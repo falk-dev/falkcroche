@@ -38,7 +38,8 @@ templ Clientes(clientes []modelos.Cliente) {
 				<div>
 					<label for="cliente-whatsapp"
 						class="mb-1.5 block text-sm font-semibold text-[#5a262c]">WhatsApp</label>
-					<input id="cliente-whatsapp" type="tel" name="whatsapp"
+					<input id="cliente-whatsapp" type="tel" name="whatsapp" inputmode="tel" autocomplete="tel"
+						maxlength="19" placeholder="(00) 00000-0000"
 						class="w-full rounded-lg border border-[#e8d5c4] bg-[#fcf9f8] px-3 py-3 outline-none focus:border-[#5a262c] focus:ring-2 focus:ring-[#5a262c]/20" />
 				</div>
 				<div class="grid grid-cols-1 gap-4 sm:grid-cols-[1fr_8rem]">

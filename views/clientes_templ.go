@@ -34,7 +34,7 @@ func Clientes(clientes []modelos.Cliente) templ.Component {
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"space-y-6\"><div class=\"flex items-center justify-between gap-4\"><div><h3 class=\"text-xl font-serif font-bold text-[#5a262c]\">Clientes do ateliê</h3><p class=\"text-sm text-[#5a262c]/60\">Consulte os contatos cadastrados.</p></div><button id=\"abrir-modal-cliente\" type=\"button\" class=\"shrink-0 rounded-lg bg-[#5a262c] px-4 py-2.5 text-sm font-bold text-[#ffeae8] hover:bg-[#472025] transition-colors\">Novo cliente</button></div><dialog id=\"modal-cliente\" class=\"w-[min(38rem,calc(100%-2rem))] max-w-none rounded-2xl border-0 p-0 shadow-2xl backdrop:bg-[#2b1719]/50\"><div class=\"bg-white p-6 sm:p-8\"><div class=\"mb-6 flex items-start justify-between gap-4\"><div><p class=\"mb-1 text-sm font-semibold text-[#c17f6b]\">Cadastro</p><h3 id=\"titulo-modal-cliente\" class=\"text-2xl font-serif font-bold text-[#5a262c]\">Novo cliente</h3></div><button id=\"fechar-modal-cliente\" type=\"button\" aria-label=\"Fechar\" class=\"rounded-full px-3 py-1 text-2xl text-[#5a262c]/60 hover:bg-[#ffeae8]\">&times;</button></div><form id=\"form-cliente\" method=\"POST\" action=\"/clientes/inserir\" class=\"space-y-4\"><input id=\"cliente-id\" type=\"hidden\" name=\"id\"><div><label for=\"cliente-nome\" class=\"mb-1.5 block text-sm font-semibold text-[#5a262c]\">Nome</label> <input id=\"cliente-nome\" type=\"text\" name=\"nome\" required class=\"w-full rounded-lg border border-[#e8d5c4] bg-[#fcf9f8] px-3 py-3 outline-none focus:border-[#5a262c] focus:ring-2 focus:ring-[#5a262c]/20\"></div><div><label for=\"cliente-whatsapp\" class=\"mb-1.5 block text-sm font-semibold text-[#5a262c]\">WhatsApp</label> <input id=\"cliente-whatsapp\" type=\"tel\" name=\"whatsapp\" class=\"w-full rounded-lg border border-[#e8d5c4] bg-[#fcf9f8] px-3 py-3 outline-none focus:border-[#5a262c] focus:ring-2 focus:ring-[#5a262c]/20\"></div><div class=\"grid grid-cols-1 gap-4 sm:grid-cols-[1fr_8rem]\"><div><label for=\"cliente-cidade\" class=\"mb-1.5 block text-sm font-semibold text-[#5a262c]\">Cidade</label> <input id=\"cliente-cidade\" type=\"text\" name=\"cidade\" autocomplete=\"address-level2\" class=\"w-full rounded-lg border border-[#e8d5c4] bg-[#fcf9f8] px-3 py-3 outline-none focus:border-[#5a262c] focus:ring-2 focus:ring-[#5a262c]/20\"></div><div><label for=\"cliente-estado\" class=\"mb-1.5 block text-sm font-semibold text-[#5a262c]\">Estado (UF)</label> <input id=\"cliente-estado\" type=\"text\" name=\"estado\" maxlength=\"2\" autocomplete=\"address-level1\" placeholder=\"SP\" class=\"w-full rounded-lg border border-[#e8d5c4] bg-[#fcf9f8] px-3 py-3 uppercase outline-none focus:border-[#5a262c] focus:ring-2 focus:ring-[#5a262c]/20\"></div></div><div class=\"flex justify-end gap-3 border-t border-[#e8d5c4] pt-5\"><button id=\"cancelar-modal-cliente\" type=\"button\" class=\"rounded-lg border border-[#e8d5c4] px-4 py-2.5 text-sm font-semibold hover:bg-[#ffeae8]\">Cancelar</button> <button type=\"submit\" class=\"rounded-lg bg-[#5a262c] px-5 py-2.5 text-sm font-bold text-[#ffeae8] hover:bg-[#472025]\">Salvar cliente</button></div></form></div></dialog><div class=\"overflow-hidden rounded-3xl border border-[#e8d5c4] bg-white shadow-sm\"><div class=\"overflow-x-auto\"><table class=\"w-full text-left\"><thead class=\"border-b border-[#e8d5c4] bg-[#ffeae8]/40\"><tr><th class=\"p-5 font-bold text-[#5a262c]\">Nº Cliente</th><th class=\"p-5 font-bold text-[#5a262c]\">Nome</th><th class=\"p-5 font-bold text-[#5a262c]\">WhatsApp</th><th class=\"p-5 font-bold text-[#5a262c]\">Cidade</th><th class=\"p-5 font-bold text-[#5a262c]\">Estado</th><th class=\"p-5 text-right font-bold text-[#5a262c]\">Ações</th></tr></thead> <tbody class=\"divide-y divide-[#e8d5c4]/50\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"space-y-6\"><div class=\"flex items-center justify-between gap-4\"><div><h3 class=\"text-xl font-serif font-bold text-[#5a262c]\">Clientes do ateliê</h3><p class=\"text-sm text-[#5a262c]/60\">Consulte os contatos cadastrados.</p></div><button id=\"abrir-modal-cliente\" type=\"button\" class=\"shrink-0 rounded-lg bg-[#5a262c] px-4 py-2.5 text-sm font-bold text-[#ffeae8] hover:bg-[#472025] transition-colors\">Novo cliente</button></div><dialog id=\"modal-cliente\" class=\"w-[min(38rem,calc(100%-2rem))] max-w-none rounded-2xl border-0 p-0 shadow-2xl backdrop:bg-[#2b1719]/50\"><div class=\"bg-white p-6 sm:p-8\"><div class=\"mb-6 flex items-start justify-between gap-4\"><div><p class=\"mb-1 text-sm font-semibold text-[#c17f6b]\">Cadastro</p><h3 id=\"titulo-modal-cliente\" class=\"text-2xl font-serif font-bold text-[#5a262c]\">Novo cliente</h3></div><button id=\"fechar-modal-cliente\" type=\"button\" aria-label=\"Fechar\" class=\"rounded-full px-3 py-1 text-2xl text-[#5a262c]/60 hover:bg-[#ffeae8]\">&times;</button></div><form id=\"form-cliente\" method=\"POST\" action=\"/clientes/inserir\" class=\"space-y-4\"><input id=\"cliente-id\" type=\"hidden\" name=\"id\"><div><label for=\"cliente-nome\" class=\"mb-1.5 block text-sm font-semibold text-[#5a262c]\">Nome</label> <input id=\"cliente-nome\" type=\"text\" name=\"nome\" required class=\"w-full rounded-lg border border-[#e8d5c4] bg-[#fcf9f8] px-3 py-3 outline-none focus:border-[#5a262c] focus:ring-2 focus:ring-[#5a262c]/20\"></div><div><label for=\"cliente-whatsapp\" class=\"mb-1.5 block text-sm font-semibold text-[#5a262c]\">WhatsApp</label> <input id=\"cliente-whatsapp\" type=\"tel\" name=\"whatsapp\" inputmode=\"tel\" autocomplete=\"tel\" maxlength=\"19\" placeholder=\"(00) 00000-0000\" class=\"w-full rounded-lg border border-[#e8d5c4] bg-[#fcf9f8] px-3 py-3 outline-none focus:border-[#5a262c] focus:ring-2 focus:ring-[#5a262c]/20\"></div><div class=\"grid grid-cols-1 gap-4 sm:grid-cols-[1fr_8rem]\"><div><label for=\"cliente-cidade\" class=\"mb-1.5 block text-sm font-semibold text-[#5a262c]\">Cidade</label> <input id=\"cliente-cidade\" type=\"text\" name=\"cidade\" autocomplete=\"address-level2\" class=\"w-full rounded-lg border border-[#e8d5c4] bg-[#fcf9f8] px-3 py-3 outline-none focus:border-[#5a262c] focus:ring-2 focus:ring-[#5a262c]/20\"></div><div><label for=\"cliente-estado\" class=\"mb-1.5 block text-sm font-semibold text-[#5a262c]\">Estado (UF)</label> <input id=\"cliente-estado\" type=\"text\" name=\"estado\" maxlength=\"2\" autocomplete=\"address-level1\" placeholder=\"SP\" class=\"w-full rounded-lg border border-[#e8d5c4] bg-[#fcf9f8] px-3 py-3 uppercase outline-none focus:border-[#5a262c] focus:ring-2 focus:ring-[#5a262c]/20\"></div></div><div class=\"flex justify-end gap-3 border-t border-[#e8d5c4] pt-5\"><button id=\"cancelar-modal-cliente\" type=\"button\" class=\"rounded-lg border border-[#e8d5c4] px-4 py-2.5 text-sm font-semibold hover:bg-[#ffeae8]\">Cancelar</button> <button type=\"submit\" class=\"rounded-lg bg-[#5a262c] px-5 py-2.5 text-sm font-bold text-[#ffeae8] hover:bg-[#472025]\">Salvar cliente</button></div></form></div></dialog><div class=\"overflow-hidden rounded-3xl border border-[#e8d5c4] bg-white shadow-sm\"><div class=\"overflow-x-auto\"><table class=\"w-full text-left\"><thead class=\"border-b border-[#e8d5c4] bg-[#ffeae8]/40\"><tr><th class=\"p-5 font-bold text-[#5a262c]\">Nº Cliente</th><th class=\"p-5 font-bold text-[#5a262c]\">Nome</th><th class=\"p-5 font-bold text-[#5a262c]\">WhatsApp</th><th class=\"p-5 font-bold text-[#5a262c]\">Cidade</th><th class=\"p-5 font-bold text-[#5a262c]\">Estado</th><th class=\"p-5 text-right font-bold text-[#5a262c]\">Ações</th></tr></thead> <tbody class=\"divide-y divide-[#e8d5c4]/50\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -46,7 +46,7 @@ func Clientes(clientes []modelos.Cliente) templ.Component {
 			var templ_7745c5c3_Var2 string
 			templ_7745c5c3_Var2, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%d", c.ID))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/clientes.templ`, Line: 86, Col: 73}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/clientes.templ`, Line: 87, Col: 73}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var2))
 			if templ_7745c5c3_Err != nil {
@@ -59,7 +59,7 @@ func Clientes(clientes []modelos.Cliente) templ.Component {
 			var templ_7745c5c3_Var3 string
 			templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs(c.Nome)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/clientes.templ`, Line: 87, Col: 55}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/clientes.templ`, Line: 88, Col: 55}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
 			if templ_7745c5c3_Err != nil {
@@ -72,7 +72,7 @@ func Clientes(clientes []modelos.Cliente) templ.Component {
 			var templ_7745c5c3_Var4 string
 			templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs(c.Whatsapp)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/clientes.templ`, Line: 88, Col: 52}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/clientes.templ`, Line: 89, Col: 52}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
 			if templ_7745c5c3_Err != nil {
@@ -85,7 +85,7 @@ func Clientes(clientes []modelos.Cliente) templ.Component {
 			var templ_7745c5c3_Var5 string
 			templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(c.Cidade)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/clientes.templ`, Line: 89, Col: 50}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/clientes.templ`, Line: 90, Col: 50}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var5))
 			if templ_7745c5c3_Err != nil {
@@ -98,7 +98,7 @@ func Clientes(clientes []modelos.Cliente) templ.Component {
 			var templ_7745c5c3_Var6 string
 			templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.JoinStringErrs(c.Estado)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/clientes.templ`, Line: 90, Col: 50}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/clientes.templ`, Line: 91, Col: 50}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var6))
 			if templ_7745c5c3_Err != nil {
@@ -111,7 +111,7 @@ func Clientes(clientes []modelos.Cliente) templ.Component {
 			var templ_7745c5c3_Var7 string
 			templ_7745c5c3_Var7, templ_7745c5c3_Err = templ.ResolveAttributeValue(fmt.Sprintf("%d", c.ID))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/clientes.templ`, Line: 92, Col: 82}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/clientes.templ`, Line: 93, Col: 82}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var7)
 			if templ_7745c5c3_Err != nil {
@@ -124,7 +124,7 @@ func Clientes(clientes []modelos.Cliente) templ.Component {
 			var templ_7745c5c3_Var8 string
 			templ_7745c5c3_Var8, templ_7745c5c3_Err = templ.ResolveAttributeValue(c.Nome)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/clientes.templ`, Line: 93, Col: 14}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/clientes.templ`, Line: 94, Col: 14}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var8)
 			if templ_7745c5c3_Err != nil {
@@ -137,7 +137,7 @@ func Clientes(clientes []modelos.Cliente) templ.Component {
 			var templ_7745c5c3_Var9 string
 			templ_7745c5c3_Var9, templ_7745c5c3_Err = templ.ResolveAttributeValue(c.Whatsapp)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/clientes.templ`, Line: 93, Col: 43}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/clientes.templ`, Line: 94, Col: 43}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var9)
 			if templ_7745c5c3_Err != nil {
@@ -150,7 +150,7 @@ func Clientes(clientes []modelos.Cliente) templ.Component {
 			var templ_7745c5c3_Var10 string
 			templ_7745c5c3_Var10, templ_7745c5c3_Err = templ.ResolveAttributeValue(c.Cidade)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/clientes.templ`, Line: 93, Col: 68}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/clientes.templ`, Line: 94, Col: 68}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var10)
 			if templ_7745c5c3_Err != nil {
@@ -163,7 +163,7 @@ func Clientes(clientes []modelos.Cliente) templ.Component {
 			var templ_7745c5c3_Var11 string
 			templ_7745c5c3_Var11, templ_7745c5c3_Err = templ.ResolveAttributeValue(c.Estado)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/clientes.templ`, Line: 93, Col: 93}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/clientes.templ`, Line: 94, Col: 93}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var11)
 			if templ_7745c5c3_Err != nil {
@@ -176,7 +176,7 @@ func Clientes(clientes []modelos.Cliente) templ.Component {
 			var templ_7745c5c3_Var12 string
 			templ_7745c5c3_Var12, templ_7745c5c3_Err = templ.ResolveAttributeValue("Editar cliente " + c.Nome)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/clientes.templ`, Line: 94, Col: 42}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/clientes.templ`, Line: 95, Col: 42}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var12)
 			if templ_7745c5c3_Err != nil {
@@ -189,7 +189,7 @@ func Clientes(clientes []modelos.Cliente) templ.Component {
 			var templ_7745c5c3_Var13 string
 			templ_7745c5c3_Var13, templ_7745c5c3_Err = templ.ResolveAttributeValue("Editar cliente " + c.Nome)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/clientes.templ`, Line: 94, Col: 84}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/clientes.templ`, Line: 95, Col: 84}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var13)
 			if templ_7745c5c3_Err != nil {
