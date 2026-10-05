@@ -53,7 +53,7 @@ func exportarVitrine() error {
 	if err := os.MkdirAll(diretorioStatic, 0755); err != nil {
 		return fmt.Errorf("erro ao criar pasta de saída: %w", err)
 	}
-	logo, err := os.ReadFile("logo.png")
+	logo, err := os.ReadFile("./static/logo.png")
 	if err != nil {
 		return fmt.Errorf("erro ao ler logo.png: %w", err)
 	}
