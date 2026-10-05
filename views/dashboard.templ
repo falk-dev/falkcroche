@@ -138,15 +138,23 @@ return quantidade
 
 func FormatarReais(valor float64) string {
 centavos := int64(math.Round(valor * 100))
-negativo := centavos < 0 if negativo { centavos=-centavos } inteiros :=strconv.FormatInt(centavos/100, 10) var formatado
-    strings.Builder for indice, digito :=range inteiros { if indice> 0 && (len(inteiros)-indice)%3 == 0 {
-    formatado.WriteByte('.')
-    }
-    formatado.WriteRune(digito)
-    }
-    sinal := ""
-    if negativo {
-    sinal = "-"
-    }
-    return fmt.Sprintf("%sR$ %s,%02d", sinal, formatado.String(), centavos%100)
-    }
+negativo := centavos < 0
+if negativo {
+centavos = -centavos
+}
+
+inteiros := strconv.FormatInt(centavos/100, 10)
+var formatado strings.Builder
+for indice, digito := range inteiros {
+if indice > 0 && (len(inteiros)-indice)%3 == 0 {
+formatado.WriteByte('.')
+}
+formatado.WriteRune(digito)
+}
+
+sinal := ""
+if negativo {
+sinal = "-"
+}
+return fmt.Sprintf("%sR$ %s,%02d", sinal, formatado.String(), centavos%100)
+}

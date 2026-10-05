@@ -330,6 +330,7 @@ func FormatarReais(valor float64) string {
 	if negativo {
 		centavos = -centavos
 	}
+
 	inteiros := strconv.FormatInt(centavos/100, 10)
 	var formatado strings.Builder
 	for indice, digito := range inteiros {
@@ -338,6 +339,7 @@ func FormatarReais(valor float64) string {
 		}
 		formatado.WriteRune(digito)
 	}
+
 	sinal := ""
 	if negativo {
 		sinal = "-"
