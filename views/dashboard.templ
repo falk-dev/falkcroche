@@ -1,0 +1,145 @@
+package views
+
+import "fmt"
+import "math"
+import "strconv"
+import "strings"
+import "falkcroche/modelos"
+
+templ Dashboard(qtdPedidos int, qtdProdutos int, qtdClientes int, saldo float64, produtos []modelos.Produto, pedidos
+[]modelos.Pedido, clientes []modelos.Cliente) {
+<div class="space-y-6">
+	<section class="flex flex-col lg:flex-row lg:items-end justify-between gap-6">
+		<div>
+			<p class="text-sm text-[#c17f6b] font-medium mb-2">Seu espaço de gestão</p>
+			<h2 class="text-4xl font-serif font-bold leading-tight">Bem-vinda de volta,<br />Falk Crochê</h2>
+		</div>
+		<div class="grid grid-cols-2 md:grid-cols-4 gap-x-8 gap-y-4">
+			<div>
+				<p class="text-xs text-[#5a262c]/60 mb-1">Saldo atual</p>
+				<p class="text-2xl font-bold">{ FormatarReais(saldo) }</p>
+			</div>
+			<div>
+				<p class="text-xs text-[#5a262c]/60 mb-1">Produtos</p>
+				<p class="text-2xl font-bold">{ fmt.Sprintf("%d", qtdProdutos) }</p>
+			</div>
+			<div>
+				<p class="text-xs text-[#5a262c]/60 mb-1">Pedidos</p>
+				<p class="text-2xl font-bold">{ fmt.Sprintf("%d", qtdPedidos) }</p>
+			</div>
+			<div>
+				<p class="text-xs text-[#5a262c]/60 mb-1">Clientes</p>
+				<p class="text-2xl font-bold">{ fmt.Sprintf("%d", qtdClientes) }</p>
+			</div>
+		</div>
+	</section>
+
+	<div class="grid grid-cols-1 xl:grid-cols-[1.25fr_1fr] gap-4">
+		<section class="bg-[#f1eeeb] rounded-2xl p-5">
+			<div class="flex items-center justify-between mb-4">
+				<div>
+					<h3 class="font-bold text-lg">Produtos do ateliê</h3>
+					<p class="text-sm text-[#5a262c]/60">Peças cadastradas no seu catálogo</p>
+				</div>
+				<a href="/produtos" class="text-sm font-semibold text-[#5a262c] hover:underline">Ver produtos</a>
+			</div>
+			<div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+				for indice, p := range produtos {
+				if indice < 6 { <article class="bg-white rounded-xl overflow-hidden">
+					<div class="aspect-square bg-[#e8d5c4]/40">
+						if p.FotoURL != "" {
+						<img src={ p.FotoURL } alt={ p.NomePeca } class="w-full h-full object-cover" />
+						} else {
+						<div class="w-full h-full flex items-center justify-center text-xs text-[#5a262c]/50">Sem foto
+						</div>
+						}
+					</div>
+					<div class="p-3">
+						<h4 class="font-semibold text-sm truncate">{ p.NomePeca }</h4>
+						<p class="text-xs text-[#5a262c]/60">{ FormatarReais(p.Preco) }</p>
+					</div>
+					</article>
+					}
+					}
+					if len(produtos) == 0 {
+					<p class="col-span-full rounded-xl bg-white p-6 text-sm text-[#5a262c]/60">Cadastre produtos para
+						acompanhar seu catálogo aqui.</p>
+					}
+			</div>
+		</section>
+
+		<div class="space-y-4">
+			<section class="bg-[#f1eeeb] rounded-2xl p-5">
+				<div class="flex items-center justify-between mb-4">
+					<div>
+						<h3 class="font-bold text-lg">Etapas dos pedidos</h3>
+						<p class="text-sm text-[#5a262c]/60">Acompanhe a produção</p>
+					</div>
+					<a href="/pedidos" class="text-sm font-semibold text-[#5a262c] hover:underline">Abrir pedidos</a>
+				</div>
+				<div class="space-y-3">
+					@ResumoStatus("Orçamento", contarPedidosStatus(pedidos, "Orçamento"), "bg-[#e8d5c4]")
+					@ResumoStatus("Aguardando Sinal", contarPedidosStatus(pedidos, "Aguardando Sinal"), "bg-[#c17f6b]")
+					@ResumoStatus("Em Produção", contarPedidosStatus(pedidos, "Em Produção"), "bg-[#c17f6b]")
+					@ResumoStatus("Entregue", contarPedidosStatus(pedidos, "Entregue"), "bg-[#5a262c]")
+				</div>
+			</section>
+
+			<section class="bg-[#f1eeeb] rounded-2xl p-5">
+				<h3 class="font-bold text-lg mb-1">Atividade recente</h3>
+				<p class="text-sm text-[#5a262c]/60 mb-4">Últimos pedidos registrados</p>
+				<div class="space-y-3">
+					for indice, p := range pedidos {
+					if indice < 4 { <div
+						class="flex items-center justify-between gap-3 border-b border-[#e8d5c4] pb-3 last:border-0 last:pb-0">
+						<div class="min-w-0">
+							<p class="font-semibold text-sm truncate">{ obterNomeCliente(p.ClienteID, clientes) }</p>
+							<p class="text-xs text-[#5a262c]/60">Pedido #{ fmt.Sprintf("%d", p.ID) }</p>
+						</div>
+						@StatusLabel(p.Status)
+				</div>
+				}
+				}
+				if len(pedidos) == 0 {
+				<p class="text-sm text-[#5a262c]/60">Nenhum pedido registrado.</p>
+				}
+		</div>
+		</section>
+	</div>
+</div>
+</div>
+}
+
+templ ResumoStatus(status string, quantidade int, cor string) {
+<div class="flex items-center gap-3">
+	<span class="w-2.5 h-2.5 rounded-full { cor }"></span>
+	<span class="flex-1 text-sm">{ status }</span>
+	<span class="font-bold text-sm">{ fmt.Sprintf("%d", quantidade) }</span>
+</div>
+}
+
+func contarPedidosStatus(pedidos []modelos.Pedido, status string) int {
+quantidade := 0
+for _, pedido := range pedidos {
+if pedido.Status == status {
+quantidade++
+}
+}
+return quantidade
+}
+
+func FormatarReais(valor float64) string {
+centavos := int64(math.Round(valor * 100))
+negativo := centavos < 0 if negativo { centavos=-centavos } inteiros :=strconv.FormatInt(centavos/100, 10) var formatado
+	strings.Builder for indice, digito :=range inteiros { if indice> 0 && (len(inteiros)-indice)%3 == 0 {
+	formatado.WriteByte('.')
+	}
+	formatado.WriteRune(digito)
+	}
+
+	sinal := ""
+	if negativo {
+	sinal = "-"
+	}
+	return fmt.Sprintf("%sR$ %s,%02d", sinal, formatado.String(), centavos%100)
+	}
