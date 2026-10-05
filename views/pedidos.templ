@@ -1,0 +1,233 @@
+package views
+
+import "falkcroche/modelos"
+import "fmt"
+import "time"
+
+templ PedidosLista(pedidos []modelos.Pedido, clientes []modelos.Cliente, produtos []modelos.Produto) {
+<div class="space-y-6">
+	<div class="flex items-center justify-between gap-4">
+		<div>
+			<h3 class="text-xl font-serif font-bold text-[#5a262c]">Pedidos do ateliê</h3>
+			<p class="text-sm text-[#5a262c]/60">Acompanhe cada encomenda até a entrega.</p>
+		</div>
+		<button id="abrir-modal-pedido" type="button"
+			class="shrink-0 rounded-lg bg-[#5a262c] px-4 py-2.5 text-sm font-bold text-[#ffeae8] hover:bg-[#472025] transition-colors">Novo
+			pedido</button>
+	</div>
+
+	<dialog id="modal-pedido"
+		class="w-[min(42rem,calc(100%-2rem))] max-w-none rounded-2xl border-0 p-0 shadow-2xl backdrop:bg-[#2b1719]/50">
+		<div class="max-h-[90vh] overflow-y-auto bg-white p-6 sm:p-8">
+			<div class="flex items-start justify-between gap-4 mb-6">
+				<div>
+					<p class="text-sm font-semibold text-[#c17f6b] mb-1">Nova encomenda</p>
+					<h3 class="text-2xl font-serif font-bold">Registrar pedido</h3>
+				</div>
+				<button id="fechar-modal-pedido" type="button" aria-label="Fechar"
+					class="rounded-full px-3 py-1 text-2xl text-[#5a262c]/60 hover:bg-[#ffeae8]">&times;</button>
+			</div>
+			<form method="POST" action="/pedidos/inserir" class="space-y-5">
+				<div class="relative" id="cliente-campo">
+					<label for="cliente-busca" class="mb-1.5 block text-sm font-semibold">Cliente</label>
+					<input id="cliente-busca" type="search" autocomplete="off" required
+						placeholder="Digite o nome ou WhatsApp"
+						class="w-full rounded-lg border border-[#e8d5c4] bg-[#fcf9f8] px-3 py-3 outline-none focus:border-[#5a262c] focus:ring-2 focus:ring-[#5a262c]/20" />
+					<input id="cliente-id" type="hidden" name="cliente_id" />
+					<div id="cliente-opcoes"
+						class="absolute z-20 mt-1 hidden max-h-48 w-full overflow-y-auto rounded-lg border border-[#e8d5c4] bg-white p-1 shadow-lg">
+						for _, c := range clientes {
+						<button type="button" data-opcao-cliente data-id={ fmt.Sprintf("%d", c.ID) } data-label={ c.Nome
+							} data-busca={ c.Nome + " " + c.Whatsapp }
+							class="block w-full rounded-md px-3 py-2 text-left text-sm hover:bg-[#ffeae8]">
+							<strong>{ c.Nome }</strong>
+							if c.Whatsapp != "" {
+							<span class="ml-2 text-[#5a262c]/60">{ c.Whatsapp }</span>
+							}
+						</button>
+						}
+						<p id="cliente-sem-resultado" class="hidden px-3 py-2 text-sm text-[#5a262c]/60">Nenhum cliente
+							encontrado.</p>
+					</div>
+					if len(clientes) == 0 {
+					<p class="mt-2 text-xs text-[#c17f6b]">Cadastre um cliente antes de criar o pedido.</p>
+					}
+				</div>
+
+				<div class="relative" id="produto-campo">
+					<label for="produto-busca" class="mb-1.5 block text-sm font-semibold">Produto</label>
+					<input id="produto-busca" type="search" autocomplete="off" required
+						placeholder="Digite o nome da peça"
+						class="w-full rounded-lg border border-[#e8d5c4] bg-[#fcf9f8] px-3 py-3 outline-none focus:border-[#5a262c] focus:ring-2 focus:ring-[#5a262c]/20" />
+					<input id="produto-id" type="hidden" name="produto_id" />
+					<div id="produto-opcoes"
+						class="absolute z-10 mt-1 hidden max-h-48 w-full overflow-y-auto rounded-lg border border-[#e8d5c4] bg-white p-1 shadow-lg">
+						for _, p := range produtos {
+						<button type="button" data-opcao-produto data-id={ fmt.Sprintf("%d", p.ID) } data-label={
+							p.NomePeca } data-busca={ p.NomePeca }
+							class="block w-full rounded-md px-3 py-2 text-left text-sm hover:bg-[#ffeae8]">
+							<strong>{ p.NomePeca }</strong><span class="ml-2 text-[#5a262c]/60">{ FormatarReais(p.Preco)
+								}</span>
+						</button>
+						}
+						<p id="produto-sem-resultado" class="hidden px-3 py-2 text-sm text-[#5a262c]/60">Nenhum produto
+							encontrado.</p>
+					</div>
+					if len(produtos) == 0 {
+					<p class="mt-2 text-xs text-[#c17f6b]">Cadastre um produto antes de criar o pedido.</p>
+					}
+				</div>
+
+				<p class="rounded-lg bg-[#ffeae8]/60 px-4 py-3 text-sm text-[#5a262c]/80">Prazo de produção: <strong>20
+						dias úteis</strong>, com previsão calculada automaticamente.</p>
+
+				<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+					<div>
+						<label for="linha-cores-nome" class="mb-1.5 block text-sm font-semibold">Linha de fios para este
+							orçamento</label>
+						<input id="linha-cores-nome" name="linha_cores_nome" type="text"
+							placeholder="Ex.: Amigurumi Soft"
+							class="w-full rounded-lg border border-[#e8d5c4] bg-[#fcf9f8] px-3 py-3 outline-none focus:border-[#5a262c] focus:ring-2 focus:ring-[#5a262c]/20" />
+					</div>
+					<div>
+						<label for="linha-cores-link" class="mb-1.5 block text-sm font-semibold">Link da tabela oficial
+							de cores</label>
+						<input id="linha-cores-link" name="linha_cores_link" type="url" placeholder="https://..."
+							class="w-full rounded-lg border border-[#e8d5c4] bg-[#fcf9f8] px-3 py-3 outline-none focus:border-[#5a262c] focus:ring-2 focus:ring-[#5a262c]/20" />
+					</div>
+				</div>
+
+				<div>
+					<label for="observacoes-pedido" class="mb-1.5 block text-sm font-semibold">Detalhes do
+						pedido</label>
+					<textarea id="observacoes-pedido" name="observacoes" rows="3"
+						placeholder="Cores, tamanho ou outros detalhes"
+						class="w-full rounded-lg border border-[#e8d5c4] bg-[#fcf9f8] px-3 py-3 outline-none focus:border-[#5a262c] focus:ring-2 focus:ring-[#5a262c]/20"></textarea>
+				</div>
+				<div class="flex justify-end gap-3 border-t border-[#e8d5c4] pt-5">
+					<button id="cancelar-modal-pedido" type="button"
+						class="rounded-lg border border-[#e8d5c4] px-4 py-2.5 text-sm font-semibold hover:bg-[#ffeae8]">Cancelar</button>
+					<button type="submit"
+						class="rounded-lg bg-[#5a262c] px-5 py-2.5 text-sm font-bold text-[#ffeae8] hover:bg-[#472025]">Criar
+						orçamento</button>
+				</div>
+			</form>
+		</div>
+	</dialog>
+
+	<!-- Tabela de Pedidos -->
+	<div class="bg-white rounded-3xl border border-[#e8d5c4] shadow-sm overflow-hidden">
+		<table class="w-full text-left">
+			<thead class="bg-[#ffeae8]/40 border-b border-[#e8d5c4]">
+				<tr>
+					<th class="p-5 font-bold text-[#5a262c]">Nº Pedido</th>
+					<th class="p-5 font-bold text-[#5a262c]">Cliente / Produto</th>
+					<th class="p-5 font-bold text-[#5a262c]">Observações</th>
+					<th class="p-5 font-bold text-[#5a262c]">Entrega</th>
+					<th class="p-5 font-bold text-[#5a262c]">Fluxo do pedido</th>
+				</tr>
+			</thead>
+			<tbody class="divide-y divide-[#e8d5c4]/50">
+				for _, p := range pedidos {
+				<tr class="hover:bg-[#ffeae8]/20 transition-colors">
+					<td class="p-5 text-[#5a262c] font-bold">
+						<div class="flex items-center gap-2">
+							<span>#{ fmt.Sprintf("%d", p.ID) }</span>
+							<button type="button" data-copiar-orcamento data-pedido-id={ fmt.Sprintf("%d", p.ID) }
+								title="Copiar orçamento do pedido" aria-label={ "Copiar orçamento do pedido " +
+								fmt.Sprintf("%d", p.ID) }
+								class="grid size-9 shrink-0 place-items-center rounded-lg border border-[#e8d5c4] bg-white text-lg hover:bg-[#ffeae8]">📋</button>
+						</div>
+						<textarea id={ "mensagem-orcamento-" + fmt.Sprintf("%d", p.ID) } readonly
+							hidden>{ p.MensagemOrcamento }</textarea>
+						<span id={ "status-copia-orcamento-" + fmt.Sprintf("%d", p.ID) } class="sr-only"
+							aria-live="polite"></span>
+					</td>
+					<td class="p-5">
+						<div class="text-[#5a262c]/90 font-bold">{ obterNomeCliente(p.ClienteID, clientes) }</div>
+						<div class="text-[#5a262c]/70 text-sm">{ obterNomeProduto(p.ProdutoID, produtos) }</div>
+					</td>
+					<td class="p-5 text-[#5a262c]/80 text-sm max-w-xs truncate" title={ p.Observacoes }>{ p.Observacoes
+						}</td>
+					<td class="p-5 text-[#5a262c]/80 font-medium">{ formatarDataPedido(p.DataEntrega) }</td>
+					<td class="p-5">
+						<div class="space-y-2">
+							@StatusLabel(p.Status)
+							if len(modelos.ProximosStatusPedido(p.Status)) > 0 {
+							<form method="POST" action="/pedidos/status" class="flex flex-wrap items-center gap-2">
+								<input type="hidden" name="pedido_id" value={ fmt.Sprintf("%d", p.ID) } />
+								<select name="status"
+									class="max-w-48 rounded-lg border border-[#e8d5c4] bg-white px-2 py-1.5 text-xs focus:border-[#5a262c] focus:outline-none">
+									for _, proximo := range modelos.ProximosStatusPedido(p.Status) {
+									<option value={ proximo }>{ proximo }</option>
+									}
+								</select>
+								<button type="submit"
+									class="rounded-md bg-[#5a262c] px-2.5 py-1.5 text-xs font-semibold text-[#ffeae8] hover:bg-[#472025]">Avançar</button>
+							</form>
+							}
+						</div>
+					</td>
+				</tr>
+				}
+			</tbody>
+		</table>
+		if len(pedidos) == 0 {
+		<div class="p-10 text-center text-[#5a262c]/50 font-medium">Você ainda não tem nenhum pedido cadastrado.</div>
+		}
+	</div>
+	<script src="/static/js/pedidos.js" defer></script>
+</div>
+}
+
+func formatarDataPedido(data string) string {
+dataConvertida, err := time.Parse("2006-01-02", data)
+if err != nil {
+return data
+}
+return dataConvertida.Format("02-01-2006")
+}
+
+templ StatusLabel(status string) {
+if status == modelos.StatusOrcamento {
+<span class="inline-flex items-center rounded-full bg-[#e8d5c4]/50 px-3 py-1 text-[11px] font-bold text-[#5a262c]">{
+	status }</span>
+} else if status == modelos.StatusAguardandoSinal || status == modelos.StatusAguardandoPagamento {
+<span class="inline-flex items-center rounded-full bg-[#f0dcb0] px-3 py-1 text-[11px] font-bold text-[#5a262c]">{ status
+	}</span>
+} else if status == modelos.StatusEntregue {
+<span class="inline-flex items-center rounded-full bg-[#7a8c5f]/15 px-3 py-1 text-[11px] font-bold text-[#56653f]">{
+	status }</span>
+} else if status == modelos.StatusEmProducao {
+<span class="inline-flex items-center rounded-full bg-blue-50 px-3 py-1 text-[11px] font-bold text-blue-700">{ status
+	}</span>
+} else if status == modelos.StatusSinalRecebido || status == modelos.StatusPago {
+<span class="inline-flex items-center rounded-full bg-[#ffeae8] px-3 py-1 text-[11px] font-bold text-[#5a262c]">{ status
+	}</span>
+} else if status == modelos.StatusCancelado {
+<span class="inline-flex items-center rounded-full bg-[#c17f6b]/20 px-3 py-1 text-[11px] font-bold text-[#7d4438]">{
+	status }</span>
+} else {
+<span class="inline-flex items-center rounded-full bg-[#e8d5c4]/30 px-3 py-1 text-[11px] font-bold text-[#5a262c]">{
+	status }</span>
+}
+}
+
+// funcoes auxiliares para mostrar os nomes verdadeiros na tabela (no lugar do id)
+func obterNomeCliente(id int, clientes []modelos.Cliente) string {
+for _, c := range clientes {
+if c.ID == id {
+return c.Nome
+}
+}
+return "Desconhecido"
+}
+
+func obterNomeProduto(id int, produtos []modelos.Produto) string {
+for _, p := range produtos {
+if p.ID == id {
+return p.NomePeca
+}
+}
+return "Desconhecido"
+}
