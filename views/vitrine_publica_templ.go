@@ -8,9 +8,12 @@ package views
 import "github.com/a-h/templ"
 import templruntime "github.com/a-h/templ/runtime"
 
-import "falkcroche/modelos"
-import "net/url"
-import "strings"
+import (
+	"net/url"
+	"strings"
+
+	"falkcroche/modelos"
+)
 
 func VitrinePublica(produtos []modelos.Produto, whatsapp string) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
@@ -46,7 +49,7 @@ func VitrinePublica(produtos []modelos.Produto, whatsapp string) templ.Component
 				var templ_7745c5c3_Var2 templ.SafeURL
 				templ_7745c5c3_Var2, templ_7745c5c3_Err = templ.JoinURLErrs(linkWhatsAppContato(whatsapp))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/vitrine_publica.templ`, Line: 14, Col: 43}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/vitrine_publica.templ`, Line: 18, Col: 43}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var2))
 				if templ_7745c5c3_Err != nil {
@@ -62,7 +65,7 @@ func VitrinePublica(produtos []modelos.Produto, whatsapp string) templ.Component
 				return templ_7745c5c3_Err
 			}
 		} else {
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "<div class=\"grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 sm:gap-5\">")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "<div class=\"grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -89,7 +92,7 @@ func VitrinePublica(produtos []modelos.Produto, whatsapp string) templ.Component
 					var templ_7745c5c3_Var3 string
 					templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.ResolveAttributeValue(p.FotoURL)
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/vitrine_publica.templ`, Line: 26, Col: 27}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/vitrine_publica.templ`, Line: 35, Col: 32}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var3)
 					if templ_7745c5c3_Err != nil {
@@ -102,13 +105,13 @@ func VitrinePublica(produtos []modelos.Produto, whatsapp string) templ.Component
 					var templ_7745c5c3_Var4 string
 					templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.ResolveAttributeValue(p.NomePeca)
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/vitrine_publica.templ`, Line: 26, Col: 46}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/vitrine_publica.templ`, Line: 35, Col: 51}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var4)
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 11, "\" class=\"w-full h-full object-cover hover:scale-105 transition-transform duration-500\">")
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 11, "\" class=\"h-full w-full object-cover transition-transform duration-500 hover:scale-105\">")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
@@ -125,7 +128,7 @@ func VitrinePublica(produtos []modelos.Produto, whatsapp string) templ.Component
 				var templ_7745c5c3_Var5 string
 				templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(p.NomePeca)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/vitrine_publica.templ`, Line: 32, Col: 83}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/vitrine_publica.templ`, Line: 42, Col: 89}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var5))
 				if templ_7745c5c3_Err != nil {
@@ -138,7 +141,7 @@ func VitrinePublica(produtos []modelos.Produto, whatsapp string) templ.Component
 				var templ_7745c5c3_Var6 string
 				templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.JoinStringErrs(FormatarReais(p.Preco))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/vitrine_publica.templ`, Line: 33, Col: 81}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/vitrine_publica.templ`, Line: 43, Col: 87}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var6))
 				if templ_7745c5c3_Err != nil {
@@ -156,7 +159,7 @@ func VitrinePublica(produtos []modelos.Produto, whatsapp string) templ.Component
 					var templ_7745c5c3_Var7 templ.SafeURL
 					templ_7745c5c3_Var7, templ_7745c5c3_Err = templ.JoinURLErrs(linkWhatsApp(whatsapp, p.NomePeca))
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/vitrine_publica.templ`, Line: 35, Col: 51}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/vitrine_publica.templ`, Line: 45, Col: 56}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var7))
 					if templ_7745c5c3_Err != nil {
@@ -184,7 +187,7 @@ func VitrinePublica(produtos []modelos.Produto, whatsapp string) templ.Component
 				var templ_7745c5c3_Var8 templ.SafeURL
 				templ_7745c5c3_Var8, templ_7745c5c3_Err = templ.JoinURLErrs(linkWhatsAppContato(whatsapp))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/vitrine_publica.templ`, Line: 49, Col: 43}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/vitrine_publica.templ`, Line: 60, Col: 43}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var8))
 				if templ_7745c5c3_Err != nil {
