@@ -8,19 +8,27 @@ function configurarBusca(tipo) {
     const busca = document.getElementById(tipo + "-busca");
     const idSelecionado = document.getElementById(tipo + "-id");
     const opcoes = document.getElementById(tipo + "-opcoes");
-    const botoes = opcoes.querySelectorAll("[data-opcao-" + tipo + "]");
     const semResultado = document.getElementById(tipo + "-sem-resultado");
+    const botoes = Array.from(opcoes.querySelectorAll("[data-opcao-" + tipo + "]"));
+
+    botoes.sort((a, b) => a.dataset.label.localeCompare(b.dataset.label, "pt-BR", { sensitivity: "base" }));
+    botoes.forEach((botao) => opcoes.insertBefore(botao, semResultado));
+
+    const normalizar = (texto) => texto
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .toLocaleLowerCase("pt-BR");
 
     busca.addEventListener("input", () => {
         idSelecionado.value = "";
-        const termo = busca.value.trim().toLocaleLowerCase("pt-BR");
+        const termo = normalizar(busca.value.trim());
         let encontrou = false;
         botoes.forEach((botao) => {
-            const corresponde = botao.dataset.busca.toLocaleLowerCase("pt-BR").includes(termo);
-            botao.hidden = !corresponde;
+            const corresponde = normalizar(botao.dataset.busca).includes(termo);
+            botao.style.display = corresponde ? "" : "none";
             encontrou = encontrou || corresponde;
         });
-        semResultado.hidden = encontrou;
+        semResultado.classList.toggle("hidden", encontrou);
         opcoes.classList.remove("hidden");
     });
     busca.addEventListener("focus", () => opcoes.classList.remove("hidden"));
