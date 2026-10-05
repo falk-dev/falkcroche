@@ -213,7 +213,7 @@ func PedidosLista(pedidos []modelos.Pedido, clientes []modelos.Cliente, produtos
 				return templ_7745c5c3_Err
 			}
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 21, "</div><p class=\"rounded-lg bg-[#ffeae8]/60 px-4 py-3 text-sm text-[#5a262c]/80\">Prazo de produção: <strong>20 dias úteis</strong>, com previsão calculada automaticamente.</p><div class=\"grid grid-cols-1 sm:grid-cols-2 gap-4\"><div><label for=\"linha-cores-nome\" class=\"mb-1.5 block text-sm font-semibold\">Linha de fios para este orçamento</label> <input id=\"linha-cores-nome\" name=\"linha_cores_nome\" type=\"text\" placeholder=\"Ex.: Amigurumi Soft\" class=\"w-full rounded-lg border border-[#e8d5c4] bg-[#fcf9f8] px-3 py-3 outline-none focus:border-[#5a262c] focus:ring-2 focus:ring-[#5a262c]/20\"></div><div><label for=\"linha-cores-link\" class=\"mb-1.5 block text-sm font-semibold\">Link da tabela oficial de cores</label> <input id=\"linha-cores-link\" name=\"linha_cores_link\" type=\"url\" placeholder=\"https://...\" class=\"w-full rounded-lg border border-[#e8d5c4] bg-[#fcf9f8] px-3 py-3 outline-none focus:border-[#5a262c] focus:ring-2 focus:ring-[#5a262c]/20\"></div></div><div><label for=\"observacoes-pedido\" class=\"mb-1.5 block text-sm font-semibold\">Detalhes do pedido</label> <textarea id=\"observacoes-pedido\" name=\"observacoes\" rows=\"3\" placeholder=\"Cores, tamanho ou outros detalhes\" class=\"w-full rounded-lg border border-[#e8d5c4] bg-[#fcf9f8] px-3 py-3 outline-none focus:border-[#5a262c] focus:ring-2 focus:ring-[#5a262c]/20\"></textarea></div><div class=\"flex justify-end gap-3 border-t border-[#e8d5c4] pt-5\"><button id=\"cancelar-modal-pedido\" type=\"button\" class=\"rounded-lg border border-[#e8d5c4] px-4 py-2.5 text-sm font-semibold hover:bg-[#ffeae8]\">Cancelar</button> <button type=\"submit\" class=\"rounded-lg bg-[#5a262c] px-5 py-2.5 text-sm font-bold text-[#ffeae8] hover:bg-[#472025]\">Criar orçamento</button></div></form></div></dialog><!-- Tabela de Pedidos --><div class=\"bg-white rounded-3xl border border-[#e8d5c4] shadow-sm overflow-hidden\"><table class=\"w-full text-left\"><thead class=\"bg-[#ffeae8]/40 border-b border-[#e8d5c4]\"><tr><th class=\"p-5 font-bold text-[#5a262c]\">Nº Pedido</th><th class=\"p-5 font-bold text-[#5a262c]\">Cliente / Produto</th><th class=\"p-5 font-bold text-[#5a262c]\">Observações</th><th class=\"p-5 font-bold text-[#5a262c]\">Entrega</th><th class=\"p-5 font-bold text-[#5a262c]\">Fluxo do pedido</th></tr></thead> <tbody class=\"divide-y divide-[#e8d5c4]/50\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 21, "</div><p class=\"rounded-lg bg-[#ffeae8]/60 px-4 py-3 text-sm text-[#5a262c]/80\">Prazo de produção: <strong>20 dias úteis</strong>, com previsão calculada automaticamente.</p><div class=\"grid grid-cols-1 sm:grid-cols-2 gap-4\"><div><label for=\"linha-cores-nome\" class=\"mb-1.5 block text-sm font-semibold\">Linha de fios para este orçamento</label> <input id=\"linha-cores-nome\" name=\"linha_cores_nome\" type=\"text\" placeholder=\"Ex.: Amigurumi Soft\" class=\"w-full rounded-lg border border-[#e8d5c4] bg-[#fcf9f8] px-3 py-3 outline-none focus:border-[#5a262c] focus:ring-2 focus:ring-[#5a262c]/20\"></div><div><label for=\"linha-cores-link\" class=\"mb-1.5 block text-sm font-semibold\">Link da tabela oficial de cores</label> <input id=\"linha-cores-link\" name=\"linha_cores_link\" type=\"url\" placeholder=\"https://...\" class=\"w-full rounded-lg border border-[#e8d5c4] bg-[#fcf9f8] px-3 py-3 outline-none focus:border-[#5a262c] focus:ring-2 focus:ring-[#5a262c]/20\"></div></div><div><label for=\"observacoes-pedido\" class=\"mb-1.5 block text-sm font-semibold\">Detalhes do pedido</label> <textarea id=\"observacoes-pedido\" name=\"observacoes\" rows=\"3\" placeholder=\"Cores, tamanho ou outros detalhes\" class=\"w-full rounded-lg border border-[#e8d5c4] bg-[#fcf9f8] px-3 py-3 outline-none focus:border-[#5a262c] focus:ring-2 focus:ring-[#5a262c]/20\"></textarea></div><div class=\"flex justify-end gap-3 border-t border-[#e8d5c4] pt-5\"><button id=\"cancelar-modal-pedido\" type=\"button\" class=\"rounded-lg border border-[#e8d5c4] px-4 py-2.5 text-sm font-semibold hover:bg-[#ffeae8]\">Cancelar</button> <button type=\"submit\" class=\"rounded-lg bg-[#5a262c] px-5 py-2.5 text-sm font-bold text-[#ffeae8] hover:bg-[#472025]\">Criar orçamento</button></div></form></div></dialog><div class=\"bg-white rounded-3xl border border-[#e8d5c4] shadow-sm overflow-hidden\"><table class=\"w-full text-left\"><thead class=\"bg-[#ffeae8]/40 border-b border-[#e8d5c4]\"><tr><th class=\"p-5 font-bold text-[#5a262c]\">Nº Pedido</th><th class=\"p-5 font-bold text-[#5a262c]\">Cliente / Produto</th><th class=\"p-5 font-bold text-[#5a262c]\">Observações</th><th class=\"p-5 font-bold text-[#5a262c]\">Entrega</th><th class=\"p-5 font-bold text-[#5a262c]\">Fluxo do pedido</th></tr></thead> <tbody class=\"divide-y divide-[#e8d5c4]/50\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -225,7 +225,7 @@ func PedidosLista(pedidos []modelos.Pedido, clientes []modelos.Cliente, produtos
 			var templ_7745c5c3_Var12 string
 			templ_7745c5c3_Var12, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%d", p.ID))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/pedidos.templ`, Line: 135, Col: 39}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/pedidos.templ`, Line: 134, Col: 39}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var12))
 			if templ_7745c5c3_Err != nil {
@@ -238,7 +238,7 @@ func PedidosLista(pedidos []modelos.Pedido, clientes []modelos.Cliente, produtos
 			var templ_7745c5c3_Var13 string
 			templ_7745c5c3_Var13, templ_7745c5c3_Err = templ.ResolveAttributeValue(fmt.Sprintf("%d", p.ID))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/pedidos.templ`, Line: 136, Col: 91}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/pedidos.templ`, Line: 135, Col: 91}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var13)
 			if templ_7745c5c3_Err != nil {
@@ -252,7 +252,7 @@ func PedidosLista(pedidos []modelos.Pedido, clientes []modelos.Cliente, produtos
 			templ_7745c5c3_Var14, templ_7745c5c3_Err = templ.ResolveAttributeValue("Copiar orçamento do pedido " +
 				fmt.Sprintf("%d", p.ID))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/pedidos.templ`, Line: 138, Col: 31}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/pedidos.templ`, Line: 137, Col: 31}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var14)
 			if templ_7745c5c3_Err != nil {
@@ -265,7 +265,7 @@ func PedidosLista(pedidos []modelos.Pedido, clientes []modelos.Cliente, produtos
 			var templ_7745c5c3_Var15 string
 			templ_7745c5c3_Var15, templ_7745c5c3_Err = templ.ResolveAttributeValue("mensagem-orcamento-" + fmt.Sprintf("%d", p.ID))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/pedidos.templ`, Line: 141, Col: 68}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/pedidos.templ`, Line: 140, Col: 68}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var15)
 			if templ_7745c5c3_Err != nil {
@@ -278,7 +278,7 @@ func PedidosLista(pedidos []modelos.Pedido, clientes []modelos.Cliente, produtos
 			var templ_7745c5c3_Var16 string
 			templ_7745c5c3_Var16, templ_7745c5c3_Err = templ.JoinStringErrs(p.MensagemOrcamento)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/pedidos.templ`, Line: 142, Col: 35}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/pedidos.templ`, Line: 141, Col: 35}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var16))
 			if templ_7745c5c3_Err != nil {
@@ -291,7 +291,7 @@ func PedidosLista(pedidos []modelos.Pedido, clientes []modelos.Cliente, produtos
 			var templ_7745c5c3_Var17 string
 			templ_7745c5c3_Var17, templ_7745c5c3_Err = templ.ResolveAttributeValue("status-copia-orcamento-" + fmt.Sprintf("%d", p.ID))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/pedidos.templ`, Line: 143, Col: 68}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/pedidos.templ`, Line: 142, Col: 68}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var17)
 			if templ_7745c5c3_Err != nil {
@@ -304,7 +304,7 @@ func PedidosLista(pedidos []modelos.Pedido, clientes []modelos.Cliente, produtos
 			var templ_7745c5c3_Var18 string
 			templ_7745c5c3_Var18, templ_7745c5c3_Err = templ.JoinStringErrs(obterNomeCliente(p.ClienteID, clientes))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/pedidos.templ`, Line: 147, Col: 88}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/pedidos.templ`, Line: 146, Col: 88}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var18))
 			if templ_7745c5c3_Err != nil {
@@ -317,7 +317,7 @@ func PedidosLista(pedidos []modelos.Pedido, clientes []modelos.Cliente, produtos
 			var templ_7745c5c3_Var19 string
 			templ_7745c5c3_Var19, templ_7745c5c3_Err = templ.JoinStringErrs(obterNomeProduto(p.ProdutoID, produtos))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/pedidos.templ`, Line: 148, Col: 86}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/pedidos.templ`, Line: 147, Col: 86}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var19))
 			if templ_7745c5c3_Err != nil {
@@ -330,7 +330,7 @@ func PedidosLista(pedidos []modelos.Pedido, clientes []modelos.Cliente, produtos
 			var templ_7745c5c3_Var20 string
 			templ_7745c5c3_Var20, templ_7745c5c3_Err = templ.ResolveAttributeValue(p.Observacoes)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/pedidos.templ`, Line: 150, Col: 86}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/pedidos.templ`, Line: 149, Col: 86}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var20)
 			if templ_7745c5c3_Err != nil {
@@ -343,7 +343,7 @@ func PedidosLista(pedidos []modelos.Pedido, clientes []modelos.Cliente, produtos
 			var templ_7745c5c3_Var21 string
 			templ_7745c5c3_Var21, templ_7745c5c3_Err = templ.JoinStringErrs(p.Observacoes)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/pedidos.templ`, Line: 150, Col: 104}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/pedidos.templ`, Line: 149, Col: 104}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var21))
 			if templ_7745c5c3_Err != nil {
@@ -356,7 +356,7 @@ func PedidosLista(pedidos []modelos.Pedido, clientes []modelos.Cliente, produtos
 			var templ_7745c5c3_Var22 string
 			templ_7745c5c3_Var22, templ_7745c5c3_Err = templ.JoinStringErrs(formatarDataPedido(p.DataEntrega))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/pedidos.templ`, Line: 152, Col: 86}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/pedidos.templ`, Line: 151, Col: 86}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var22))
 			if templ_7745c5c3_Err != nil {
@@ -378,7 +378,7 @@ func PedidosLista(pedidos []modelos.Pedido, clientes []modelos.Cliente, produtos
 				var templ_7745c5c3_Var23 string
 				templ_7745c5c3_Var23, templ_7745c5c3_Err = templ.ResolveAttributeValue(fmt.Sprintf("%d", p.ID))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/pedidos.templ`, Line: 158, Col: 77}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/pedidos.templ`, Line: 157, Col: 77}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var23)
 				if templ_7745c5c3_Err != nil {
@@ -396,7 +396,7 @@ func PedidosLista(pedidos []modelos.Pedido, clientes []modelos.Cliente, produtos
 					var templ_7745c5c3_Var24 string
 					templ_7745c5c3_Var24, templ_7745c5c3_Err = templ.ResolveAttributeValue(proximo)
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/pedidos.templ`, Line: 162, Col: 32}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/pedidos.templ`, Line: 161, Col: 32}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var24)
 					if templ_7745c5c3_Err != nil {
@@ -409,7 +409,7 @@ func PedidosLista(pedidos []modelos.Pedido, clientes []modelos.Cliente, produtos
 					var templ_7745c5c3_Var25 string
 					templ_7745c5c3_Var25, templ_7745c5c3_Err = templ.JoinStringErrs(proximo)
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/pedidos.templ`, Line: 162, Col: 44}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/pedidos.templ`, Line: 161, Col: 44}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var25))
 					if templ_7745c5c3_Err != nil {
@@ -440,7 +440,7 @@ func PedidosLista(pedidos []modelos.Pedido, clientes []modelos.Cliente, produtos
 				return templ_7745c5c3_Err
 			}
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 43, "</div><script src=\"/static/js/financeiro.js\" defer></script></div>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 43, "</div><script src=\"/static/js/pedidos.js\" defer></script></div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -486,7 +486,7 @@ func StatusLabel(status string) templ.Component {
 			templ_7745c5c3_Var27, templ_7745c5c3_Err = templ.JoinStringErrs(
 				status)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/pedidos.templ`, Line: 194, Col: 7}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/pedidos.templ`, Line: 193, Col: 7}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var27))
 			if templ_7745c5c3_Err != nil {
@@ -504,7 +504,7 @@ func StatusLabel(status string) templ.Component {
 			var templ_7745c5c3_Var28 string
 			templ_7745c5c3_Var28, templ_7745c5c3_Err = templ.JoinStringErrs(status)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/pedidos.templ`, Line: 196, Col: 120}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/pedidos.templ`, Line: 195, Col: 120}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var28))
 			if templ_7745c5c3_Err != nil {
@@ -523,7 +523,7 @@ func StatusLabel(status string) templ.Component {
 			templ_7745c5c3_Var29, templ_7745c5c3_Err = templ.JoinStringErrs(
 				status)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/pedidos.templ`, Line: 200, Col: 7}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/pedidos.templ`, Line: 199, Col: 7}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var29))
 			if templ_7745c5c3_Err != nil {
@@ -541,7 +541,7 @@ func StatusLabel(status string) templ.Component {
 			var templ_7745c5c3_Var30 string
 			templ_7745c5c3_Var30, templ_7745c5c3_Err = templ.JoinStringErrs(status)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/pedidos.templ`, Line: 202, Col: 117}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/pedidos.templ`, Line: 201, Col: 117}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var30))
 			if templ_7745c5c3_Err != nil {
@@ -559,7 +559,7 @@ func StatusLabel(status string) templ.Component {
 			var templ_7745c5c3_Var31 string
 			templ_7745c5c3_Var31, templ_7745c5c3_Err = templ.JoinStringErrs(status)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/pedidos.templ`, Line: 205, Col: 120}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/pedidos.templ`, Line: 204, Col: 120}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var31))
 			if templ_7745c5c3_Err != nil {
@@ -578,7 +578,7 @@ func StatusLabel(status string) templ.Component {
 			templ_7745c5c3_Var32, templ_7745c5c3_Err = templ.JoinStringErrs(
 				status)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/pedidos.templ`, Line: 209, Col: 7}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/pedidos.templ`, Line: 208, Col: 7}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var32))
 			if templ_7745c5c3_Err != nil {
@@ -597,7 +597,7 @@ func StatusLabel(status string) templ.Component {
 			templ_7745c5c3_Var33, templ_7745c5c3_Err = templ.JoinStringErrs(
 				status)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/pedidos.templ`, Line: 212, Col: 7}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/pedidos.templ`, Line: 211, Col: 7}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var33))
 			if templ_7745c5c3_Err != nil {

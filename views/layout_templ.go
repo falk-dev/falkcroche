@@ -36,13 +36,13 @@ func BaseHead(title string) templ.Component {
 		var templ_7745c5c3_Var2 string
 		templ_7745c5c3_Var2, templ_7745c5c3_Err = templ.JoinStringErrs(title)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/layout.templ`, Line: 7, Col: 16}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/layout.templ`, Line: 8, Col: 15}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var2))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, " - Falk Crochê</title><script src=\"https://cdn.tailwindcss.com\"></script><link href=\"https://fonts.googleapis.com/css2?family=Fraunces:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700;800&display=swap\" rel=\"stylesheet\"><style>\n\t\t\tbody.font-sans { font-family: 'DM Sans', sans-serif; }\n\t\t\tbody .font-serif { font-family: 'Fraunces', serif; }\n\t\t</style></head>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, " - Falk Crochê</title><script src=\"https://cdn.tailwindcss.com\"></script><link href=\"https://fonts.googleapis.com/css2?family=Fraunces:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700;800&display=swap\" rel=\"stylesheet\"><style>\n\t\tbody.font-sans {\n\t\t\tfont-family: 'DM Sans', sans-serif;\n\t\t}\n\n\t\tbody .font-serif {\n\t\t\tfont-family: 'Fraunces', serif;\n\t\t}\n\t</style></head>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -50,7 +50,7 @@ func BaseHead(title string) templ.Component {
 	})
 }
 
-// AdminLayout é o layout privado de gestão
+// AdminLayout eh o layout privado de gestao
 func AdminLayout(title string, content templ.Component) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
@@ -80,7 +80,7 @@ func AdminLayout(title string, content templ.Component) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "<!-- Fundo levemente escurecido para destacar o painel central \"flutuante\" (estilo Dribbble) --><body class=\"bg-[#e8d5c4]/40 text-[#5a262c] font-sans antialiased min-h-screen p-4 md:p-8 flex items-center justify-center\"><!-- Container Principal (Canto Arredondado Grande) --><div class=\"bg-[#fdfbf9] rounded-[2rem] w-full max-w-[1400px] min-h-[calc(100vh-4rem)] shadow-xl overflow-hidden flex flex-col border border-white\"><!-- Navegação de Topo (Menu Horizontal) --><header class=\"flex items-center justify-between px-8 py-5 border-b border-[#e8d5c4]/30\"><!-- Logo --><div class=\"flex items-center gap-3\"><img src=\"/static/logo.png\" alt=\"Falk Crochê\" class=\"h-16 w-28 object-contain\"></div><!-- Menu em formato de Pílulas (Pills) --><nav class=\"hidden lg:flex items-center gap-2 bg-[#ffeae8]/60 p-1.5 rounded-full border border-[#ffeae8]\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "<!-- fundo levemente escurecido para destacar o painel central --><body class=\"bg-[#e8d5c4]/40 text-[#5a262c] font-sans antialiased min-h-screen p-4 md:p-8 flex items-center justify-center\"><!-- container principal (canto arredondado grande) --><div class=\"bg-[#fdfbf9] rounded-[2rem] w-full max-w-[1400px] min-h-[calc(100vh-4rem)] shadow-xl overflow-hidden flex flex-col border border-white\"><!-- menu horizontal --><header class=\"flex items-center justify-between px-8 py-5 border-b border-[#e8d5c4]/30\"><!-- logo --><div class=\"flex items-center gap-3\"><img src=\"/static/logo.png\" alt=\"Falk Crochê\" class=\"h-16 w-28 object-contain\"></div><nav class=\"hidden lg:flex items-center gap-2 bg-[#ffeae8]/60 p-1.5 rounded-full border border-[#ffeae8]\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -104,7 +104,7 @@ func AdminLayout(title string, content templ.Component) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "</nav><!-- Lado Direito (Perfil e Link Externo) --><div class=\"flex items-center gap-4\"><a href=\"/\" target=\"_blank\" class=\"hidden md:flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold bg-white text-[#c17f6b] border border-[#e8d5c4] hover:bg-[#ffeae8] transition-colors shadow-sm\">Vitrine Pública</a><div class=\"h-10 w-10 rounded-full bg-[#5a262c] text-[#ffeae8] flex items-center justify-center font-bold text-lg shadow-sm\">F</div><form method=\"POST\" action=\"/admin/sair\"><button type=\"submit\" class=\"text-sm font-medium text-[#5a262c] hover:underline\">Sair</button></form></div></header><!-- Área do Conteúdo Central --><main class=\"flex-1 overflow-y-auto p-8 lg:p-12\"><div class=\"max-w-7xl mx-auto\"><!-- Em algumas páginas o 'title' não precisa ser renderizado aqui se já houver um cabeçalho customizado (como no Dashboard) -->")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "</nav><div class=\"flex items-center gap-4\"><a href=\"/\" target=\"_blank\" class=\"hidden md:flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold bg-white text-[#c17f6b] border border-[#e8d5c4] hover:bg-[#ffeae8] transition-colors shadow-sm\">Vitrine Pública</a><div class=\"h-10 w-10 rounded-full bg-[#5a262c] text-[#ffeae8] flex items-center justify-center font-bold text-lg shadow-sm\">F</div><form method=\"POST\" action=\"/admin/sair\"><button type=\"submit\" class=\"text-sm font-medium text-[#5a262c] hover:underline\">Sair</button></form></div></header><main class=\"flex-1 overflow-y-auto p-8 lg:p-12\"><div class=\"max-w-7xl mx-auto\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -116,7 +116,7 @@ func AdminLayout(title string, content templ.Component) templ.Component {
 			var templ_7745c5c3_Var4 string
 			templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs(title)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/layout.templ`, Line: 63, Col: 72}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/layout.templ`, Line: 73, Col: 69}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
 			if templ_7745c5c3_Err != nil {
@@ -168,7 +168,7 @@ func AdminNavLink(label string, href string, ativa bool) templ.Component {
 			var templ_7745c5c3_Var6 templ.SafeURL
 			templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.JoinURLErrs(href)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/layout.templ`, Line: 76, Col: 16}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/layout.templ`, Line: 87, Col: 14}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var6))
 			if templ_7745c5c3_Err != nil {
@@ -181,7 +181,7 @@ func AdminNavLink(label string, href string, ativa bool) templ.Component {
 			var templ_7745c5c3_Var7 string
 			templ_7745c5c3_Var7, templ_7745c5c3_Err = templ.JoinStringErrs(label)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/layout.templ`, Line: 76, Col: 151}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/layout.templ`, Line: 88, Col: 113}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var7))
 			if templ_7745c5c3_Err != nil {
@@ -199,7 +199,7 @@ func AdminNavLink(label string, href string, ativa bool) templ.Component {
 			var templ_7745c5c3_Var8 templ.SafeURL
 			templ_7745c5c3_Var8, templ_7745c5c3_Err = templ.JoinURLErrs(href)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/layout.templ`, Line: 78, Col: 16}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/layout.templ`, Line: 91, Col: 14}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var8))
 			if templ_7745c5c3_Err != nil {
@@ -210,9 +210,10 @@ func AdminNavLink(label string, href string, ativa bool) templ.Component {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var9 string
-			templ_7745c5c3_Var9, templ_7745c5c3_Err = templ.JoinStringErrs(label)
+			templ_7745c5c3_Var9, templ_7745c5c3_Err = templ.JoinStringErrs(
+				label)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/layout.templ`, Line: 78, Col: 149}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/layout.templ`, Line: 93, Col: 6}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var9))
 			if templ_7745c5c3_Err != nil {
@@ -227,7 +228,7 @@ func AdminNavLink(label string, href string, ativa bool) templ.Component {
 	})
 }
 
-// PublicLayout é o layout da página pública para os clientes
+// PublicLayout eh o layout da página publica para os clientes
 func PublicLayout(title string, content templ.Component, logoURL string) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
@@ -257,14 +258,14 @@ func PublicLayout(title string, content templ.Component, logoURL string) templ.C
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 16, "<!-- Fundo Rosa Seda para imersão total na marca --><body class=\"bg-[#ffeae8] text-[#5a262c] font-sans antialiased min-h-screen flex flex-col\"><header class=\"px-4 pb-3 pt-6 text-center sm:pt-8\"><img src=\"")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 16, "<body class=\"bg-[#ffeae8] text-[#5a262c] font-sans antialiased min-h-screen flex flex-col\"><header class=\"px-4 pb-3 pt-6 text-center sm:pt-8\"><img src=\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var11 string
 		templ_7745c5c3_Var11, templ_7745c5c3_Err = templ.ResolveAttributeValue(logoURL)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/layout.templ`, Line: 90, Col: 22}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/layout.templ`, Line: 105, Col: 20}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var11)
 		if templ_7745c5c3_Err != nil {
