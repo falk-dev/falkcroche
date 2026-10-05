@@ -43,10 +43,7 @@ func main() {
 	)
 
 	mux := http.NewServeMux()
-	mux.HandleFunc("/static/logo.png", func(w http.ResponseWriter, r *http.Request) {
-		http.ServeFile(w, r, "logo.png")
-	})
-	mux.Handle("/static/js/", http.StripPrefix("/static/js/", http.FileServer(http.Dir("static/js"))))
+	mux.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
 	mux.HandleFunc("/admin/login", acessoCtrl.Login)
 	mux.Handle("/admin/sair", acessoCtrl.Proteger(http.HandlerFunc(acessoCtrl.Sair)))
 
