@@ -1,0 +1,109 @@
+package views
+
+import (
+"falkcroche/modelos"
+"fmt"
+)
+
+templ Clientes(clientes []modelos.Cliente) {
+<div class="space-y-6">
+	<div class="flex items-center justify-between gap-4">
+		<div>
+			<h3 class="text-xl font-serif font-bold text-[#5a262c]">Clientes do ateliê</h3>
+			<p class="text-sm text-[#5a262c]/60">Consulte os contatos cadastrados.</p>
+		</div>
+		<button id="abrir-modal-cliente" type="button"
+			class="shrink-0 rounded-lg bg-[#5a262c] px-4 py-2.5 text-sm font-bold text-[#ffeae8] hover:bg-[#472025] transition-colors">Novo
+			cliente</button>
+	</div>
+
+	<dialog id="modal-cliente"
+		class="w-[min(38rem,calc(100%-2rem))] max-w-none rounded-2xl border-0 p-0 shadow-2xl backdrop:bg-[#2b1719]/50">
+		<div class="bg-white p-6 sm:p-8">
+			<div class="mb-6 flex items-start justify-between gap-4">
+				<div>
+					<p class="mb-1 text-sm font-semibold text-[#c17f6b]">Cadastro</p>
+					<h3 id="titulo-modal-cliente" class="text-2xl font-serif font-bold text-[#5a262c]">Novo cliente</h3>
+				</div>
+				<button id="fechar-modal-cliente" type="button" aria-label="Fechar"
+					class="rounded-full px-3 py-1 text-2xl text-[#5a262c]/60 hover:bg-[#ffeae8]">&times;</button>
+			</div>
+			<form id="form-cliente" method="POST" action="/clientes/inserir" class="space-y-4">
+				<input id="cliente-id" type="hidden" name="id" />
+				<div>
+					<label for="cliente-nome" class="mb-1.5 block text-sm font-semibold text-[#5a262c]">Nome</label>
+					<input id="cliente-nome" type="text" name="nome" required
+						class="w-full rounded-lg border border-[#e8d5c4] bg-[#fcf9f8] px-3 py-3 outline-none focus:border-[#5a262c] focus:ring-2 focus:ring-[#5a262c]/20" />
+				</div>
+				<div>
+					<label for="cliente-whatsapp"
+						class="mb-1.5 block text-sm font-semibold text-[#5a262c]">WhatsApp</label>
+					<input id="cliente-whatsapp" type="tel" name="whatsapp"
+						class="w-full rounded-lg border border-[#e8d5c4] bg-[#fcf9f8] px-3 py-3 outline-none focus:border-[#5a262c] focus:ring-2 focus:ring-[#5a262c]/20" />
+				</div>
+				<div class="grid grid-cols-1 gap-4 sm:grid-cols-[1fr_8rem]">
+					<div>
+						<label for="cliente-cidade"
+							class="mb-1.5 block text-sm font-semibold text-[#5a262c]">Cidade</label>
+						<input id="cliente-cidade" type="text" name="cidade" autocomplete="address-level2"
+							class="w-full rounded-lg border border-[#e8d5c4] bg-[#fcf9f8] px-3 py-3 outline-none focus:border-[#5a262c] focus:ring-2 focus:ring-[#5a262c]/20" />
+					</div>
+					<div>
+						<label for="cliente-estado" class="mb-1.5 block text-sm font-semibold text-[#5a262c]">Estado
+							(UF)</label>
+						<input id="cliente-estado" type="text" name="estado" maxlength="2" autocomplete="address-level1"
+							placeholder="SP"
+							class="w-full rounded-lg border border-[#e8d5c4] bg-[#fcf9f8] px-3 py-3 uppercase outline-none focus:border-[#5a262c] focus:ring-2 focus:ring-[#5a262c]/20" />
+					</div>
+				</div>
+				<div class="flex justify-end gap-3 border-t border-[#e8d5c4] pt-5">
+					<button id="cancelar-modal-cliente" type="button"
+						class="rounded-lg border border-[#e8d5c4] px-4 py-2.5 text-sm font-semibold hover:bg-[#ffeae8]">Cancelar</button>
+					<button type="submit"
+						class="rounded-lg bg-[#5a262c] px-5 py-2.5 text-sm font-bold text-[#ffeae8] hover:bg-[#472025]">Salvar
+						cliente</button>
+				</div>
+			</form>
+		</div>
+	</dialog>
+
+	<div class="overflow-hidden rounded-3xl border border-[#e8d5c4] bg-white shadow-sm">
+		<div class="overflow-x-auto">
+			<table class="w-full text-left">
+				<thead class="border-b border-[#e8d5c4] bg-[#ffeae8]/40">
+					<tr>
+						<th class="p-5 font-bold text-[#5a262c]">Nº Cliente</th>
+						<th class="p-5 font-bold text-[#5a262c]">Nome</th>
+						<th class="p-5 font-bold text-[#5a262c]">WhatsApp</th>
+						<th class="p-5 font-bold text-[#5a262c]">Cidade</th>
+						<th class="p-5 font-bold text-[#5a262c]">Estado</th>
+						<th class="p-5 text-right font-bold text-[#5a262c]">Ações</th>
+					</tr>
+				</thead>
+				<tbody class="divide-y divide-[#e8d5c4]/50">
+					for _, c := range clientes {
+					<tr class="transition-colors hover:bg-[#ffeae8]/20">
+						<td class="p-5 font-bold text-[#5a262c]">#{ fmt.Sprintf("%d", c.ID) }</td>
+						<td class="p-5 font-bold text-[#5a262c]">{ c.Nome }</td>
+						<td class="p-5 text-[#5a262c]/80">{ c.Whatsapp }</td>
+						<td class="p-5 text-[#5a262c]/80">{ c.Cidade }</td>
+						<td class="p-5 text-[#5a262c]/80">{ c.Estado }</td>
+						<td class="p-5 text-right">
+							<button type="button" data-editar-cliente data-id={ fmt.Sprintf("%d", c.ID) } data-nome={
+								c.Nome } data-whatsapp={ c.Whatsapp } data-cidade={ c.Cidade } data-estado={ c.Estado }
+								title={ "Editar cliente " + c.Nome } aria-label={ "Editar cliente " + c.Nome }
+								class="grid size-9 ml-auto place-items-center rounded-lg border border-[#e8d5c4] bg-white text-lg hover:bg-[#ffeae8]">✎</button>
+						</td>
+					</tr>
+					}
+				</tbody>
+			</table>
+			if len(clientes) == 0 {
+			<div class="p-10 text-center font-medium text-[#5a262c]/50">Você ainda não tem nenhum cliente cadastrado.
+			</div>
+			}
+		</div>
+	</div>
+	<script src="/static/js/clientes.js" defer></script>
+</div>
+}

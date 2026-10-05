@@ -1,0 +1,139 @@
+package views
+
+import (
+"fmt"
+"falkcroche/modelos"
+)
+
+templ Produtos(produtos []modelos.Produto) {
+<div class="space-y-6">
+	<div class="flex items-center justify-between gap-4">
+		<div>
+			<h3 class="text-xl font-serif font-bold text-[#5a262c]">Produtos do ateliê</h3>
+			<p class="text-sm text-[#5a262c]/60">Gerencie as peças e sua exibição na vitrine.</p>
+		</div>
+		<button id="abrir-modal-produto" type="button"
+			class="shrink-0 rounded-lg bg-[#5a262c] px-4 py-2.5 text-sm font-bold text-[#ffeae8] hover:bg-[#472025] transition-colors">Novo
+			produto</button>
+	</div>
+
+	<dialog id="modal-produto"
+		class="w-[min(42rem,calc(100%-2rem))] max-w-none rounded-2xl border-0 p-0 shadow-2xl backdrop:bg-[#2b1719]/50">
+		<div class="max-h-[90vh] overflow-y-auto bg-white p-6 sm:p-8">
+			<div class="mb-6 flex items-start justify-between gap-4">
+				<div>
+					<p class="mb-1 text-sm font-semibold text-[#c17f6b]">Cadastro</p>
+					<h3 id="titulo-modal-produto" class="text-2xl font-serif font-bold text-[#5a262c]">Novo produto</h3>
+				</div>
+				<button id="fechar-modal-produto" type="button" aria-label="Fechar"
+					class="rounded-full px-3 py-1 text-2xl text-[#5a262c]/60 hover:bg-[#ffeae8]">&times;</button>
+			</div>
+			<form id="form-produto" method="POST" action="/produtos/inserir" class="space-y-5">
+				<input id="produto-id" type="hidden" name="id" />
+				<div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+					<div>
+						<label for="produto-nome" class="mb-1.5 block text-sm font-semibold">Nome da peça</label>
+						<input id="produto-nome" type="text" name="nome_peca" required
+							class="w-full rounded-lg border border-[#e8d5c4] bg-[#fcf9f8] px-3 py-3 outline-none focus:border-[#5a262c] focus:ring-2 focus:ring-[#5a262c]/20" />
+					</div>
+					<div>
+						<label for="produto-preco" class="mb-1.5 block text-sm font-semibold">Preço (R$)</label>
+						<input id="produto-preco" type="number" min="0" step="0.01" name="preco" required
+							class="w-full rounded-lg border border-[#e8d5c4] bg-[#fcf9f8] px-3 py-3 outline-none focus:border-[#5a262c] focus:ring-2 focus:ring-[#5a262c]/20" />
+					</div>
+				</div>
+				<div>
+					<label for="produto-foto" class="mb-1.5 block text-sm font-semibold">URL da foto</label>
+					<input id="produto-foto" type="url" name="foto_url" placeholder="https://..."
+						class="w-full rounded-lg border border-[#e8d5c4] bg-[#fcf9f8] px-3 py-3 outline-none focus:border-[#5a262c] focus:ring-2 focus:ring-[#5a262c]/20" />
+				</div>
+				<div class="space-y-3 rounded-lg bg-[#fcf9f8] p-4">
+					<label class="flex cursor-pointer items-center gap-3 text-sm font-medium text-[#5a262c]">
+						<input type="checkbox" name="pronta_entrega" class="size-4 accent-[#5a262c]" />
+						Pronta entrega
+					</label>
+					<label class="flex cursor-pointer items-center gap-3 text-sm font-medium text-[#5a262c]">
+						<input type="checkbox" name="publicado" class="size-4 accent-[#5a262c]" />
+						Exibir na vitrine pública
+					</label>
+				</div>
+				<div class="flex justify-end gap-3 border-t border-[#e8d5c4] pt-5">
+					<button id="cancelar-modal-produto" type="button"
+						class="rounded-lg border border-[#e8d5c4] px-4 py-2.5 text-sm font-semibold hover:bg-[#ffeae8]">Cancelar</button>
+					<button type="submit"
+						class="rounded-lg bg-[#5a262c] px-5 py-2.5 text-sm font-bold text-[#ffeae8] hover:bg-[#472025]">Salvar
+						produto</button>
+				</div>
+			</form>
+		</div>
+	</dialog>
+
+	<div class="overflow-hidden rounded-3xl border border-[#e8d5c4] bg-white shadow-sm">
+		<div class="overflow-x-auto">
+			<table class="w-full text-left">
+				<thead class="border-b border-[#e8d5c4] bg-[#ffeae8]/40">
+					<tr>
+						<th class="p-5 font-bold text-[#5a262c]">Produto</th>
+						<th class="p-5 font-bold text-[#5a262c]">Preço</th>
+						<th class="p-5 font-bold text-[#5a262c]">Disponibilidade</th>
+						<th class="p-5 font-bold text-[#5a262c]">Vitrine</th>
+						<th class="p-5 text-right font-bold text-[#5a262c]">Ações</th>
+					</tr>
+				</thead>
+				<tbody class="divide-y divide-[#e8d5c4]/50">
+					for _, p := range produtos {
+					<tr class="transition-colors hover:bg-[#ffeae8]/20">
+						<td class="p-4 sm:p-5">
+							<div class="flex min-w-52 items-center gap-3">
+								if p.FotoURL != "" {
+								<img src={ p.FotoURL } alt={ p.NomePeca }
+									class="size-12 shrink-0 rounded-lg border border-[#e8d5c4] object-cover" />
+								} else {
+								<div
+									class="grid size-12 shrink-0 place-items-center rounded-lg bg-[#ffeae8]/60 text-xs text-[#5a262c]/50">
+									Foto</div>
+								}
+								<span class="font-bold text-[#5a262c]">{ p.NomePeca }</span>
+							</div>
+						</td>
+						<td class="whitespace-nowrap p-5 font-bold text-[#5a262c]">{ FormatarReais(p.Preco) }</td>
+						<td class="p-5">
+							if p.ProntaEntrega {
+							<span
+								class="inline-flex rounded-full bg-[#f0dcb0] px-3 py-1 text-xs font-semibold text-[#5a262c]">Pronta
+								entrega</span>
+							} else {
+							<span class="text-sm text-[#5a262c]/60">Sob encomenda</span>
+							}
+						</td>
+						<td class="p-5">
+							<span
+								class="inline-flex rounded-full px-3 py-1 text-xs font-semibold { if p.Publicado { `bg-[#7a8c5f]/15 text-[#56653f]` } else { `bg-[#e8d5c4]/50 text-[#5a262c]/70` } }">
+								if p.Publicado {
+								Publicado
+								} else {
+								Privado
+								}
+							</span>
+						</td>
+						<td class="p-5 text-right">
+							<button type="button" data-editar-produto data-id={ fmt.Sprintf("%d", p.ID) } data-nome={
+								p.NomePeca } data-preco={ fmt.Sprintf("%.2f", p.Preco) } data-foto={ p.FotoURL }
+								data-pronta-entrega={ fmt.Sprintf("%t", p.ProntaEntrega) } data-publicado={
+								fmt.Sprintf("%t", p.Publicado) } title={ "Editar produto " + p.NomePeca }
+								aria-label={ "Editar produto " + p.NomePeca }
+								class="ml-auto grid size-9 place-items-center rounded-lg border border-[#e8d5c4] bg-white text-lg hover:bg-[#ffeae8]">✎</button>
+						</td>
+					</tr>
+					}
+				</tbody>
+			</table>
+			if len(produtos) == 0 {
+			<div class="p-10 text-center font-medium text-[#5a262c]/50">Você ainda não tem nenhum produto cadastrado.
+			</div>
+			}
+		</div>
+	</div>
+	<script src="/static/js/produtos.js" defer></script>
+</div>
+}
