@@ -104,7 +104,7 @@ func AdminLayout(title string, content templ.Component) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "</nav><div class=\"flex items-center gap-4\"><a href=\"/\" target=\"_blank\" class=\"hidden md:flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold bg-white text-[#c17f6b] border border-[#e8d5c4] hover:bg-[#ffeae8] transition-colors shadow-sm\">Vitrine Pública</a><div class=\"h-10 w-10 rounded-full bg-[#5a262c] text-[#ffeae8] flex items-center justify-center font-bold text-lg shadow-sm\">F</div><form method=\"POST\" action=\"/admin/sair\"><button type=\"submit\" class=\"text-sm font-medium text-[#5a262c] hover:underline\">Sair</button></form></div></header><main class=\"flex-1 overflow-y-auto p-8 lg:p-12\"><div class=\"max-w-7xl mx-auto\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "</nav><div class=\"flex items-center gap-4\"><a href=\"https://falk-dev.github.io/falkcroche/\" target=\"_blank\" class=\"hidden md:flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold bg-white text-[#c17f6b] border border-[#e8d5c4] hover:bg-[#ffeae8] transition-colors shadow-sm\">Vitrine Pública</a><div class=\"h-10 w-10 rounded-full bg-[#5a262c] text-[#ffeae8] flex items-center justify-center font-bold text-lg shadow-sm\">F</div><form method=\"POST\" action=\"/admin/sair\"><button type=\"submit\" class=\"text-sm font-medium text-[#5a262c] hover:underline\">Sair</button></form></div></header><main class=\"flex-1 overflow-y-auto p-8 lg:p-12\"><div class=\"max-w-7xl mx-auto\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
