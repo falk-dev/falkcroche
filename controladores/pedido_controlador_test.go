@@ -37,7 +37,6 @@ func TestMensagemOrcamentoComDescontoEParcelas(t *testing.T) {
 		"pix à vista: R$ 153,00 (10% de desconto)",
 		"sinal de 30% via pix (R$ 51,00)",
 		"o restante (R$ 119,00) pode ser parcelado em até 3x sem juros",
-		"2x de R$ 39,67 e 1x de R$ 39,66",
 		"prazo de produção: 20 dias úteis",
 		"previsão de entrega: 06-11-2026",
 		"este orçamento é válido por 15 dias",

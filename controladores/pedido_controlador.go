@@ -105,10 +105,8 @@ func montarMensagemOrcamento(clienteNome string, produtoNome string, preco float
 	valorPix := math.Round(preco*0.90*100) / 100
 	sinalCartaoPix := math.Round(preco*0.30*100) / 100
 	restanteCartao := preco - sinalCartaoPix
-	parcelaCartao := math.Round(restanteCartao/3*100) / 100
-	ultimaParcela := math.Round((restanteCartao-2*parcelaCartao)*100) / 100
 
-	mensagem := fmt.Sprintf("oi, %s! seguem os detalhes do orçamento para a sua peça:\n\n🌸 peça: %s\n💰 valor: %s\n\n💳 formas de pagamento:\n• pix à vista: %s (10%% de desconto)\n• cartão de crédito: sinal de 30%% via pix (%s), e o restante (%s) pode ser parcelado em até 3x sem juros: 2x de %s e 1x de %s.\n\n⏳ prazo de produção: %d dias úteis (podendo ser entregue antes).\n📅 previsão de entrega: %s\n\neste orçamento é válido por 15 dias.", clienteNome, produtoNome, views.FormatarReais(preco), views.FormatarReais(valorPix), views.FormatarReais(sinalCartaoPix), views.FormatarReais(restanteCartao), views.FormatarReais(parcelaCartao), views.FormatarReais(ultimaParcela), diasUteis, entrega.Format("02-01-2006"))
+	mensagem := fmt.Sprintf("oi, %s! seguem os detalhes do orçamento para a sua peça:\n\n🌸 peça: %s\n💰 valor: %s\n\n💳 formas de pagamento:\n• pix à vista: %s (10%% de desconto)\n• cartão de crédito: sinal de 30%% via pix (%s), e o restante (%s) pode ser parcelado em até 3x sem juros.\n\n⏳ prazo de produção: %d dias úteis (podendo ser entregue antes).\n📅 previsão de entrega: %s\n\neste orçamento é válido por 15 dias.", clienteNome, produtoNome, views.FormatarReais(preco), views.FormatarReais(valorPix), views.FormatarReais(sinalCartaoPix), views.FormatarReais(restanteCartao), diasUteis, entrega.Format("02-01-2006"))
 	if strings.TrimSpace(linhaNome) != "" && strings.TrimSpace(linhaLink) != "" {
 		mensagem += fmt.Sprintf("\n\n🎨 cores disponíveis:\nescolha a cor da sua peça pela tabela oficial de cores da linha %s:\n%s", strings.TrimSpace(linhaNome), strings.TrimSpace(linhaLink))
 	}
