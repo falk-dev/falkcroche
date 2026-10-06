@@ -29,16 +29,16 @@ func TestPrazoPadraoDeVinteDiasUteis(t *testing.T) {
 
 func TestMensagemOrcamentoComDescontoEParcelas(t *testing.T) {
 	entrega := time.Date(2026, time.November, 6, 12, 0, 0, 0, time.Local)
-	mensagem := montarMensagemOrcamento("Ana", "Blusa Vitória-Régia", 170, prazoPadraoDiasUteis, entrega, "Linha Exemplo", "https://exemplo.com/cores")
+	mensagem := montarMensagemOrcamento("Ana", "Blusa Vitória-Régia", 170, prazoPadraoDiasUteis, entrega, "Linha Exemplo", "https://exemplo.com/cores", false, 0, false, true)
 	for _, trecho := range []string{
 		"oi, Ana! seguem os detalhes do orçamento",
-		"🌸 peça: Blusa Vitória-Régia",
-		"💰 valor: R$ 170,00",
-		"pix à vista: R$ 153,00 (10% de desconto)",
-		"sinal de 30% via pix (R$ 51,00)",
-		"o restante (R$ 119,00) pode ser parcelado em até 3x sem juros",
-		"prazo de produção: 20 dias úteis",
-		"previsão de entrega: 06-11-2026",
+		"🌸 *peça:* Blusa Vitória-Régia",
+		"💰 *valor:* R$ 170,00",
+		"*pix à vista*\nR$ 153,00\n10% de desconto",
+		"*cartão de crédito*\nR$ 170,00\n→ sinal de 30% via pix: R$ 51,00\n→ restante: R$ 119,00 em até 3x sem juros.",
+		"🎁 *brinde:* a compra inclui um pequeno brinde nas cores escolhidas para a sua peça.",
+		"prazo de produção:* 20 dias úteis, podendo ser entregue antes.",
+		"previsão de entrega:* 06/11/2026",
 		"este orçamento é válido por 15 dias",
 		"Linha Exemplo:\nhttps://exemplo.com/cores",
 	} {
@@ -48,9 +48,42 @@ func TestMensagemOrcamentoComDescontoEParcelas(t *testing.T) {
 	}
 }
 
+func TestMensagemOrcamentoAplicaDescontoPromocionalSomenteNoCartao(t *testing.T) {
+	entrega := time.Date(2026, time.November, 6, 12, 0, 0, 0, time.Local)
+	mensagem := montarMensagemOrcamento("Ana", "Blusa Vitória-Régia", 170, prazoPadraoDiasUteis, entrega, "", "", true, 5, false, false)
+	for _, trecho := range []string{
+		"*pix à vista*\nR$ 153,00\n10% de desconto",
+		"*cartão de crédito*\nR$ 161,50\n5% de desconto",
+		"→ sinal de 30% via pix: R$ 48,45",
+		"→ restante: R$ 113,05 em até 3x sem juros.",
+	} {
+		if !strings.Contains(mensagem, trecho) {
+			t.Errorf("mensagem de orçamento não contém %q", trecho)
+		}
+	}
+}
+
+func TestMensagemIncluiPixParceladoSomenteQuandoSelecionado(t *testing.T) {
+	entrega := time.Date(2026, time.November, 6, 12, 0, 0, 0, time.Local)
+	semOpcao := montarMensagemOrcamento("Ana", "Blusa Vitória-Régia", 170, prazoPadraoDiasUteis, entrega, "", "", false, 0, false, false)
+	comOpcao := montarMensagemOrcamento("Ana", "Blusa Vitória-Régia", 170, prazoPadraoDiasUteis, entrega, "", "", false, 0, true, true)
+	if strings.Contains(semOpcao, "pix parcelado") || strings.Contains(semOpcao, "brinde") {
+		t.Fatalf("mensagem incluiu opcionais não selecionados: %s", semOpcao)
+	}
+	for _, trecho := range []string{
+		"*pix parcelado*\nR$ 170,00\n→ sinal de 30% via pix: R$ 51,00",
+		"→ restante: R$ 119,00 em até 3 parcelas via pix.",
+		"🎁 *brinde:* a compra inclui um pequeno brinde nas cores escolhidas para a sua peça.",
+	} {
+		if !strings.Contains(comOpcao, trecho) {
+			t.Errorf("mensagem de orçamento não contém %q", trecho)
+		}
+	}
+}
+
 func TestMensagemSemLinhaDeCoresOmiteSecaoOpcional(t *testing.T) {
 	entrega := time.Date(2026, time.November, 6, 12, 0, 0, 0, time.Local)
-	mensagem := montarMensagemOrcamento("Ana", "Blusa Vitória-Régia", 170, prazoPadraoDiasUteis, entrega, "", "")
+	mensagem := montarMensagemOrcamento("Ana", "Blusa Vitória-Régia", 170, prazoPadraoDiasUteis, entrega, "", "", false, 0, false, false)
 	if strings.Contains(mensagem, "cores disponíveis") || strings.Contains(mensagem, "[nome da linha]") {
 		t.Fatalf("mensagem sem linha de cores incluiu conteúdo placeholder: %s", mensagem)
 	}

@@ -81,6 +81,32 @@ templ PedidosLista(pedidos []modelos.Pedido, clientes []modelos.Cliente, produto
 				<p class="rounded-lg bg-[#ffeae8]/60 px-4 py-3 text-sm text-[#5a262c]/80">Prazo de produção: <strong>20
 						dias úteis</strong>, com previsão calculada automaticamente.</p>
 
+				<div class="grid grid-cols-1 sm:grid-cols-2 gap-4 items-end">
+					<label class="flex items-center gap-2 pb-3 text-sm font-semibold">
+						<input name="tem_desconto" type="checkbox" class="size-4 accent-[#5a262c]" />
+						Aplicar desconto no cartão de crédito
+					</label>
+					<div>
+						<label for="percentual-desconto" class="mb-1.5 block text-sm font-semibold">Percentual do desconto no cartão</label>
+						<div class="flex items-center gap-2">
+							<input id="percentual-desconto" name="percentual_desconto" type="number" min="0.01" max="100" step="0.01"
+								placeholder="Ex.: 10"
+								class="w-full rounded-lg border border-[#e8d5c4] bg-[#fcf9f8] px-3 py-3 outline-none focus:border-[#5a262c] focus:ring-2 focus:ring-[#5a262c]/20" />
+							<span class="text-sm font-semibold">%</span>
+						</div>
+					</div>
+				</div>
+				<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+					<label class="flex items-center gap-2 text-sm font-semibold">
+						<input name="pix_parcelado" type="checkbox" class="size-4 accent-[#5a262c]" />
+						Oferecer Pix parcelado (30% de sinal + até 3 parcelas)
+					</label>
+					<label class="flex items-center gap-2 text-sm font-semibold">
+						<input name="incluir_brinde" type="checkbox" class="size-4 accent-[#5a262c]" />
+						Incluir brinde pequeno nas cores escolhidas
+					</label>
+				</div>
+
 				<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
 					<div>
 						<label for="linha-cores-nome" class="mb-1.5 block text-sm font-semibold">Linha de fios para este
