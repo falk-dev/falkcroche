@@ -127,7 +127,7 @@ func montarMensagemOrcamento(clienteNome string, produtoNome string, preco float
 	valorPix := math.Round(preco*0.90*100) / 100
 	sinalCartaoPix := math.Round(valorCartao*0.30*100) / 100
 	restanteCartao := valorCartao - sinalCartaoPix
-	sinalPixParcelado := math.Round(preco*0.30*100) / 100
+	sinalPixParcelado := math.Round(preco*0.90*100) / 100
 	restantePixParcelado := preco - sinalPixParcelado
 
 	mensagem := fmt.Sprintf("oi, %s! seguem os detalhes do orçamento para a sua peça:\n\n🌸 *peça:* %s\n💰 *valor:* %s\n\n💳 *formas de pagamento*\n\n*pix à vista*\n%s\n10%% de desconto\n\n*cartão de crédito*\n%s\n→ sinal de 30%% via pix: %s\n→ restante: %s em até 3x sem juros.", clienteNome, produtoNome, views.FormatarReais(preco), views.FormatarReais(valorPix), descricaoCartao, views.FormatarReais(sinalCartaoPix), views.FormatarReais(restanteCartao))
