@@ -193,7 +193,7 @@ func VitrinePublica(produtos []modelos.Produto, whatsapp string) templ.Component
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 21, "\" target=\"_blank\" rel=\"noreferrer\" class=\"inline-flex shrink-0 items-center justify-center rounded-lg border border-[#5a262c] px-4 py-2.5 text-sm font-semibold text-[#5a262c] transition-colors hover:bg-white\">Conversar no WhatsApp</a></section>")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 21, "\" target=\"_blank\" rel=\"noreferrer\" class=\"inline-flex shrink-0 items-center justify-center rounded-lg border border-[#25D366] bg-[#25D366] px-4 py-2.5 text-sm font-semibold text-[#111B21] transition-colors hover:border-[#1ebe5d] hover:bg-[#1ebe5d]\">Conversar no WhatsApp</a></section>")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
