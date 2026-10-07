@@ -3,14 +3,18 @@ package database
 import (
 	"database/sql"
 	"log"
+	"os"
 
 	_ "github.com/mattn/go-sqlite3" // o underline importa o driver apenas para os seus efeitos colaterais
 )
 
 // Conectar() inicia a conexao com o banco e cria as tabelas se nao existirem
 func Conectar() *sql.DB {
-	// abre a conexao com o arquivo do banco de dados (sera criado se nao existir)
-	db, err := sql.Open("sqlite3", "./falkcroche.db")
+	caminho := os.Getenv("DATABASE_PATH")
+	if caminho == "" {
+		caminho = "./falkcroche.db"
+	}
+	db, err := sql.Open("sqlite3", caminho)
 	if err != nil {
 		log.Fatalf("Erro ao abrir o banco de dados: %v", err)
 	}

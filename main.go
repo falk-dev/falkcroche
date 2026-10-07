@@ -96,7 +96,10 @@ func main() {
 		componente.Render(r.Context(), w)
 	})
 
-	endereco := "127.0.0.1:8080"
+	endereco := os.Getenv("SERVER_ADDRESS")
+	if endereco == "" {
+		endereco = "127.0.0.1:8080"
+	}
 	fmt.Printf("Servidor rodando em http://%s\n", endereco)
 	if err := http.ListenAndServe(endereco, mux); err != nil {
 		log.Fatalf("Erro ao iniciar o servidor: %v", err)
