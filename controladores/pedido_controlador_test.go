@@ -110,6 +110,32 @@ func TestProximosStatusPedidoSegueFluxo(t *testing.T) {
 	}
 }
 
+func TestTodosPagamentosRecebidosExigeTodosOsItensConfirmados(t *testing.T) {
+	if todosPagamentosRecebidos(nil) {
+		t.Fatal("nenhum pagamento não deve ser considerado quitação")
+	}
+	if todosPagamentosRecebidos([]modelos.Pagamento{{Status: "Recebido"}, {Status: "Pendente"}}) {
+		t.Fatal("parcelas pendentes não devem ser consideradas quitadas")
+	}
+	if !todosPagamentosRecebidos([]modelos.Pagamento{{Status: "Recebido"}, {Status: "Recebido"}}) {
+		t.Fatal("todos os pagamentos recebidos deveriam indicar quitação")
+	}
+}
+
+func TestMensagemLembreteIdentificaPecaPeloNome(t *testing.T) {
+	mensagem := montarMensagemLembrete("Camila", "Amigurumi Coelho", modelos.Pagamento{
+		Descricao:      "Parcela 1 de 2",
+		Valor:          29.90,
+		DataVencimento: "2026-11-15",
+	})
+	if !strings.Contains(mensagem, "da peça *Amigurumi Coelho*") {
+		t.Fatalf("lembrete não identifica a peça: %s", mensagem)
+	}
+	if strings.Contains(mensagem, "pedido #") {
+		t.Fatalf("lembrete ainda menciona número do pedido: %s", mensagem)
+	}
+}
+
 func TestFormatarReaisUsaPadraoBrasileiro(t *testing.T) {
 	testes := []struct {
 		valor       float64

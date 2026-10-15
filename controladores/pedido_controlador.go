@@ -49,6 +49,16 @@ func (c *PedidoControlador) Inserir(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	dataPedido := time.Now()
+	if valorDataPedido := r.FormValue("data_pedido"); valorDataPedido != "" {
+		var err error
+		dataPedido, err = time.Parse("2006-01-02", valorDataPedido)
+		if err != nil {
+			http.Error(w, "Informe uma data de pedido válida.", http.StatusBadRequest)
+			return
+		}
+	}
+
 	temDesconto := r.FormValue("tem_desconto") == "on"
 	percentualDesconto := 0.0
 	if temDesconto {
@@ -72,8 +82,7 @@ func (c *PedidoControlador) Inserir(w http.ResponseWriter, r *http.Request) {
 	}
 	incluirBrinde := r.FormValue("incluir_brinde") == "on"
 
-	dataAtual := time.Now()
-	dataEntregaCalculada := calcularDataEntrega(dataAtual, prazoPadraoDiasUteis)
+	dataEntregaCalculada := calcularDataEntrega(dataPedido, prazoPadraoDiasUteis)
 	clientes, err := c.clienteDAO.BuscarTodos()
 	if err != nil {
 		http.Error(w, "Erro ao buscar clientes.", http.StatusInternalServerError)
@@ -110,11 +119,15 @@ func (c *PedidoControlador) Inserir(w http.ResponseWriter, r *http.Request) {
 		ClienteID:         clienteID,
 		ProdutoID:         produtoID,
 		Status:            modelos.StatusOrcamento,
-		DataPedido:        dataAtual.Format("2006-01-02"),
+		DataPedido:        dataPedido.Format("2006-01-02"),
 		DiasPrazo:         prazoPadraoDiasUteis,
 		DataEntrega:       dataEntregaCalculada.Format("2006-01-02"),
 		Observacoes:       r.FormValue("observacoes"),
 		MensagemOrcamento: mensagem,
+		PrecoBase:         produtoPreco,
+		DescontoCartao:    percentualDesconto,
+		DescontoPix:       percentualDescontoPixParcelado,
+		PixParcelado:      temPixParcelado,
 	}
 
 	if _, err := c.dao.Inserir(pedidoDTO); err != nil {
@@ -176,7 +189,36 @@ func (c *PedidoControlador) AtualizarStatus(w http.ResponseWriter, r *http.Reque
 		http.Error(w, "Pedido inválido.", http.StatusBadRequest)
 		return
 	}
-	if err := c.dao.AtualizarStatus(id, r.FormValue("status")); err != nil {
+	status := r.FormValue("status")
+	primeiraData := r.FormValue("primeira_data")
+	if primeiraData == "" {
+		primeiraData = time.Now().Format("2006-01-02")
+	}
+	dataRecebimento := r.FormValue("data_recebimento")
+	if status == modelos.StatusSinalRecebido {
+		if r.FormValue("confirmado") != "sim" {
+			http.Error(w, "Confirme que recebeu o sinal antes de avançar o pedido.", http.StatusBadRequest)
+			return
+		}
+		if _, err := time.Parse("2006-01-02", dataRecebimento); err != nil {
+			http.Error(w, "Informe uma data de recebimento válida.", http.StatusBadRequest)
+			return
+		}
+	}
+	numeroParcelas := 1
+	if valor := r.FormValue("numero_parcelas"); valor != "" {
+		numeroParcelas, err = strconv.Atoi(valor)
+		if err != nil {
+			http.Error(w, "Informe um número de parcelas válido.", http.StatusBadRequest)
+			return
+		}
+	}
+	if status == modelos.StatusSinalRecebido {
+		err = c.dao.AvancarStatusComRecebimentoSinal(id, r.FormValue("forma_pagamento"), numeroParcelas, primeiraData, dataRecebimento)
+	} else {
+		err = c.dao.AtualizarStatusComPagamento(id, status, "", numeroParcelas, primeiraData)
+	}
+	if err != nil {
 		if errors.Is(err, daos.ErrTransicaoPedidoInvalida) {
 			http.Error(w, "Essa etapa não pode ser selecionada agora.", http.StatusBadRequest)
 			return
@@ -185,7 +227,53 @@ func (c *PedidoControlador) AtualizarStatus(w http.ResponseWriter, r *http.Reque
 			http.NotFound(w, r)
 			return
 		}
+		if errors.Is(err, daos.ErrFormaPagamentoInvalida) ||
+			errors.Is(err, daos.ErrPixParceladoNaoOferecido) ||
+			errors.Is(err, daos.ErrNumeroParcelasInvalido) ||
+			errors.Is(err, daos.ErrDataParcelaInvalida) ||
+			errors.Is(err, daos.ErrValorTotalInvalido) {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
 		http.Error(w, "Erro ao atualizar o pedido.", http.StatusInternalServerError)
+		return
+	}
+	http.Redirect(w, r, "/pedidos", http.StatusSeeOther)
+}
+
+func (c *PedidoControlador) ReceberPagamento(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Método não permitido.", http.StatusMethodNotAllowed)
+		return
+	}
+	if err := r.ParseForm(); err != nil {
+		http.Error(w, "Erro ao processar formulário.", http.StatusBadRequest)
+		return
+	}
+	id, err := strconv.Atoi(r.FormValue("pagamento_id"))
+	if err != nil || id < 1 {
+		http.Error(w, "Pagamento inválido.", http.StatusBadRequest)
+		return
+	}
+	if r.FormValue("confirmado") != "sim" {
+		http.Error(w, "Confirme que o pagamento foi recebido antes de lançar no caixa.", http.StatusBadRequest)
+		return
+	}
+	dataRecebimento := r.FormValue("data_recebimento")
+	if _, err := time.Parse("2006-01-02", dataRecebimento); err != nil {
+		http.Error(w, "Informe uma data de recebimento válida.", http.StatusBadRequest)
+		return
+	}
+	if err := c.dao.RegistrarRecebimento(id, dataRecebimento); err != nil {
+		if errors.Is(err, daos.ErrPagamentoNaoEncontrado) {
+			http.NotFound(w, r)
+			return
+		}
+		if errors.Is(err, daos.ErrPagamentoJaRecebido) {
+			http.Error(w, "Este pagamento já foi registrado como recebido.", http.StatusConflict)
+			return
+		}
+		http.Error(w, "Erro ao registrar recebimento.", http.StatusInternalServerError)
 		return
 	}
 	http.Redirect(w, r, "/pedidos", http.StatusSeeOther)
@@ -201,8 +289,8 @@ func (c *PedidoControlador) Listar(w http.ResponseWriter, r *http.Request) {
 	clientes, _ := c.clienteDAO.BuscarTodos()
 	produtos, _ := c.produtoDAO.BuscarTodos()
 	for i := range pedidos {
-		if pedidos[i].MensagemOrcamento != "" {
-			continue
+		if pedidos[i].Status == modelos.StatusAguardandoPagamento && todosPagamentosRecebidos(pedidos[i].Pagamentos) {
+			pedidos[i].Status = modelos.StatusPago
 		}
 		clienteNome := "Desconhecido"
 		for _, cliente := range clientes {
@@ -219,6 +307,15 @@ func (c *PedidoControlador) Listar(w http.ResponseWriter, r *http.Request) {
 				produtoPreco = produto.Preco
 				break
 			}
+		}
+		for j := range pedidos[i].Pagamentos {
+			if pedidos[i].Pagamentos[j].Status == "Recebido" {
+				continue
+			}
+			pedidos[i].Pagamentos[j].MensagemLembrete = montarMensagemLembrete(clienteNome, produtoNome, pedidos[i].Pagamentos[j])
+		}
+		if pedidos[i].MensagemOrcamento != "" {
+			continue
 		}
 		dataEntrega, err := time.Parse("2006-01-02", pedidos[i].DataEntrega)
 		if err != nil {
@@ -244,4 +341,30 @@ func calcularDataEntrega(inicio time.Time, diasUteis int) time.Time {
 		}
 	}
 	return data
+}
+
+func formatarDataParaMensagem(data string) string {
+	dataConvertida, err := time.Parse("2006-01-02", data)
+	if err != nil {
+		return data
+	}
+	return dataConvertida.Format("02/01/2006")
+}
+
+func montarMensagemLembrete(clienteNome string, produtoNome string, pagamento modelos.Pagamento) string {
+	return fmt.Sprintf(
+		"oi, %s! passando para lembrar do pagamento de %s da peça *%s*, no valor de %s, com vencimento em %s. Se já realizou, pode desconsiderar. Obrigada! 🌸",
+		clienteNome, pagamento.Descricao, produtoNome, views.FormatarReais(pagamento.Valor), formatarDataParaMensagem(pagamento.DataVencimento))
+}
+
+func todosPagamentosRecebidos(pagamentos []modelos.Pagamento) bool {
+	if len(pagamentos) == 0 {
+		return false
+	}
+	for _, pagamento := range pagamentos {
+		if pagamento.Status != "Recebido" {
+			return false
+		}
+	}
+	return true
 }

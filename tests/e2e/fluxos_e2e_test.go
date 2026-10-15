@@ -202,6 +202,7 @@ func criarEAvancarPedido(t *testing.T, driver selenium.WebDriver, baseURL string
 		t.Fatal(err)
 	}
 	abrirModal(t, driver, "abrir-modal-pedido", "modal-pedido")
+	preencher(t, driver, selenium.ByID, "data-pedido", "2026-06-01")
 	preencher(t, driver, selenium.ByID, "cliente-busca", "Cliente Selenium Atualizado")
 	clicar(t, driver, selenium.ByCSSSelector, "button[data-opcao-cliente]")
 	preencher(t, driver, selenium.ByID, "produto-busca", "Peça Selenium Atualizada")
@@ -231,9 +232,37 @@ func criarEAvancarPedido(t *testing.T, driver selenium.WebDriver, baseURL string
 		}
 	}
 
-	for _, status := range []string{"Aguardando sinal", "Sinal recebido", "Em produção", "Aguardando pagamento final", "Pago", "Entregue"} {
+	clicar(t, driver, selenium.ByCSSSelector, "form[action='/pedidos/status'] button[type='submit']")
+	assertTextNaPagina(t, driver, "Aguardando sinal")
+	clicar(t, driver, selenium.ByCSSSelector, "form[action='/pedidos/status'] button[type='submit']")
+	assertTextNaPagina(t, driver, "Confirmar sinal recebido")
+	selecionarValor(t, driver, "dialog[id^='modal-sinal-'] select[name='forma_pagamento']", "Pix parcelado")
+	selecionarValor(t, driver, "dialog[id^='modal-sinal-'] select[name='numero_parcelas']", "2")
+	clicar(t, driver, selenium.ByCSSSelector, "dialog[id^='modal-sinal-'] input[name='confirmado']")
+	clicar(t, driver, selenium.ByCSSSelector, "dialog[id^='modal-sinal-'] form button[type='submit']")
+	assertTextNaPagina(t, driver, "Sinal recebido")
+	assertTextNaPagina(t, driver, "Ver pagamentos")
+	clicar(t, driver, selenium.ByCSSSelector, "[data-abrir-pagamentos]")
+	assertTextNaPagina(t, driver, "R$ 34,50")
+	assertTextNaPagina(t, driver, "Copiar lembrete para WhatsApp")
+
+	for _, status := range []string{"Em produção", "Aguardando pagamento final", "Entregue"} {
 		clicar(t, driver, selenium.ByCSSSelector, "form[action='/pedidos/status'] button[type='submit']")
 		esperarStatusPedido(t, driver, status)
+	}
+	for range 2 {
+		clicar(t, driver, selenium.ByCSSSelector, "[data-abrir-pagamentos]")
+		clicar(t, driver, selenium.ByCSSSelector, "form[action='/pedidos/pagamentos/receber'] input[name='confirmado']")
+		clicar(t, driver, selenium.ByCSSSelector, "form[action='/pedidos/pagamentos/receber'] button[type='submit']")
+	}
+}
+
+func selecionarValor(t *testing.T, driver selenium.WebDriver, seletor string, valor string) {
+	t.Helper()
+	elemento := buscar(t, driver, selenium.ByCSSSelector, seletor)
+	_, err := driver.ExecuteScript("arguments[0].value = arguments[1]; arguments[0].dispatchEvent(new Event('change', { bubbles: true }));", []interface{}{elemento, valor})
+	if err != nil {
+		t.Fatal(err)
 	}
 }
 
@@ -247,7 +276,7 @@ func registrarMovimentacoesFinanceiras(t *testing.T, driver selenium.WebDriver, 
 	registrarTransacao(t, driver, "Entrada", "Receita Selenium", "75.50")
 	assertTextNaPagina(t, driver, "Despesa Selenium")
 	assertTextNaPagina(t, driver, "Receita Selenium")
-	assertTextNaPagina(t, driver, "R$ 180,25")
+	assertTextNaPagina(t, driver, "R$ 170,25")
 }
 
 func registrarTransacao(t *testing.T, driver selenium.WebDriver, tipo string, descricao string, valor string) {

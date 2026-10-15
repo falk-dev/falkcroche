@@ -6,7 +6,7 @@ import "time"
 
 templ PedidosLista(pedidos []modelos.Pedido, clientes []modelos.Cliente, produtos []modelos.Produto) {
 <div class="space-y-6">
-	<div class="flex items-center justify-between gap-4">
+	<div class="flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-center sm:gap-4">
 		<div>
 			<h3 class="text-xl font-serif font-bold text-[#5a262c]">Pedidos do ateliê</h3>
 			<p class="text-sm text-[#5a262c]/60">Acompanhe cada encomenda até a entrega.</p>
@@ -18,7 +18,7 @@ templ PedidosLista(pedidos []modelos.Pedido, clientes []modelos.Cliente, produto
 
 	<dialog id="modal-pedido"
 		class="w-[min(42rem,calc(100%-2rem))] max-w-none rounded-2xl border-0 p-0 shadow-2xl backdrop:bg-[#2b1719]/50">
-		<div class="max-h-[90vh] overflow-y-auto bg-white p-6 sm:p-8">
+		<div class="max-h-[90vh] overflow-y-auto bg-white p-4 sm:p-8">
 			<div class="flex items-start justify-between gap-4 mb-6">
 				<div>
 					<p class="text-sm font-semibold text-[#c17f6b] mb-1">Nova encomenda</p>
@@ -89,7 +89,7 @@ templ PedidosLista(pedidos []modelos.Pedido, clientes []modelos.Cliente, produto
 								<input id="tem-desconto-cartao" name="tem_desconto" type="checkbox" class="size-4 shrink-0 accent-[#5a262c]" />
 								<span>Desconto no cartão de crédito</span>
 							</label>
-							<div class="flex items-center gap-3 sm:justify-self-end">
+							<div class="flex flex-wrap items-center gap-3 sm:justify-self-end">
 								<label for="percentual-desconto" class="text-sm">Percentual</label>
 								<input id="percentual-desconto" name="percentual_desconto" type="number" min="0.01" max="100" step="0.01" placeholder="Ex.: 10" aria-label="Percentual de desconto no cartão" class="w-24 rounded-md border border-[#e8d5c4] bg-[#fcf9f8] px-3 py-2 outline-none focus:border-[#5a262c] focus:ring-2 focus:ring-[#5a262c]/20" />
 								<span class="text-sm font-semibold">%</span>
@@ -106,7 +106,7 @@ templ PedidosLista(pedidos []modelos.Pedido, clientes []modelos.Cliente, produto
 									<input id="tem-desconto-pix-parcelado" name="tem_desconto_pix_parcelado" type="checkbox" class="size-4 shrink-0 accent-[#5a262c]" />
 									<span>Aplicar desconto nessa modalidade</span>
 								</label>
-								<div class="flex items-center gap-3 sm:justify-self-end">
+								<div class="flex flex-wrap items-center gap-3 sm:justify-self-end">
 									<label for="percentual-desconto-pix-parcelado" class="text-sm">Percentual</label>
 									<input id="percentual-desconto-pix-parcelado" name="percentual_desconto_pix_parcelado" type="number" min="0.01" max="100" step="0.01" placeholder="Ex.: 5" aria-label="Percentual de desconto no Pix parcelado" class="w-24 rounded-md border border-[#e8d5c4] bg-[#fcf9f8] px-3 py-2 outline-none focus:border-[#5a262c] focus:ring-2 focus:ring-[#5a262c]/20" />
 									<span class="text-sm font-semibold">%</span>
@@ -121,7 +121,7 @@ templ PedidosLista(pedidos []modelos.Pedido, clientes []modelos.Cliente, produto
 					</div>
 				</fieldset>
 
-				<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+				<div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
 					<div>
 						<label for="linha-cores-nome" class="mb-1.5 block text-sm font-semibold">Linha de fios para este
 							orçamento</label>
@@ -138,13 +138,19 @@ templ PedidosLista(pedidos []modelos.Pedido, clientes []modelos.Cliente, produto
 				</div>
 
 				<div>
+					<label for="data-pedido" class="mb-1.5 block text-sm font-semibold">Data do pedido</label>
+					<input id="data-pedido" name="data_pedido" type="date"
+						class="w-full rounded-lg border border-[#e8d5c4] bg-[#fcf9f8] px-3 py-3 outline-none focus:border-[#5a262c] focus:ring-2 focus:ring-[#5a262c]/20" />
+					<p class="mt-1 text-xs text-[#5a262c]/60">Preencha para registrar uma encomenda antiga; se deixar em branco, será usada a data de hoje.</p>
+				</div>
+				<div>
 					<label for="observacoes-pedido" class="mb-1.5 block text-sm font-semibold">Detalhes do
 						pedido</label>
 					<textarea id="observacoes-pedido" name="observacoes" rows="3"
 						placeholder="Cores, tamanho ou outros detalhes"
 						class="w-full rounded-lg border border-[#e8d5c4] bg-[#fcf9f8] px-3 py-3 outline-none focus:border-[#5a262c] focus:ring-2 focus:ring-[#5a262c]/20"></textarea>
 				</div>
-				<div class="flex justify-end gap-3 border-t border-[#e8d5c4] pt-5">
+				<div class="flex flex-col-reverse justify-end gap-2 border-t border-[#e8d5c4] pt-5 sm:flex-row sm:gap-3">
 					<button id="cancelar-modal-pedido" type="button"
 						class="rounded-lg border border-[#e8d5c4] px-4 py-2.5 text-sm font-semibold hover:bg-[#ffeae8]">Cancelar</button>
 					<button type="submit"
@@ -156,19 +162,22 @@ templ PedidosLista(pedidos []modelos.Pedido, clientes []modelos.Cliente, produto
 	</dialog>
 
 	<div class="bg-white rounded-3xl border border-[#e8d5c4] shadow-sm overflow-hidden">
-		<table class="w-full text-left">
+		<div class="overflow-x-auto overscroll-x-contain" role="region" aria-label="Tabela de pedidos" tabindex="0">
+		<table class="min-w-[1120px] w-full text-left">
 			<thead class="bg-[#ffeae8]/40 border-b border-[#e8d5c4]">
 				<tr>
 					<th class="p-5 font-bold text-[#5a262c]">Nº Pedido</th>
+					<th class="p-5 font-bold text-[#5a262c]">Data</th>
 					<th class="p-5 font-bold text-[#5a262c]">Cliente / Produto</th>
 					<th class="p-5 font-bold text-[#5a262c]">Observações</th>
 					<th class="p-5 font-bold text-[#5a262c]">Entrega</th>
+					<th class="p-5 font-bold text-[#5a262c]">Pagamentos</th>
 					<th class="p-5 font-bold text-[#5a262c]">Fluxo do pedido</th>
 				</tr>
 			</thead>
 			<tbody class="divide-y divide-[#e8d5c4]/50">
 				for _, p := range pedidos {
-				<tr class="hover:bg-[#ffeae8]/20 transition-colors">
+				<tr id={ "pedido-" + fmt.Sprintf("%d", p.ID) } class="transition-colors hover:bg-[#ffeae8]/20">
 					<td class="p-5 text-[#5a262c] font-bold">
 						<div class="flex items-center gap-2">
 							<span>#{ fmt.Sprintf("%d", p.ID) }</span>
@@ -182,6 +191,7 @@ templ PedidosLista(pedidos []modelos.Pedido, clientes []modelos.Cliente, produto
 						<span id={ "status-copia-orcamento-" + fmt.Sprintf("%d", p.ID) } class="sr-only"
 							aria-live="polite"></span>
 					</td>
+					<td class="whitespace-nowrap p-5 text-sm text-[#5a262c]/80">{ formatarDataPedido(p.DataPedido) }</td>
 					<td class="p-5">
 						<div class="text-[#5a262c]/90 font-bold">{ obterNomeCliente(p.ClienteID, clientes) }</div>
 						<div class="text-[#5a262c]/70 text-sm">{ obterNomeProduto(p.ProdutoID, produtos) }</div>
@@ -189,13 +199,75 @@ templ PedidosLista(pedidos []modelos.Pedido, clientes []modelos.Cliente, produto
 					<td class="p-5 text-[#5a262c]/80 text-sm max-w-xs truncate" title={ p.Observacoes }>{ p.Observacoes
 						}</td>
 					<td class="p-5 text-[#5a262c]/80 font-medium">{ formatarDataPedido(p.DataEntrega) }</td>
-					<td class="p-5">
+					<td class="whitespace-nowrap p-5">
+						if len(p.Pagamentos) == 0 {
+						<span class="text-xs text-[#5a262c]/50">—</span>
+						} else {
+						<div class="space-y-2">
+							<p class="text-xs font-semibold text-[#5a262c]">
+								{ fmt.Sprintf("%d/%d recebidos", pagamentosRecebidos(p.Pagamentos), len(p.Pagamentos)) }
+							</p>
+							<p class="text-xs text-[#5a262c]/70">{ FormatarReais(p.TotalAcordado) }</p>
+							<button type="button" data-abrir-pagamentos data-modal-id={ "modal-pagamentos-" + fmt.Sprintf("%d", p.ID) }
+								aria-label={ "Ver pagamentos do pedido " + fmt.Sprintf("%d", p.ID) }
+								class="rounded-md border border-[#e8d5c4] px-3 py-1.5 text-xs font-semibold text-[#5a262c] hover:bg-[#ffeae8]">Ver pagamentos</button>
+						</div>
+						<dialog id={ "modal-pagamentos-" + fmt.Sprintf("%d", p.ID) }
+							class="w-[min(42rem,calc(100%-2rem))] max-w-none rounded-2xl border-0 p-0 shadow-2xl backdrop:bg-[#2b1719]/50">
+							<div class="max-h-[85vh] overflow-y-auto bg-white p-4 sm:p-8">
+								<div class="mb-5 flex items-start justify-between gap-4">
+									<div>
+										<p class="mb-1 text-sm font-semibold text-[#c17f6b]">Pedido #{ fmt.Sprintf("%d", p.ID) }</p>
+										<h3 class="text-2xl font-serif font-bold text-[#5a262c]">Pagamentos</h3>
+										<p class="mt-1 text-sm text-[#5a262c]/70">{ p.FormaPagamento } · Total { FormatarReais(p.TotalAcordado) }</p>
+									</div>
+									<button type="button" data-fechar-pagamentos aria-label="Fechar"
+										class="rounded-full px-3 py-1 text-2xl text-[#5a262c]/60 hover:bg-[#ffeae8]">&times;</button>
+								</div>
+								<div class="space-y-3">
+									for _, pagamento := range p.Pagamentos {
+									<div class="rounded-xl border border-[#e8d5c4] p-4">
+										<div class="flex items-center justify-between gap-3">
+											<strong class="text-sm text-[#5a262c]">{ pagamento.Descricao }</strong>
+											<strong class="text-sm text-[#5a262c]">{ FormatarReais(pagamento.Valor) }</strong>
+										</div>
+										if pagamento.Status == "Recebido" {
+										<p class="mt-1 text-sm text-[#56653f]">Recebido em { formatarDataPedido(pagamento.DataRecebimento) }</p>
+										} else {
+										<p class="mt-1 text-sm text-[#5a262c]/70">Vence em { formatarDataPedido(pagamento.DataVencimento) } · Pendente</p>
+										<form method="POST" action="/pedidos/pagamentos/receber" class="mt-3 flex flex-wrap items-end gap-3">
+											<input type="hidden" name="pagamento_id" value={ fmt.Sprintf("%d", pagamento.ID) } />
+											<label class="text-xs text-[#5a262c]/70">Data recebida
+												<input name="data_recebimento" type="date" required value={ time.Now().Format("2006-01-02") }
+													class="mt-1 block rounded border border-[#e8d5c4] px-2 py-1.5 text-sm" />
+											</label>
+											<label class="flex items-center gap-1.5 text-xs text-[#5a262c]/70">
+												<input type="checkbox" name="confirmado" value="sim" required class="size-4 accent-[#5a262c]" />
+												Confirmo que recebi
+											</label>
+											<button type="submit" class="rounded-md bg-[#7a8c5f] px-3 py-2 text-xs font-semibold text-white hover:bg-[#56653f]">Lançar no caixa</button>
+										</form>
+										<div class="mt-2 flex items-center gap-2">
+											<button type="button" data-copiar-lembrete data-pagamento-id={ fmt.Sprintf("%d", pagamento.ID) }
+												class="rounded-md border border-[#e8d5c4] px-3 py-1.5 text-xs font-semibold text-[#5a262c] hover:bg-[#ffeae8]">Copiar lembrete para WhatsApp</button>
+											<span id={ "status-copia-lembrete-" + fmt.Sprintf("%d", pagamento.ID) } class="sr-only" aria-live="polite"></span>
+										</div>
+										<textarea id={ "mensagem-lembrete-" + fmt.Sprintf("%d", pagamento.ID) } readonly hidden>{ pagamento.MensagemLembrete }</textarea>
+										}
+									</div>
+									}
+								</div>
+							</div>
+						</dialog>
+						}
+					</td>
+						<td class="p-5">
 						<div class="space-y-2">
 							@StatusLabel(p.Status)
 							if len(modelos.ProximosStatusPedido(p.Status)) > 0 {
 							<form method="POST" action="/pedidos/status" class="flex flex-wrap items-center gap-2">
 								<input type="hidden" name="pedido_id" value={ fmt.Sprintf("%d", p.ID) } />
-								<select name="status"
+								<select name="status" data-pedido-status
 									class="max-w-48 rounded-lg border border-[#e8d5c4] bg-white px-2 py-1.5 text-xs focus:border-[#5a262c] focus:outline-none">
 									for _, proximo := range modelos.ProximosStatusPedido(p.Status) {
 									<option value={ proximo }>{ proximo }</option>
@@ -204,6 +276,63 @@ templ PedidosLista(pedidos []modelos.Pedido, clientes []modelos.Cliente, produto
 								<button type="submit"
 									class="rounded-md bg-[#5a262c] px-2.5 py-1.5 text-xs font-semibold text-[#ffeae8] hover:bg-[#472025]">Avançar</button>
 							</form>
+							if p.Status == modelos.StatusAguardandoSinal {
+							<dialog id={ "modal-sinal-" + fmt.Sprintf("%d", p.ID) }
+								class="w-[min(38rem,calc(100%-2rem))] max-w-none rounded-2xl border-0 p-0 shadow-2xl backdrop:bg-[#2b1719]/50">
+								<div class="max-h-[85vh] overflow-y-auto bg-white p-4 sm:p-8">
+									<div class="mb-5 flex items-start justify-between gap-4">
+										<div>
+											<p class="mb-1 text-sm font-semibold text-[#c17f6b]">Pedido #{ fmt.Sprintf("%d", p.ID) }</p>
+											<h3 class="text-2xl font-serif font-bold text-[#5a262c]">Confirmar sinal recebido</h3>
+											<p class="mt-1 text-sm text-[#5a262c]/70">Escolha as condições de pagamento. O sinal só será lançado no caixa após confirmar o recebimento.</p>
+										</div>
+										<button type="button" data-fechar-modal-sinal aria-label="Fechar"
+											class="rounded-full px-3 py-1 text-2xl text-[#5a262c]/60 hover:bg-[#ffeae8]">&times;</button>
+									</div>
+									<form method="POST" action="/pedidos/status" class="space-y-4">
+										<input type="hidden" name="pedido_id" value={ fmt.Sprintf("%d", p.ID) } />
+										<input type="hidden" name="status" value={ modelos.StatusSinalRecebido } />
+										<label class="block text-sm font-semibold text-[#5a262c]">Forma de pagamento aceita
+											<select name="forma_pagamento" data-forma-pagamento required class="mt-1 w-full rounded-lg border border-[#e8d5c4] bg-[#fcf9f8] px-3 py-2.5">
+												<option value="Pix à vista">Pix à vista (10% de desconto)</option>
+												if p.PixParcelado {
+												<option value="Pix parcelado">Pix parcelado</option>
+												}
+												<option value="Cartão de crédito">Cartão de crédito</option>
+											</select>
+										</label>
+										<div data-detalhes-parcelamento class="space-y-3">
+											<label class="block text-sm font-semibold text-[#5a262c]">Parcelas após o sinal
+												<select name="numero_parcelas" class="mt-1 w-full rounded-lg border border-[#e8d5c4] bg-[#fcf9f8] px-3 py-2.5">
+													<option value="1">1 parcela</option>
+													<option value="2" selected>2 parcelas</option>
+													<option value="3">3 parcelas</option>
+												</select>
+											</label>
+											<label class="block text-sm font-semibold text-[#5a262c]">Vencimento da primeira parcela
+												<input name="primeira_data" type="date" required value={ time.Now().AddDate(0, 1, 0).Format("2006-01-02") }
+													class="mt-1 w-full rounded-lg border border-[#e8d5c4] bg-[#fcf9f8] px-3 py-2.5" />
+											</label>
+										</div>
+										<div class="rounded-lg bg-[#fcf9f8] p-3 text-sm text-[#5a262c]/70">
+											<p>Para Pix parcelado ou cartão, o sinal é 30% e as parcelas vencem mensalmente. No Pix à vista, será registrado o pagamento total de uma vez.</p>
+										</div>
+										<label class="block text-sm font-semibold text-[#5a262c]">Data em que recebeu o sinal
+											<input name="data_recebimento" type="date" required value={ time.Now().Format("2006-01-02") }
+												class="mt-1 w-full rounded-lg border border-[#e8d5c4] bg-[#fcf9f8] px-3 py-2.5" />
+										</label>
+										<label class="flex items-start gap-2 text-sm text-[#5a262c]">
+											<input type="checkbox" name="confirmado" value="sim" required class="mt-0.5 size-4 accent-[#5a262c]" />
+											<span>Confirmo que recebi o sinal e autorizo o lançamento no caixa.</span>
+										</label>
+										<div class="flex flex-col-reverse justify-end gap-2 border-t border-[#e8d5c4] pt-4 sm:flex-row sm:gap-3">
+											<button type="button" data-fechar-modal-sinal class="rounded-lg border border-[#e8d5c4] px-4 py-2.5 text-sm font-semibold hover:bg-[#ffeae8]">Voltar</button>
+											<button type="submit" class="rounded-lg bg-[#7a8c5f] px-5 py-2.5 text-sm font-bold text-white hover:bg-[#56653f]">Confirmar e avançar</button>
+										</div>
+									</form>
+								</div>
+							</dialog>
+							}
 							}
 						</div>
 					</td>
@@ -211,12 +340,23 @@ templ PedidosLista(pedidos []modelos.Pedido, clientes []modelos.Cliente, produto
 				}
 			</tbody>
 		</table>
+		</div>
 		if len(pedidos) == 0 {
 		<div class="p-10 text-center text-[#5a262c]/50 font-medium">Você ainda não tem nenhum pedido cadastrado.</div>
 		}
 	</div>
 	<script src="/static/js/pedidos.js" defer></script>
 </div>
+}
+
+func pagamentosRecebidos(pagamentos []modelos.Pagamento) int {
+	recebidos := 0
+	for _, pagamento := range pagamentos {
+		if pagamento.Status == "Recebido" {
+			recebidos++
+		}
+	}
+	return recebidos
 }
 
 func formatarDataPedido(data string) string {

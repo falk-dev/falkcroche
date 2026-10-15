@@ -20,9 +20,9 @@ func ProximosStatusPedido(status string) []string {
 	case StatusSinalRecebido:
 		return []string{StatusEmProducao, StatusCancelado}
 	case StatusEmProducao:
-		return []string{StatusAguardandoPagamento, StatusCancelado}
+		return []string{StatusAguardandoPagamento, StatusEntregue, StatusCancelado}
 	case StatusAguardandoPagamento:
-		return []string{StatusPago, StatusCancelado}
+		return []string{StatusEntregue, StatusCancelado}
 	case StatusPago:
 		return []string{StatusEntregue}
 	default:
@@ -40,4 +40,23 @@ type Pedido struct {
 	DataEntrega       string
 	Observacoes       string
 	MensagemOrcamento string
+	PrecoBase         float64
+	DescontoCartao    float64
+	DescontoPix       float64
+	PixParcelado      bool
+	FormaPagamento    string
+	TotalAcordado     float64
+	Pagamentos        []Pagamento
+}
+
+type Pagamento struct {
+	ID               int
+	PedidoID         int
+	Etapa            string
+	Descricao        string
+	Valor            float64
+	DataVencimento   string
+	DataRecebimento  string
+	Status           string
+	MensagemLembrete string
 }

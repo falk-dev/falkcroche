@@ -27,7 +27,7 @@ func (dao *TransacaoDAO) Inserir(t dtos.TransacaoInputDTO) (int, error) {
 }
 
 func (dao *TransacaoDAO) BuscarTodas() ([]modelos.Transacao, error) {
-	query := `SELECT id, tipo, descricao, valor, data FROM transacoes ORDER BY data DESC`
+	query := `SELECT id, tipo, descricao, valor, data FROM transacoes ORDER BY data DESC, id DESC`
 	linhas, err := dao.db.Query(query)
 	if err != nil {
 		return nil, err

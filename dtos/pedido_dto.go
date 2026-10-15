@@ -9,4 +9,8 @@ type PedidoInputDTO struct {
 	DataEntrega       string
 	Observacoes       string
 	MensagemOrcamento string
+	PrecoBase         float64
+	DescontoCartao    float64
+	DescontoPix       float64
+	PixParcelado      bool
 }
