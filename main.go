@@ -32,11 +32,13 @@ func main() {
 	produtoDAO := daos.NovoProdutoDAO(db)
 	pedidoDAO := daos.NovoPedidoDAO(db)
 	transacaoDAO := daos.NovoTransacaoDAO(db)
+	notificacaoDAO := daos.NovoNotificacaoDAO(db)
 
 	clienteCtrl := controladores.NovoClienteControlador(clienteDAO)
 	produtoCtrl := controladores.NovoProdutoControlador(produtoDAO)
 	pedidoCtrl := controladores.NovoPedidoControlador(pedidoDAO, clienteDAO, produtoDAO)
 	transacaoCtrl := controladores.NovoTransacaoControlador(transacaoDAO)
+	notificacaoCtrl := controladores.NovoNotificacaoControlador(notificacaoDAO)
 	acessoCtrl := controladores.NovoAcessoControlador(
 		os.Getenv("ADMIN_PASSWORD"),
 		os.Getenv("ADMIN_SESSION_KEY"),
@@ -59,9 +61,12 @@ func main() {
 	mux.Handle("/pedidos", acessoCtrl.Proteger(http.HandlerFunc(pedidoCtrl.Listar)))
 	mux.Handle("/pedidos/inserir", acessoCtrl.Proteger(http.HandlerFunc(pedidoCtrl.Inserir)))
 	mux.Handle("/pedidos/status", acessoCtrl.Proteger(http.HandlerFunc(pedidoCtrl.AtualizarStatus)))
+	mux.Handle("/pedidos/pagamentos/receber", acessoCtrl.Proteger(http.HandlerFunc(pedidoCtrl.ReceberPagamento)))
 
 	mux.Handle("/financeiro", acessoCtrl.Proteger(http.HandlerFunc(transacaoCtrl.Listar)))
 	mux.Handle("/financeiro/inserir", acessoCtrl.Proteger(http.HandlerFunc(transacaoCtrl.Inserir)))
+	mux.Handle("/notificacoes", acessoCtrl.Proteger(http.HandlerFunc(notificacaoCtrl.Listar)))
+	mux.Handle("/notificacoes/ler", acessoCtrl.Proteger(http.HandlerFunc(notificacaoCtrl.MarcarComoLida)))
 
 	mux.Handle("/dashboard", acessoCtrl.Proteger(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		pedidos, _ := pedidoDAO.BuscarTodos()
@@ -92,7 +97,7 @@ func main() {
 			return
 		}
 		produtos, _ := produtoDAO.BuscarPublicados()
-		componente := views.PublicLayout("Vitrine", views.VitrinePublica(produtos, os.Getenv("WHATSAPP_NUMERO")), "/static/logo.png")
+		componente := views.PublicLayout("Vitrine", views.VitrinePublica(produtos, os.Getenv("WHATSAPP_NUMERO")), "/static/logo.png", "/static")
 		componente.Render(r.Context(), w)
 	})
 
