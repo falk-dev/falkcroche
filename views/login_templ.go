@@ -33,11 +33,11 @@ func Login(mensagem string) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = BaseHead("Acesso administrativo").Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = BaseHead("Acesso administrativo", "/static").Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "<body class=\"min-h-screen bg-[#ffeae8] text-[#5a262c] font-sans flex items-center justify-center p-5\"><main class=\"w-full max-w-md bg-white border border-[#e8d5c4] rounded-2xl p-8 shadow-sm\"><img src=\"/static/logo.png\" alt=\"Falk Crochê\" class=\"mx-auto mb-4 block h-24 w-40 object-contain\"><h1 class=\"text-3xl font-bold mb-2\">Área administrativa</h1><p class=\"text-[#5a262c]/70 mb-7\">Entre para gerenciar o ateliê.</p>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "<body class=\"flex min-h-screen items-center justify-center bg-[#ffeae8] p-3 font-sans text-[#5a262c] sm:p-5\"><main class=\"w-full max-w-md rounded-2xl border border-[#e8d5c4] bg-white p-5 shadow-sm sm:p-8\"><img src=\"/static/logo.png\" alt=\"Falk Crochê\" class=\"mx-auto mb-4 block h-24 w-40 object-contain\"><h1 class=\"text-3xl font-bold mb-2\">Área administrativa</h1><p class=\"text-[#5a262c]/70 mb-7\">Entre para gerenciar o ateliê.</p>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

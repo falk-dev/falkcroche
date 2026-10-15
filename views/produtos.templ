@@ -7,7 +7,7 @@ import (
 
 templ Produtos(produtos []modelos.Produto) {
 <div class="space-y-6">
-	<div class="flex items-center justify-between gap-4">
+	<div class="flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-center sm:gap-4">
 		<div>
 			<h3 class="text-xl font-serif font-bold text-[#5a262c]">Produtos do ateliê</h3>
 			<p class="text-sm text-[#5a262c]/60">Gerencie as peças e sua exibição na vitrine.</p>
@@ -19,7 +19,7 @@ templ Produtos(produtos []modelos.Produto) {
 
 	<dialog id="modal-produto"
 		class="w-[min(42rem,calc(100%-2rem))] max-w-none rounded-2xl border-0 p-0 shadow-2xl backdrop:bg-[#2b1719]/50">
-		<div class="max-h-[90vh] overflow-y-auto bg-white p-6 sm:p-8">
+		<div class="max-h-[90vh] overflow-y-auto bg-white p-4 sm:p-8">
 			<div class="mb-6 flex items-start justify-between gap-4">
 				<div>
 					<p class="mb-1 text-sm font-semibold text-[#c17f6b]">Cadastro</p>
@@ -57,7 +57,7 @@ templ Produtos(produtos []modelos.Produto) {
 						Exibir na vitrine pública
 					</label>
 				</div>
-				<div class="flex justify-end gap-3 border-t border-[#e8d5c4] pt-5">
+				<div class="flex flex-col-reverse justify-end gap-2 border-t border-[#e8d5c4] pt-5 sm:flex-row sm:gap-3">
 					<button id="cancelar-modal-produto" type="button"
 						class="rounded-lg border border-[#e8d5c4] px-4 py-2.5 text-sm font-semibold hover:bg-[#ffeae8]">Cancelar</button>
 					<button type="submit"
@@ -69,8 +69,8 @@ templ Produtos(produtos []modelos.Produto) {
 	</dialog>
 
 	<div class="overflow-hidden rounded-3xl border border-[#e8d5c4] bg-white shadow-sm">
-		<div class="overflow-x-auto">
-			<table class="w-full text-left">
+		<div class="overflow-x-auto overscroll-x-contain" role="region" aria-label="Tabela de produtos" tabindex="0">
+			<table class="min-w-[760px] w-full text-left">
 				<thead class="border-b border-[#e8d5c4] bg-[#ffeae8]/40">
 					<tr>
 						<th class="p-5 font-bold text-[#5a262c]">Produto</th>

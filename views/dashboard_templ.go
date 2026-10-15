@@ -46,7 +46,7 @@ func Dashboard(
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"space-y-6\"><section class=\"flex flex-col justify-between gap-6 lg:flex-row lg:items-end\"><div><p class=\"mb-2 text-sm font-medium text-[#c17f6b]\">Seu espaço de gestão</p><h2 class=\"font-serif text-4xl font-bold leading-tight\">Bem-vinda de volta,<br>Falk Crochê</h2></div><div class=\"grid grid-cols-2 gap-x-8 gap-y-4 md:grid-cols-4\"><div><p class=\"mb-1 text-xs text-[#5a262c]/60\">Saldo atual</p><p class=\"text-2xl font-bold\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"space-y-6\"><section class=\"flex flex-col justify-between gap-6 lg:flex-row lg:items-end\"><div><p class=\"mb-2 text-sm font-medium text-[#c17f6b]\">Seu espaço de gestão</p><h2 class=\"font-serif text-3xl font-bold leading-tight sm:text-4xl\">Bem-vinda de volta,<br>Falk Crochê</h2></div><div class=\"grid grid-cols-2 gap-x-8 gap-y-4 md:grid-cols-4\"><div><p class=\"mb-1 text-xs text-[#5a262c]/60\">Saldo atual</p><p class=\"text-2xl font-bold\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
