@@ -96,9 +96,20 @@ func main() {
 		componente.Render(r.Context(), w)
 	})
 
-	endereco := os.Getenv("SERVER_ADDRESS")
+	host := os.Getenv("APP_HOST")
+	if host == "" {
+		host = "0.0.0.0"
+	}
+
+	port := os.Getenv("APP_PORT")
+	if port == "" {
+		port = "8080"
+	}
+
+	endereco := host + ":" + port
+
 	if endereco == "" {
-		endereco = "127.0.0.1:8080"
+		endereco = "0.0.0.0:8080"
 	}
 	fmt.Printf("Servidor rodando em http://%s\n", endereco)
 	if err := http.ListenAndServe(endereco, mux); err != nil {
