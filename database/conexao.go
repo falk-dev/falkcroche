@@ -68,6 +68,7 @@ func criarTabelas(db *sql.DB) {
 		preco_base REAL NOT NULL DEFAULT 0,
 		desconto_cartao REAL NOT NULL DEFAULT 0,
 		desconto_pix REAL NOT NULL DEFAULT 0,
+		desconto_pix_avista BOOLEAN NOT NULL DEFAULT 1,
 		pix_parcelado BOOLEAN NOT NULL DEFAULT 0,
 		forma_pagamento TEXT NOT NULL DEFAULT '',
 		total_acordado REAL NOT NULL DEFAULT 0,
@@ -170,12 +171,13 @@ func migrarPagamentosPendentes(db *sql.DB) {
 
 func migrarColunasPedidos(db *sql.DB) {
 	colunas := map[string]string{
-		"preco_base":      `ALTER TABLE pedidos ADD COLUMN preco_base REAL NOT NULL DEFAULT 0`,
-		"desconto_cartao": `ALTER TABLE pedidos ADD COLUMN desconto_cartao REAL NOT NULL DEFAULT 0`,
-		"desconto_pix":    `ALTER TABLE pedidos ADD COLUMN desconto_pix REAL NOT NULL DEFAULT 0`,
-		"pix_parcelado":   `ALTER TABLE pedidos ADD COLUMN pix_parcelado BOOLEAN NOT NULL DEFAULT 0`,
-		"forma_pagamento": `ALTER TABLE pedidos ADD COLUMN forma_pagamento TEXT NOT NULL DEFAULT ''`,
-		"total_acordado":  `ALTER TABLE pedidos ADD COLUMN total_acordado REAL NOT NULL DEFAULT 0`,
+		"preco_base":          `ALTER TABLE pedidos ADD COLUMN preco_base REAL NOT NULL DEFAULT 0`,
+		"desconto_cartao":     `ALTER TABLE pedidos ADD COLUMN desconto_cartao REAL NOT NULL DEFAULT 0`,
+		"desconto_pix":        `ALTER TABLE pedidos ADD COLUMN desconto_pix REAL NOT NULL DEFAULT 0`,
+		"desconto_pix_avista": `ALTER TABLE pedidos ADD COLUMN desconto_pix_avista BOOLEAN NOT NULL DEFAULT 1`,
+		"pix_parcelado":       `ALTER TABLE pedidos ADD COLUMN pix_parcelado BOOLEAN NOT NULL DEFAULT 0`,
+		"forma_pagamento":     `ALTER TABLE pedidos ADD COLUMN forma_pagamento TEXT NOT NULL DEFAULT ''`,
+		"total_acordado":      `ALTER TABLE pedidos ADD COLUMN total_acordado REAL NOT NULL DEFAULT 0`,
 	}
 	for coluna, alteracao := range colunas {
 		var encontrada bool

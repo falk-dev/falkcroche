@@ -35,6 +35,7 @@ func TestPedidoAgendaERegistraRecebimentosSeparadamente(t *testing.T) {
 			preco_base REAL NOT NULL DEFAULT 0,
 			desconto_cartao REAL NOT NULL DEFAULT 0,
 			desconto_pix REAL NOT NULL DEFAULT 0,
+			desconto_pix_avista BOOLEAN NOT NULL DEFAULT 1,
 			pix_parcelado BOOLEAN NOT NULL DEFAULT 0,
 			forma_pagamento TEXT NOT NULL DEFAULT '',
 			total_acordado REAL NOT NULL DEFAULT 0
@@ -58,7 +59,7 @@ func TestPedidoAgendaERegistraRecebimentosSeparadamente(t *testing.T) {
 			lida BOOLEAN NOT NULL DEFAULT 0
 		)`,
 		`INSERT INTO produtos (id, preco) VALUES (1, 100.01)`,
-		`INSERT INTO pedidos (id, produto_id, status, preco_base, desconto_pix, pix_parcelado) VALUES (1, 1, 'Orçamento', 100.01, 5, 1)`,
+		`INSERT INTO pedidos (id, produto_id, status, preco_base, desconto_pix, desconto_pix_avista, pix_parcelado) VALUES (1, 1, 'Orçamento', 100.01, 5, 1, 1)`,
 	} {
 		if _, err := db.Exec(query); err != nil {
 			t.Fatal(err)
@@ -128,6 +129,22 @@ func TestPedidoAgendaERegistraRecebimentosSeparadamente(t *testing.T) {
 	if status != modelos.StatusSinalRecebido {
 		t.Fatalf("status após confirmar sinal = %q; esperado %q", status, modelos.StatusSinalRecebido)
 	}
+
+	if _, err := db.Exec(`INSERT INTO pedidos (id, produto_id, status, preco_base, desconto_pix_avista) VALUES (2, 1, 'Orçamento', 100.01, 0)`); err != nil {
+		t.Fatal(err)
+	}
+	if err := dao.AtualizarStatus(2, modelos.StatusAguardandoSinal); err != nil {
+		t.Fatal(err)
+	}
+	if err := dao.AvancarStatusComRecebimentoSinal(2, "Pix à vista", 1, "2026-02-15", "2026-01-20"); err != nil {
+		t.Fatalf("falha ao confirmar Pix à vista sem desconto: %v", err)
+	}
+	if err := db.QueryRow(`SELECT total_acordado FROM pedidos WHERE id = 2`).Scan(&total); err != nil {
+		t.Fatal(err)
+	}
+	if math.Abs(total-100.01) > 0.001 {
+		t.Fatalf("total acordado no Pix à vista sem desconto = %.2f; esperado 100.01", total)
+	}
 }
 
 func TestPedidoPersisteMensagemOrcamento(t *testing.T) {
@@ -152,6 +169,7 @@ func TestPedidoPersisteMensagemOrcamento(t *testing.T) {
 		preco_base REAL NOT NULL DEFAULT 0,
 		desconto_cartao REAL NOT NULL DEFAULT 0,
 		desconto_pix REAL NOT NULL DEFAULT 0,
+		desconto_pix_avista BOOLEAN NOT NULL DEFAULT 1,
 		pix_parcelado BOOLEAN NOT NULL DEFAULT 0,
 		forma_pagamento TEXT NOT NULL DEFAULT '',
 		total_acordado REAL NOT NULL DEFAULT 0

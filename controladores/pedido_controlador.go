@@ -42,6 +42,7 @@ func (c *PedidoControlador) Inserir(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	temDescontoPixAvista := r.FormValue("desconto_pix_avista") == "on"
 	clienteID, erroCliente := strconv.Atoi(r.FormValue("cliente_id"))
 	produtoID, erroProduto := strconv.Atoi(r.FormValue("produto_id"))
 	if erroCliente != nil || erroProduto != nil {
@@ -113,7 +114,7 @@ func (c *PedidoControlador) Inserir(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Cliente ou produto não encontrado.", http.StatusBadRequest)
 		return
 	}
-	mensagem := montarMensagemOrcamento(clienteNome, produtoNome, produtoPreco, prazoPadraoDiasUteis, dataEntregaCalculada, r.FormValue("linha_cores_nome"), r.FormValue("linha_cores_link"), temDesconto, percentualDesconto, temPixParcelado, incluirBrinde, temDescontoPixParcelado, percentualDescontoPixParcelado)
+	mensagem := montarMensagemOrcamento(clienteNome, produtoNome, produtoPreco, prazoPadraoDiasUteis, dataEntregaCalculada, r.FormValue("linha_cores_nome"), r.FormValue("linha_cores_link"), temDesconto, percentualDesconto, temPixParcelado, incluirBrinde, temDescontoPixParcelado, percentualDescontoPixParcelado, temDescontoPixAvista)
 
 	pedidoDTO := dtos.PedidoInputDTO{
 		ClienteID:         clienteID,
@@ -127,6 +128,7 @@ func (c *PedidoControlador) Inserir(w http.ResponseWriter, r *http.Request) {
 		PrecoBase:         produtoPreco,
 		DescontoCartao:    percentualDesconto,
 		DescontoPix:       percentualDescontoPixParcelado,
+		DescontoPixAvista: temDescontoPixAvista,
 		PixParcelado:      temPixParcelado,
 	}
 
@@ -137,7 +139,7 @@ func (c *PedidoControlador) Inserir(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/pedidos", http.StatusSeeOther)
 }
 
-func montarMensagemOrcamento(clienteNome string, produtoNome string, preco float64, diasUteis int, entrega time.Time, linhaNome string, linhaLink string, temDesconto bool, percentualDesconto float64, temPixParcelado bool, incluirBrinde bool, temDescontoPixParcelado bool, percentualDescontoPixParcelado float64) string {
+func montarMensagemOrcamento(clienteNome string, produtoNome string, preco float64, diasUteis int, entrega time.Time, linhaNome string, linhaLink string, temDesconto bool, percentualDesconto float64, temPixParcelado bool, incluirBrinde bool, temDescontoPixParcelado bool, percentualDescontoPixParcelado float64, temDescontoPixAvista bool) string {
 	valorCartao := preco
 	descricaoCartao := views.FormatarReais(valorCartao)
 	if temDesconto {
@@ -147,7 +149,12 @@ func montarMensagemOrcamento(clienteNome string, produtoNome string, preco float
 		descricaoCartao = fmt.Sprintf("%s\n%s%% de desconto", views.FormatarReais(valorCartao), percentualFormatado)
 	}
 
-	valorPix := math.Round(preco*0.90*100) / 100
+	valorPix := preco
+	descricaoPix := views.FormatarReais(valorPix)
+	if temDescontoPixAvista {
+		valorPix = math.Round(preco*0.90*100) / 100
+		descricaoPix = fmt.Sprintf("%s\n10%% de desconto", views.FormatarReais(valorPix))
+	}
 	sinalCartaoPix := math.Round(valorCartao*0.30*100) / 100
 	restanteCartao := valorCartao - sinalCartaoPix
 	valorPixParcelado := preco
@@ -161,7 +168,7 @@ func montarMensagemOrcamento(clienteNome string, produtoNome string, preco float
 	sinalPixParcelado := math.Round(valorPixParcelado*0.30*100) / 100
 	restantePixParcelado := valorPixParcelado - sinalPixParcelado
 
-	mensagem := fmt.Sprintf("oi, %s! seguem os detalhes do orçamento para a sua peça:\n\n🌸 *peça:* %s\n💰 *valor:* %s\n\n💳 *formas de pagamento*\n\n*pix à vista*\n%s\n10%% de desconto\n\n*cartão de crédito*\n%s\n→ sinal de 30%% via pix: %s\n→ restante: %s em até 3x sem juros.", clienteNome, produtoNome, views.FormatarReais(preco), views.FormatarReais(valorPix), descricaoCartao, views.FormatarReais(sinalCartaoPix), views.FormatarReais(restanteCartao))
+	mensagem := fmt.Sprintf("oi, %s! seguem os detalhes do orçamento para a sua peça:\n\n🌸 *peça:* %s\n💰 *valor:* %s\n\n💳 *formas de pagamento*\n\n*pix à vista*\n%s\n\n*cartão de crédito*\n%s\n→ sinal de 30%% via pix: %s\n→ restante: %s em até 3x sem juros.", clienteNome, produtoNome, views.FormatarReais(preco), descricaoPix, descricaoCartao, views.FormatarReais(sinalCartaoPix), views.FormatarReais(restanteCartao))
 	if temPixParcelado {
 		mensagem += fmt.Sprintf("\n\n*pix parcelado*\n%s\n→ sinal de 30%% via pix: %s\n→ restante: %s em até 3 parcelas via pix.", descricaoPixParcelado, views.FormatarReais(sinalPixParcelado), views.FormatarReais(restantePixParcelado))
 	}
@@ -325,7 +332,7 @@ func (c *PedidoControlador) Listar(w http.ResponseWriter, r *http.Request) {
 		if diasPrazo <= 0 {
 			diasPrazo = prazoPadraoDiasUteis
 		}
-		pedidos[i].MensagemOrcamento = montarMensagemOrcamento(clienteNome, produtoNome, produtoPreco, diasPrazo, dataEntrega, "", "", false, 0, false, false, false, 0)
+		pedidos[i].MensagemOrcamento = montarMensagemOrcamento(clienteNome, produtoNome, produtoPreco, diasPrazo, dataEntrega, "", "", false, 0, false, false, false, 0, pedidos[i].DescontoPixAvista)
 	}
 
 	componente := views.AdminLayout("Gestão de Pedidos", views.PedidosLista(pedidos, clientes, produtos))

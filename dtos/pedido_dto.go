@@ -12,5 +12,6 @@ type PedidoInputDTO struct {
 	PrecoBase         float64
 	DescontoCartao    float64
 	DescontoPix       float64
+	DescontoPixAvista bool
 	PixParcelado      bool
 }

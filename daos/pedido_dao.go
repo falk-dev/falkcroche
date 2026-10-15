@@ -31,12 +31,12 @@ func NovoPedidoDAO(db *sql.DB) *PedidoDAO {
 }
 
 func (dao *PedidoDAO) Inserir(pedido dtos.PedidoInputDTO) (int, error) {
-	query := `INSERT INTO pedidos (cliente_id, produto_id, status, data_pedido, dias_prazo, data_entrega, observacoes, mensagem_orcamento, preco_base, desconto_cartao, desconto_pix, pix_parcelado)
-			  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+	query := `INSERT INTO pedidos (cliente_id, produto_id, status, data_pedido, dias_prazo, data_entrega, observacoes, mensagem_orcamento, preco_base, desconto_cartao, desconto_pix, desconto_pix_avista, pix_parcelado)
+			  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
 
 	resultado, err := dao.db.Exec(query, pedido.ClienteID, pedido.ProdutoID, pedido.Status,
 		pedido.DataPedido, pedido.DiasPrazo, pedido.DataEntrega, pedido.Observacoes, pedido.MensagemOrcamento,
-		pedido.PrecoBase, pedido.DescontoCartao, pedido.DescontoPix, pedido.PixParcelado)
+		pedido.PrecoBase, pedido.DescontoCartao, pedido.DescontoPix, pedido.DescontoPixAvista, pedido.PixParcelado)
 	if err != nil {
 		log.Printf("Erro ao inserir pedido: %v", err)
 		return 0, err
@@ -51,7 +51,7 @@ func (dao *PedidoDAO) Inserir(pedido dtos.PedidoInputDTO) (int, error) {
 }
 
 func (dao *PedidoDAO) BuscarTodos() ([]modelos.Pedido, error) {
-	query := `SELECT id, cliente_id, produto_id, status, data_pedido, dias_prazo, data_entrega, COALESCE(observacoes, ''), COALESCE(mensagem_orcamento, ''), preco_base, desconto_cartao, desconto_pix, pix_parcelado, forma_pagamento, total_acordado
+	query := `SELECT id, cliente_id, produto_id, status, data_pedido, dias_prazo, data_entrega, COALESCE(observacoes, ''), COALESCE(mensagem_orcamento, ''), preco_base, desconto_cartao, desconto_pix, desconto_pix_avista, pix_parcelado, forma_pagamento, total_acordado
 		FROM pedidos ORDER BY id DESC`
 
 	linhas, err := dao.db.Query(query)
@@ -67,7 +67,7 @@ func (dao *PedidoDAO) BuscarTodos() ([]modelos.Pedido, error) {
 		var p modelos.Pedido
 		err := linhas.Scan(&p.ID, &p.ClienteID, &p.ProdutoID, &p.Status,
 			&p.DataPedido, &p.DiasPrazo, &p.DataEntrega, &p.Observacoes, &p.MensagemOrcamento,
-			&p.PrecoBase, &p.DescontoCartao, &p.DescontoPix, &p.PixParcelado, &p.FormaPagamento, &p.TotalAcordado)
+			&p.PrecoBase, &p.DescontoCartao, &p.DescontoPix, &p.DescontoPixAvista, &p.PixParcelado, &p.FormaPagamento, &p.TotalAcordado)
 		if err != nil {
 			log.Printf("Erro ao ler pedido: %v", err)
 			return nil, err
@@ -117,9 +117,9 @@ func (dao *PedidoDAO) avancarStatus(id int, novoStatus string, formaPagamento st
 
 	var statusAtual string
 	var precoBase, descontoCartao, descontoPix float64
-	var pixParcelado bool
-	if err := tx.QueryRow(`SELECT status, preco_base, desconto_cartao, desconto_pix, pix_parcelado FROM pedidos WHERE id = ?`, id).
-		Scan(&statusAtual, &precoBase, &descontoCartao, &descontoPix, &pixParcelado); err != nil {
+	var pixParcelado, descontoPixAvista bool
+	if err := tx.QueryRow(`SELECT status, preco_base, desconto_cartao, desconto_pix, desconto_pix_avista, pix_parcelado FROM pedidos WHERE id = ?`, id).
+		Scan(&statusAtual, &precoBase, &descontoCartao, &descontoPix, &descontoPixAvista, &pixParcelado); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return ErrPedidoNaoEncontrado
 		}
@@ -154,7 +154,9 @@ func (dao *PedidoDAO) avancarStatus(id int, novoStatus string, formaPagamento st
 		desconto := 0.0
 		switch formaPagamento {
 		case "Pix à vista":
-			desconto = 10
+			if descontoPixAvista {
+				desconto = 10
+			}
 		case "Pix parcelado":
 			desconto = descontoPix
 		case "Cartão de crédito":

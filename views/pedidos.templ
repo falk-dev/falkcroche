@@ -84,6 +84,10 @@ templ PedidosLista(pedidos []modelos.Pedido, clientes []modelos.Cliente, produto
 				<fieldset>
 					<legend class="mb-2 text-sm font-bold text-[#5a262c]">Opções do orçamento</legend>
 					<div class="divide-y divide-[#e8d5c4] rounded-lg border border-[#e8d5c4] bg-white">
+						<label for="desconto-pix-avista" class="flex items-center gap-2 p-4 text-sm font-semibold">
+							<input id="desconto-pix-avista" name="desconto_pix_avista" type="checkbox" checked class="size-4 shrink-0 accent-[#5a262c]" />
+							<span>Aplicar desconto de 10% no Pix à vista</span>
+						</label>
 						<div class="grid grid-cols-1 gap-3 p-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
 							<label for="tem-desconto-cartao" class="flex items-center gap-2 text-sm font-semibold">
 								<input id="tem-desconto-cartao" name="tem_desconto" type="checkbox" class="size-4 shrink-0 accent-[#5a262c]" />
@@ -103,7 +107,7 @@ templ PedidosLista(pedidos []modelos.Pedido, clientes []modelos.Cliente, produto
 							</label>
 							<div class="mt-3 grid grid-cols-1 gap-3 border-l-2 border-[#e8d5c4] pl-4 sm:ml-6 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
 								<label for="tem-desconto-pix-parcelado" class="flex items-center gap-2 text-sm">
-									<input id="tem-desconto-pix-parcelado" name="tem_desconto_pix_parcelado" type="checkbox" checked class="size-4 shrink-0 accent-[#5a262c]" />
+									<input id="tem-desconto-pix-parcelado" name="tem_desconto_pix_parcelado" type="checkbox" class="size-4 shrink-0 accent-[#5a262c]" />
 									<span>Aplicar desconto nessa modalidade</span>
 								</label>
 								<div class="flex flex-wrap items-center gap-3 sm:justify-self-end">
@@ -294,7 +298,11 @@ templ PedidosLista(pedidos []modelos.Pedido, clientes []modelos.Cliente, produto
 										<input type="hidden" name="status" value={ modelos.StatusSinalRecebido } />
 										<label class="block text-sm font-semibold text-[#5a262c]">Forma de pagamento aceita
 											<select name="forma_pagamento" data-forma-pagamento required class="mt-1 w-full rounded-lg border border-[#e8d5c4] bg-[#fcf9f8] px-3 py-2.5">
+												if p.DescontoPixAvista {
 												<option value="Pix à vista">Pix à vista (10% de desconto)</option>
+												} else {
+												<option value="Pix à vista">Pix à vista (sem desconto)</option>
+												}
 												if p.PixParcelado {
 												<option value="Pix parcelado">Pix parcelado</option>
 												}
