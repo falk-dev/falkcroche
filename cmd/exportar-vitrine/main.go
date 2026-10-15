@@ -53,15 +53,26 @@ func exportarVitrine() error {
 	if err := os.MkdirAll(diretorioStatic, 0755); err != nil {
 		return fmt.Errorf("erro ao criar pasta de saída: %w", err)
 	}
-	logo, err := os.ReadFile("./static/logo.png")
-	if err != nil {
-		return fmt.Errorf("erro ao ler logo.png: %w", err)
-	}
-	if err := os.WriteFile(filepath.Join(diretorioStatic, "logo.png"), logo, 0644); err != nil {
-		return fmt.Errorf("erro ao copiar logo para a exportação: %w", err)
+	for _, arquivoStatic := range []string{
+		"logo.png",
+		"favicon.ico",
+		"favicon-16x16.png",
+		"favicon-32x32.png",
+		"apple-touch-icon.png",
+		"android-chrome-192x192.png",
+		"android-chrome-512x512.png",
+		"site.webmanifest",
+	} {
+		conteudo, err := os.ReadFile(filepath.Join("static", arquivoStatic))
+		if err != nil {
+			return fmt.Errorf("erro ao ler %s: %w", arquivoStatic, err)
+		}
+		if err := os.WriteFile(filepath.Join(diretorioStatic, arquivoStatic), conteudo, 0644); err != nil {
+			return fmt.Errorf("erro ao copiar %s para a exportação: %w", arquivoStatic, err)
+		}
 	}
 
-	pagina := views.PublicLayout("Vitrine", views.VitrinePublica(produtos, numeroWhatsApp), "static/logo.png")
+	pagina := views.PublicLayout("Vitrine", views.VitrinePublica(produtos, numeroWhatsApp), "static/logo.png", "static")
 	arquivo, err := os.Create(filepath.Join(*diretorio, "index.html"))
 	if err != nil {
 		return fmt.Errorf("erro ao criar index.html: %w", err)

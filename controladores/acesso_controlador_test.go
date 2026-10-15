@@ -55,3 +55,22 @@ func TestLoginCriaSessaoAceitaPeloMiddleware(t *testing.T) {
 		t.Fatalf("status com sessão válida = %d; esperado %d", respostaPainel.Code, http.StatusNoContent)
 	}
 }
+
+func TestLoginMarcaCookieComoSeguroAtrasDeProxyHTTPS(t *testing.T) {
+	controlador := NovoAcessoControlador("senha", strings.Repeat("k", 32))
+	formulario := url.Values{"senha": {"senha"}}
+	requisicao := httptest.NewRequest(http.MethodPost, "/admin/login", strings.NewReader(formulario.Encode()))
+	requisicao.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	requisicao.Header.Set("X-Forwarded-Proto", "https")
+	resposta := httptest.NewRecorder()
+
+	controlador.Login(resposta, requisicao)
+
+	if resposta.Code != http.StatusSeeOther {
+		t.Fatalf("status = %d; esperado %d", resposta.Code, http.StatusSeeOther)
+	}
+	cookie := resposta.Result().Cookies()[0]
+	if !cookie.Secure {
+		t.Fatal("cookie de sessão não foi marcado como Secure atrás do proxy HTTPS")
+	}
+}

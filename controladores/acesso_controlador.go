@@ -61,7 +61,7 @@ func (c *AcessoControlador) Login(w http.ResponseWriter, r *http.Request) {
 		Expires:  agora.Add(duracaoSessao),
 		MaxAge:   int(duracaoSessao.Seconds()),
 		HttpOnly: true,
-		Secure:   r.TLS != nil,
+		Secure:   requisicaoHTTPS(r),
 		SameSite: http.SameSiteStrictMode,
 	})
 	http.Redirect(w, r, "/dashboard", http.StatusSeeOther)
@@ -79,7 +79,7 @@ func (c *AcessoControlador) Sair(w http.ResponseWriter, r *http.Request) {
 		Path:     "/",
 		MaxAge:   -1,
 		HttpOnly: true,
-		Secure:   r.TLS != nil,
+		Secure:   requisicaoHTTPS(r),
 		SameSite: http.SameSiteStrictMode,
 	})
 	http.Redirect(w, r, "/admin/login", http.StatusSeeOther)
@@ -130,6 +130,10 @@ func (c *AcessoControlador) assinatura(valor string) []byte {
 	h := hmac.New(sha256.New, c.chave)
 	h.Write([]byte(valor))
 	return h.Sum(nil)
+}
+
+func requisicaoHTTPS(r *http.Request) bool {
+	return r.TLS != nil || strings.EqualFold(strings.TrimSpace(r.Header.Get("X-Forwarded-Proto")), "https")
 }
 
 func (c *AcessoControlador) renderizarLogin(w http.ResponseWriter, r *http.Request, status int, mensagem string) {
