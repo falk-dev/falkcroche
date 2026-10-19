@@ -347,14 +347,14 @@ func PublicLayout(title string, content templ.Component, logoURL string, staticP
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 22, "<body class=\"bg-[#ffeae8] text-[#5a262c] font-sans antialiased min-h-screen flex flex-col\"><header class=\"px-4 pb-3 pt-6 text-center sm:pt-8\"><img src=\"")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 22, "<script type=\"text/javascript\">\n\t(function(c,l,a,r,i,t,y){\n\t\tc[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};\n\t\tt=l.createElement(r);t.async=1;t.src=\"https://www.clarity.ms/tag/\"+i;\n\t\ty=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);\n\t})(window, document, \"clarity\", \"script\", \"z085lt3fid\");\n</script><body class=\"bg-[#ffeae8] text-[#5a262c] font-sans antialiased min-h-screen flex flex-col\"><header class=\"px-4 pb-3 pt-6 text-center sm:pt-8\"><img src=\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var16 string
 		templ_7745c5c3_Var16, templ_7745c5c3_Err = templ.ResolveAttributeValue(logoURL)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/layout.templ`, Line: 153, Col: 20}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/layout.templ`, Line: 160, Col: 20}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var16)
 		if templ_7745c5c3_Err != nil {
