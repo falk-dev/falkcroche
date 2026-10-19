@@ -13,9 +13,11 @@ import (
 )
 
 var ErrTransicaoPedidoInvalida = errors.New("transição de status inválida")
-var ErrPedidoNaoEncontrado = errors.New("pedido não encontrado")
 var ErrPagamentoNaoEncontrado = errors.New("pagamento não encontrado")
 var ErrPagamentoJaRecebido = errors.New("pagamento já recebido")
+var ErrPedidoNaoEncontrado = errors.New("pedido não encontrado")
+var ErrPedidoPrincipalNaoEncontrado = errors.New("pedido principal não encontrado")
+var ErrPedidoPrincipalInvalido = errors.New("o pedido principal não pode ser um brinde")
 var ErrFormaPagamentoInvalida = errors.New("forma de pagamento inválida")
 var ErrPixParceladoNaoOferecido = errors.New("Pix parcelado não foi oferecido neste orçamento")
 var ErrNumeroParcelasInvalido = errors.New("número de parcelas inválido")
@@ -31,12 +33,35 @@ func NovoPedidoDAO(db *sql.DB) *PedidoDAO {
 }
 
 func (dao *PedidoDAO) Inserir(pedido dtos.PedidoInputDTO) (int, error) {
-	query := `INSERT INTO pedidos (cliente_id, produto_id, status, data_pedido, dias_prazo, data_entrega, observacoes, mensagem_orcamento, preco_base, desconto_cartao, desconto_pix, desconto_pix_avista, pix_parcelado)
-			  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+	if pedido.PedidoPrincipalID > 0 {
+		var principalBrinde bool
+		if err := dao.db.QueryRow(`SELECT brinde FROM pedidos WHERE id = ?`, pedido.PedidoPrincipalID).Scan(&principalBrinde); err != nil {
+			if errors.Is(err, sql.ErrNoRows) {
+				return 0, ErrPedidoPrincipalNaoEncontrado
+			}
+			return 0, err
+		}
+		if principalBrinde {
+			return 0, ErrPedidoPrincipalInvalido
+		}
+	}
+	if pedido.Brinde {
+		pedido.Status = modelos.StatusEmProducao
+		pedido.PrecoBase = 0
+		pedido.DescontoCartao = 0
+		pedido.DescontoPix = 0
+		pedido.DescontoPixAvista = false
+		pedido.PixParcelado = false
+	} else {
+		pedido.PedidoPrincipalID = 0
+	}
+	query := `INSERT INTO pedidos (cliente_id, produto_id, status, data_pedido, dias_prazo, data_entrega, observacoes, mensagem_orcamento, preco_base, desconto_cartao, desconto_pix, desconto_pix_avista, pix_parcelado, brinde, pedido_principal_id)
+			  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NULLIF(?, 0))`
 
 	resultado, err := dao.db.Exec(query, pedido.ClienteID, pedido.ProdutoID, pedido.Status,
 		pedido.DataPedido, pedido.DiasPrazo, pedido.DataEntrega, pedido.Observacoes, pedido.MensagemOrcamento,
-		pedido.PrecoBase, pedido.DescontoCartao, pedido.DescontoPix, pedido.DescontoPixAvista, pedido.PixParcelado)
+		pedido.PrecoBase, pedido.DescontoCartao, pedido.DescontoPix, pedido.DescontoPixAvista, pedido.PixParcelado,
+		pedido.Brinde, pedido.PedidoPrincipalID)
 	if err != nil {
 		log.Printf("Erro ao inserir pedido: %v", err)
 		return 0, err
@@ -50,8 +75,24 @@ func (dao *PedidoDAO) Inserir(pedido dtos.PedidoInputDTO) (int, error) {
 	return int(id), nil
 }
 
+func (dao *PedidoDAO) AtualizarDetalhes(id int, dataPedido string, dataEntrega string, observacoes string) error {
+	resultado, err := dao.db.Exec(`UPDATE pedidos SET data_pedido = ?, data_entrega = ?, observacoes = ? WHERE id = ?`,
+		dataPedido, dataEntrega, observacoes, id)
+	if err != nil {
+		return err
+	}
+	afetadas, err := resultado.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if afetadas == 0 {
+		return ErrPedidoNaoEncontrado
+	}
+	return nil
+}
+
 func (dao *PedidoDAO) BuscarTodos() ([]modelos.Pedido, error) {
-	query := `SELECT id, cliente_id, produto_id, status, data_pedido, dias_prazo, data_entrega, COALESCE(observacoes, ''), COALESCE(mensagem_orcamento, ''), preco_base, desconto_cartao, desconto_pix, desconto_pix_avista, pix_parcelado, forma_pagamento, total_acordado
+	query := `SELECT id, cliente_id, produto_id, status, data_pedido, dias_prazo, data_entrega, COALESCE(observacoes, ''), COALESCE(mensagem_orcamento, ''), preco_base, desconto_cartao, desconto_pix, desconto_pix_avista, pix_parcelado, forma_pagamento, total_acordado, brinde, COALESCE(pedido_principal_id, 0)
 		FROM pedidos ORDER BY id DESC`
 
 	linhas, err := dao.db.Query(query)
@@ -67,7 +108,8 @@ func (dao *PedidoDAO) BuscarTodos() ([]modelos.Pedido, error) {
 		var p modelos.Pedido
 		err := linhas.Scan(&p.ID, &p.ClienteID, &p.ProdutoID, &p.Status,
 			&p.DataPedido, &p.DiasPrazo, &p.DataEntrega, &p.Observacoes, &p.MensagemOrcamento,
-			&p.PrecoBase, &p.DescontoCartao, &p.DescontoPix, &p.DescontoPixAvista, &p.PixParcelado, &p.FormaPagamento, &p.TotalAcordado)
+			&p.PrecoBase, &p.DescontoCartao, &p.DescontoPix, &p.DescontoPixAvista, &p.PixParcelado, &p.FormaPagamento, &p.TotalAcordado,
+			&p.Brinde, &p.PedidoPrincipalID)
 		if err != nil {
 			log.Printf("Erro ao ler pedido: %v", err)
 			return nil, err
@@ -117,21 +159,21 @@ func (dao *PedidoDAO) avancarStatus(id int, novoStatus string, formaPagamento st
 
 	var statusAtual string
 	var precoBase, descontoCartao, descontoPix float64
-	var pixParcelado, descontoPixAvista bool
-	if err := tx.QueryRow(`SELECT status, preco_base, desconto_cartao, desconto_pix, desconto_pix_avista, pix_parcelado FROM pedidos WHERE id = ?`, id).
-		Scan(&statusAtual, &precoBase, &descontoCartao, &descontoPix, &descontoPixAvista, &pixParcelado); err != nil {
+	var pixParcelado, descontoPixAvista, brinde bool
+	if err := tx.QueryRow(`SELECT status, preco_base, desconto_cartao, desconto_pix, desconto_pix_avista, pix_parcelado, brinde FROM pedidos WHERE id = ?`, id).
+		Scan(&statusAtual, &precoBase, &descontoCartao, &descontoPix, &descontoPixAvista, &pixParcelado, &brinde); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return ErrPedidoNaoEncontrado
 		}
 		return err
 	}
-	if precoBase == 0 {
+	if precoBase == 0 && !brinde {
 		if err := tx.QueryRow(`SELECT preco FROM produtos WHERE id = (SELECT produto_id FROM pedidos WHERE id = ?)`, id).Scan(&precoBase); err != nil {
 			return err
 		}
 	}
 
-	if !statusPedidoPermitido(statusAtual, novoStatus) {
+	if !statusPedidoPermitido(statusAtual, novoStatus, brinde) {
 		return ErrTransicaoPedidoInvalida
 	}
 
@@ -302,6 +344,11 @@ func (dao *PedidoDAO) RegistrarRecebimento(pagamentoID int, dataRecebimento stri
 			return err
 		}
 	}
+	if _, err := tx.Exec(`UPDATE pedidos SET status = ? WHERE id = ? AND status = ?
+		AND NOT EXISTS (SELECT 1 FROM pagamentos WHERE pedido_id = ? AND status != 'Recebido')`,
+		modelos.StatusPago, pedidoID, modelos.StatusAguardandoPagamento, pedidoID); err != nil {
+		return err
+	}
 	return tx.Commit()
 }
 
@@ -327,8 +374,8 @@ func (dao *PedidoDAO) buscarPagamentos() ([]modelos.Pagamento, error) {
 	return pagamentos, nil
 }
 
-func statusPedidoPermitido(atual string, proximo string) bool {
-	for _, permitido := range modelos.ProximosStatusPedido(atual) {
+func statusPedidoPermitido(atual string, proximo string, brinde bool) bool {
+	for _, permitido := range modelos.ProximosStatusPedidoComBrinde(atual, brinde) {
 		if proximo == permitido {
 			return true
 		}

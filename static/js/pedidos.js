@@ -1,7 +1,43 @@
 const modalPedido = document.getElementById("modal-pedido");
-document.getElementById("abrir-modal-pedido").addEventListener("click", () => modalPedido.showModal());
+const checkboxPedidoBrinde = document.querySelector("[data-pedido-brinde]");
+const pedidoPrincipalContainer = document.getElementById("pedido-principal-container");
+const pedidoPrincipal = document.getElementById("pedido-principal");
+const opcoesOrcamentoPedido = document.getElementById("opcoes-orcamento-pedido");
+const avisoPedidoBrinde = document.querySelector("[data-aviso-pedido-brinde]");
+const criarPedidoSubmit = document.getElementById("criar-pedido-submit");
+const atualizarTipoPedido = () => {
+    const brinde = checkboxPedidoBrinde.checked;
+    pedidoPrincipalContainer.hidden = !brinde;
+    pedidoPrincipal.disabled = !brinde;
+    opcoesOrcamentoPedido.hidden = brinde;
+    opcoesOrcamentoPedido.querySelectorAll("input, select").forEach((campo) => {
+        campo.disabled = brinde;
+    });
+    avisoPedidoBrinde.hidden = !brinde;
+    criarPedidoSubmit.textContent = brinde ? "Criar pedido de brinde" : "Criar orçamento";
+};
+checkboxPedidoBrinde.addEventListener("change", atualizarTipoPedido);
+document.getElementById("abrir-modal-pedido").addEventListener("click", () => {
+    checkboxPedidoBrinde.checked = false;
+    pedidoPrincipal.value = "";
+    atualizarTipoPedido();
+    modalPedido.showModal();
+});
 document.getElementById("fechar-modal-pedido").addEventListener("click", () => modalPedido.close());
 document.getElementById("cancelar-modal-pedido").addEventListener("click", () => modalPedido.close());
+
+const modalEditarPedido = document.getElementById("modal-editar-pedido");
+document.querySelectorAll("[data-editar-pedido]").forEach((botao) => {
+    botao.addEventListener("click", () => {
+        document.getElementById("editar-pedido-id").value = botao.dataset.id;
+        document.getElementById("editar-pedido-data").value = botao.dataset.dataPedido;
+        document.getElementById("editar-pedido-entrega").value = botao.dataset.dataEntrega;
+        document.getElementById("editar-pedido-observacoes").value = botao.dataset.observacoes;
+        modalEditarPedido.showModal();
+    });
+});
+document.getElementById("fechar-modal-editar-pedido").addEventListener("click", () => modalEditarPedido.close());
+document.getElementById("cancelar-modal-editar-pedido").addEventListener("click", () => modalEditarPedido.close());
 
 function configurarBusca(tipo) {
     const campo = document.getElementById(tipo + "-campo");

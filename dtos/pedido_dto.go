@@ -14,4 +14,6 @@ type PedidoInputDTO struct {
 	DescontoPix       float64
 	DescontoPixAvista bool
 	PixParcelado      bool
+	Brinde            bool
+	PedidoPrincipalID int
 }

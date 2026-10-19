@@ -31,8 +31,10 @@ O banco SQLite fica em `./falkcroche.db` por padrão. Em hospedagens com sistema
 ## Pedidos e pagamentos
 
 Ao criar um pedido, informe a data original da encomenda para registrar pedidos antigos. Quando a cliente aceitar o orçamento, avance o pedido para “Aguardando sinal”. Ao avançar dessa etapa, escolha no modal a forma de pagamento e, para Pix parcelado ou cartão, de uma a três parcelas após o sinal e a data de vencimento da primeira parcela. Confirme também que recebeu o sinal e informe a data: o sistema salva o valor acordado com o desconto correspondente, agenda as parcelas e lança o sinal no caixa.
+Um pedido de brinde pode ser registrado separadamente pelo checkbox no formulário; ele fica com valor zero, inicia em produção e não cria pagamentos. O vínculo com um pedido principal é opcional, mas ajuda a manter os brindes rastreáveis junto à encomenda.
 
 Cada recebimento fica pendente até ser confirmado na página de pedidos. Ao confirmar, informe a data em que o dinheiro entrou; só então o valor é lançado no financeiro. A entrega pode ser registrada mesmo com parcelas pendentes, e o lembrete de cada parcela pode ser copiado para o WhatsApp. O histórico financeiro aparece da movimentação mais recente para a mais antiga.
+Depois de confirmar a última parcela, o pedido passa automaticamente para “Pago” quando ainda estiver aguardando o pagamento final. É possível editar datas e observações do pedido sem alterar valores ou parcelas já acordados. Movimentações financeiras também podem ser editadas; recebimentos vinculados a pedidos mantêm o tipo “Entrada” e atualizam junto a data e o valor do pagamento correspondente.
 
 O sino no painel reúne notificações não lidas para pagamentos vencidos hoje ou antes. Elas permanecem no centro de lembretes até serem marcadas como lidas ou o pagamento ser confirmado.
 

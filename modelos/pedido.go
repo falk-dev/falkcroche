@@ -30,6 +30,16 @@ func ProximosStatusPedido(status string) []string {
 	}
 }
 
+func ProximosStatusPedidoComBrinde(status string, brinde bool) []string {
+	if !brinde {
+		return ProximosStatusPedido(status)
+	}
+	if status == StatusEmProducao {
+		return []string{StatusEntregue, StatusCancelado}
+	}
+	return nil
+}
+
 type Pedido struct {
 	ID                int
 	ClienteID         int
@@ -47,6 +57,8 @@ type Pedido struct {
 	PixParcelado      bool
 	FormaPagamento    string
 	TotalAcordado     float64
+	Brinde            bool
+	PedidoPrincipalID int
 	Pagamentos        []Pagamento
 }
 

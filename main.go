@@ -60,11 +60,13 @@ func main() {
 
 	mux.Handle("/pedidos", acessoCtrl.Proteger(http.HandlerFunc(pedidoCtrl.Listar)))
 	mux.Handle("/pedidos/inserir", acessoCtrl.Proteger(http.HandlerFunc(pedidoCtrl.Inserir)))
+	mux.Handle("/pedidos/atualizar", acessoCtrl.Proteger(http.HandlerFunc(pedidoCtrl.Atualizar)))
 	mux.Handle("/pedidos/status", acessoCtrl.Proteger(http.HandlerFunc(pedidoCtrl.AtualizarStatus)))
 	mux.Handle("/pedidos/pagamentos/receber", acessoCtrl.Proteger(http.HandlerFunc(pedidoCtrl.ReceberPagamento)))
 
 	mux.Handle("/financeiro", acessoCtrl.Proteger(http.HandlerFunc(transacaoCtrl.Listar)))
 	mux.Handle("/financeiro/inserir", acessoCtrl.Proteger(http.HandlerFunc(transacaoCtrl.Inserir)))
+	mux.Handle("/financeiro/atualizar", acessoCtrl.Proteger(http.HandlerFunc(transacaoCtrl.Atualizar)))
 	mux.Handle("/notificacoes", acessoCtrl.Proteger(http.HandlerFunc(notificacaoCtrl.Listar)))
 	mux.Handle("/notificacoes/ler", acessoCtrl.Proteger(http.HandlerFunc(notificacaoCtrl.MarcarComoLida)))
 

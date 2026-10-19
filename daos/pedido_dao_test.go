@@ -38,7 +38,9 @@ func TestPedidoAgendaERegistraRecebimentosSeparadamente(t *testing.T) {
 			desconto_pix_avista BOOLEAN NOT NULL DEFAULT 1,
 			pix_parcelado BOOLEAN NOT NULL DEFAULT 0,
 			forma_pagamento TEXT NOT NULL DEFAULT '',
-			total_acordado REAL NOT NULL DEFAULT 0
+			total_acordado REAL NOT NULL DEFAULT 0,
+			brinde BOOLEAN NOT NULL DEFAULT 0,
+			pedido_principal_id INTEGER
 		)`,
 		`CREATE TABLE transacoes (id INTEGER PRIMARY KEY, tipo TEXT NOT NULL, descricao TEXT NOT NULL, valor REAL NOT NULL, data TEXT NOT NULL, pedido_id INTEGER, etapa TEXT)`,
 		`CREATE UNIQUE INDEX idx_transacoes_pedido_etapa ON transacoes(pedido_id, etapa) WHERE pedido_id IS NOT NULL`,
@@ -130,9 +132,42 @@ func TestPedidoAgendaERegistraRecebimentosSeparadamente(t *testing.T) {
 		t.Fatalf("status após confirmar sinal = %q; esperado %q", status, modelos.StatusSinalRecebido)
 	}
 
+	if err := dao.AtualizarStatus(1, modelos.StatusEmProducao); err != nil {
+		t.Fatalf("falha ao avançar para produção: %v", err)
+	}
+	if err := dao.AtualizarStatus(1, modelos.StatusAguardandoPagamento); err != nil {
+		t.Fatalf("falha ao aguardar pagamento final: %v", err)
+	}
+	var parcela1ID, parcela2ID int
+	if err := db.QueryRow(`SELECT id FROM pagamentos WHERE pedido_id = 1 AND etapa = 'parcela 1'`).Scan(&parcela1ID); err != nil {
+		t.Fatal(err)
+	}
+	if err := db.QueryRow(`SELECT id FROM pagamentos WHERE pedido_id = 1 AND etapa = 'parcela 2'`).Scan(&parcela2ID); err != nil {
+		t.Fatal(err)
+	}
+	if err := dao.RegistrarRecebimento(parcela1ID, "2026-02-15"); err != nil {
+		t.Fatalf("falha ao confirmar a primeira parcela: %v", err)
+	}
+	if err := db.QueryRow(`SELECT status FROM pedidos WHERE id = 1`).Scan(&status); err != nil {
+		t.Fatal(err)
+	}
+	if status != modelos.StatusAguardandoPagamento {
+		t.Fatalf("pedido avançou antes de quitar todas as parcelas: %q", status)
+	}
+	if err := dao.RegistrarRecebimento(parcela2ID, "2026-03-15"); err != nil {
+		t.Fatalf("falha ao confirmar a última parcela: %v", err)
+	}
+	if err := db.QueryRow(`SELECT status FROM pedidos WHERE id = 1`).Scan(&status); err != nil {
+		t.Fatal(err)
+	}
+	if status != modelos.StatusPago {
+		t.Fatalf("status após confirmar a última parcela = %q; esperado %q", status, modelos.StatusPago)
+	}
+
 	if _, err := db.Exec(`INSERT INTO pedidos (id, produto_id, status, preco_base, desconto_pix_avista) VALUES (2, 1, 'Orçamento', 100.01, 0)`); err != nil {
 		t.Fatal(err)
 	}
+
 	if err := dao.AtualizarStatus(2, modelos.StatusAguardandoSinal); err != nil {
 		t.Fatal(err)
 	}
@@ -144,6 +179,114 @@ func TestPedidoAgendaERegistraRecebimentosSeparadamente(t *testing.T) {
 	}
 	if math.Abs(total-100.01) > 0.001 {
 		t.Fatalf("total acordado no Pix à vista sem desconto = %.2f; esperado 100.01", total)
+	}
+}
+
+func TestPedidoBrindeZeraPrecoEPermiteVinculoOpcional(t *testing.T) {
+	db, err := sql.Open("sqlite3", ":memory:")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Close()
+	if _, err := db.Exec(`CREATE TABLE pedidos (
+		id INTEGER PRIMARY KEY AUTOINCREMENT,
+		cliente_id INTEGER, produto_id INTEGER, status TEXT NOT NULL,
+		data_pedido TEXT, dias_prazo INTEGER, data_entrega TEXT,
+		observacoes TEXT, mensagem_orcamento TEXT, preco_base REAL NOT NULL DEFAULT 0,
+		desconto_cartao REAL NOT NULL DEFAULT 0, desconto_pix REAL NOT NULL DEFAULT 0,
+		desconto_pix_avista BOOLEAN NOT NULL DEFAULT 1, pix_parcelado BOOLEAN NOT NULL DEFAULT 0,
+		brinde BOOLEAN NOT NULL DEFAULT 0, pedido_principal_id INTEGER
+	);
+	CREATE TABLE pagamentos (id INTEGER PRIMARY KEY, pedido_id INTEGER)`); err != nil {
+		t.Fatal(err)
+	}
+	dao := NovoPedidoDAO(db)
+	principalID, err := dao.Inserir(dtos.PedidoInputDTO{
+		ClienteID: 1, ProdutoID: 1, Status: modelos.StatusOrcamento, PrecoBase: 80,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	brindeID, err := dao.Inserir(dtos.PedidoInputDTO{
+		ClienteID: 1, ProdutoID: 2, Status: modelos.StatusOrcamento, PrecoBase: 45,
+		DescontoCartao: 10, PixParcelado: true, Brinde: true, PedidoPrincipalID: principalID,
+	})
+	if err != nil {
+		t.Fatalf("falha ao cadastrar brinde relacionado: %v", err)
+	}
+	var status string
+	var preco float64
+	var brinde bool
+	var principal sql.NullInt64
+	if err := db.QueryRow(`SELECT status, preco_base, brinde, pedido_principal_id FROM pedidos WHERE id = ?`, brindeID).
+		Scan(&status, &preco, &brinde, &principal); err != nil {
+		t.Fatal(err)
+	}
+	if status != modelos.StatusEmProducao || preco != 0 || !brinde || !principal.Valid || int(principal.Int64) != principalID {
+		t.Fatalf("pedido de brinde = (%q, %.2f, %t, %+v); esperava produção, valor zero e vínculo", status, preco, brinde, principal)
+	}
+	var pagamentos int
+	if err := db.QueryRow(`SELECT COUNT(*) FROM pagamentos WHERE pedido_id = ?`, brindeID).Scan(&pagamentos); err != nil {
+		t.Fatal(err)
+	}
+	if pagamentos != 0 {
+		t.Fatalf("pedido de brinde gerou %d pagamentos; esperado zero", pagamentos)
+	}
+	if err := dao.AtualizarStatus(brindeID, modelos.StatusAguardandoPagamento); err != ErrTransicaoPedidoInvalida {
+		t.Fatalf("brinde não deveria avançar para pagamento: %v", err)
+	}
+	if err := dao.AtualizarStatus(brindeID, modelos.StatusEntregue); err != nil {
+		t.Fatalf("brinde em produção deveria poder ser entregue sem cobrança: %v", err)
+	}
+	brindeSemVinculo, err := dao.Inserir(dtos.PedidoInputDTO{ClienteID: 1, ProdutoID: 3, Brinde: true})
+	if err != nil {
+		t.Fatalf("brinde sem vínculo deveria ser permitido: %v", err)
+	}
+	if err := db.QueryRow(`SELECT preco_base, pedido_principal_id FROM pedidos WHERE id = ?`, brindeSemVinculo).
+		Scan(&preco, &principal); err != nil {
+		t.Fatal(err)
+	}
+	if preco != 0 || principal.Valid {
+		t.Fatalf("brinde avulso ficou com valor %.2f ou vínculo %+v", preco, principal)
+	}
+	if _, err := dao.Inserir(dtos.PedidoInputDTO{Brinde: true, PedidoPrincipalID: 99}); err != ErrPedidoPrincipalNaoEncontrado {
+		t.Fatalf("pedido principal inexistente deveria ser rejeitado, recebeu: %v", err)
+	}
+	if _, err := dao.Inserir(dtos.PedidoInputDTO{Brinde: true, PedidoPrincipalID: brindeID}); err != ErrPedidoPrincipalInvalido {
+		t.Fatalf("brinde não deveria aceitar outro brinde como principal, recebeu: %v", err)
+	}
+}
+
+func TestAtualizarDetalhesPedidoPreservaCondicoesAcordadas(t *testing.T) {
+	db, err := sql.Open("sqlite3", ":memory:")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Close()
+	if _, err := db.Exec(`CREATE TABLE pedidos (
+		id INTEGER PRIMARY KEY, data_pedido TEXT, data_entrega TEXT, observacoes TEXT,
+		total_acordado REAL, forma_pagamento TEXT
+	);
+		INSERT INTO pedidos VALUES (1, '2026-01-01', '2026-02-01', 'Antes', 120, 'Pix parcelado')`); err != nil {
+		t.Fatal(err)
+	}
+	dao := NovoPedidoDAO(db)
+	if err := dao.AtualizarDetalhes(1, "2026-01-02", "2026-02-10", "Novo detalhe"); err != nil {
+		t.Fatal(err)
+	}
+	var dataPedido, dataEntrega, observacoes, formaPagamento string
+	var total float64
+	if err := db.QueryRow(`SELECT data_pedido, data_entrega, observacoes, total_acordado, forma_pagamento FROM pedidos WHERE id = 1`).
+		Scan(&dataPedido, &dataEntrega, &observacoes, &total, &formaPagamento); err != nil {
+		t.Fatal(err)
+	}
+	if dataPedido != "2026-01-02" || dataEntrega != "2026-02-10" || observacoes != "Novo detalhe" ||
+		total != 120 || formaPagamento != "Pix parcelado" {
+		t.Fatalf("edição alterou dados incorretos do pedido: %q, %q, %q, %.2f, %q",
+			dataPedido, dataEntrega, observacoes, total, formaPagamento)
+	}
+	if err := dao.AtualizarDetalhes(2, "2026-01-02", "2026-02-10", ""); err != ErrPedidoNaoEncontrado {
+		t.Fatalf("pedido inexistente deveria ser reportado, recebeu: %v", err)
 	}
 }
 
@@ -172,7 +315,9 @@ func TestPedidoPersisteMensagemOrcamento(t *testing.T) {
 		desconto_pix_avista BOOLEAN NOT NULL DEFAULT 1,
 		pix_parcelado BOOLEAN NOT NULL DEFAULT 0,
 		forma_pagamento TEXT NOT NULL DEFAULT '',
-		total_acordado REAL NOT NULL DEFAULT 0
+		total_acordado REAL NOT NULL DEFAULT 0,
+		brinde BOOLEAN NOT NULL DEFAULT 0,
+		pedido_principal_id INTEGER
 	)`); err != nil {
 		t.Fatal(err)
 	}

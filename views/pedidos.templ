@@ -78,10 +78,32 @@ templ PedidosLista(pedidos []modelos.Pedido, clientes []modelos.Cliente, produto
 					}
 				</div>
 
+				<label for="pedido-brinde" class="flex items-start gap-2 rounded-lg border border-[#e8d5c4] p-4 text-sm font-semibold">
+					<input id="pedido-brinde" name="pedido_brinde" data-pedido-brinde type="checkbox" class="mt-0.5 size-4 shrink-0 accent-[#5a262c]" />
+					<span>Este pedido é um brinde: valor R$ 0,00 e sem cobrança.</span>
+				</label>
+				<div id="pedido-principal-container" hidden>
+					<label for="pedido-principal" class="mb-1.5 block text-sm font-semibold">Pedido principal (opcional)</label>
+					<select id="pedido-principal" name="pedido_principal_id" disabled
+						class="w-full rounded-lg border border-[#e8d5c4] bg-[#fcf9f8] px-3 py-3 outline-none focus:border-[#5a262c] focus:ring-2 focus:ring-[#5a262c]/20">
+						<option value="">Sem vínculo com outro pedido</option>
+						for _, principal := range pedidos {
+						if !principal.Brinde {
+						<option value={ fmt.Sprintf("%d", principal.ID) }>
+							{ fmt.Sprintf("#%d · %s · %s", principal.ID, obterNomeCliente(principal.ClienteID, clientes), obterNomeProduto(principal.ProdutoID, produtos)) }
+						</option>
+						}
+						}
+					</select>
+				</div>
+				<p class="rounded-lg bg-[#7a8c5f]/10 px-4 py-3 text-sm text-[#56653f]" data-aviso-pedido-brinde hidden>
+					O brinde será registrado diretamente em produção, com valor zero e sem gerar parcelas ou lançamentos financeiros.
+				</p>
+
 				<p class="rounded-lg bg-[#ffeae8]/60 px-4 py-3 text-sm text-[#5a262c]/80">Prazo de produção: <strong>20
 						dias úteis</strong>, com previsão calculada automaticamente.</p>
 
-				<fieldset>
+				<fieldset id="opcoes-orcamento-pedido">
 					<legend class="mb-2 text-sm font-bold text-[#5a262c]">Opções do orçamento</legend>
 					<div class="divide-y divide-[#e8d5c4] rounded-lg border border-[#e8d5c4] bg-white">
 						<label for="desconto-pix-avista" class="flex items-center gap-2 p-4 text-sm font-semibold">
@@ -157,9 +179,50 @@ templ PedidosLista(pedidos []modelos.Pedido, clientes []modelos.Cliente, produto
 				<div class="flex flex-col-reverse justify-end gap-2 border-t border-[#e8d5c4] pt-5 sm:flex-row sm:gap-3">
 					<button id="cancelar-modal-pedido" type="button"
 						class="rounded-lg border border-[#e8d5c4] px-4 py-2.5 text-sm font-semibold hover:bg-[#ffeae8]">Cancelar</button>
-					<button type="submit"
+					<button id="criar-pedido-submit" type="submit"
 						class="rounded-lg bg-[#5a262c] px-5 py-2.5 text-sm font-bold text-[#ffeae8] hover:bg-[#472025]">Criar
 						orçamento</button>
+				</div>
+			</form>
+		</div>
+	</dialog>
+
+	<dialog id="modal-editar-pedido"
+		class="w-[min(38rem,calc(100%-2rem))] max-w-none rounded-2xl border-0 p-0 shadow-2xl backdrop:bg-[#2b1719]/50">
+		<div class="bg-white p-4 sm:p-8">
+			<div class="mb-6 flex items-start justify-between gap-4">
+				<div>
+					<p class="mb-1 text-sm font-semibold text-[#c17f6b]">Pedido</p>
+					<h3 class="text-2xl font-serif font-bold text-[#5a262c]">Editar pedido</h3>
+					<p class="mt-1 text-sm text-[#5a262c]/70">A edição não altera os valores acordados nem as parcelas.</p>
+				</div>
+				<button id="fechar-modal-editar-pedido" type="button" aria-label="Fechar"
+					class="rounded-full px-3 py-1 text-2xl text-[#5a262c]/60 hover:bg-[#ffeae8]">&times;</button>
+			</div>
+			<form id="form-editar-pedido" method="POST" action="/pedidos/atualizar" class="space-y-5">
+				<input id="editar-pedido-id" type="hidden" name="pedido_id" />
+				<div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+					<div>
+						<label for="editar-pedido-data" class="mb-1.5 block text-sm font-semibold">Data do pedido</label>
+						<input id="editar-pedido-data" name="data_pedido" type="date" required
+							class="w-full rounded-lg border border-[#e8d5c4] bg-[#fcf9f8] px-3 py-3 outline-none focus:border-[#5a262c] focus:ring-2 focus:ring-[#5a262c]/20" />
+					</div>
+					<div>
+						<label for="editar-pedido-entrega" class="mb-1.5 block text-sm font-semibold">Data de entrega</label>
+						<input id="editar-pedido-entrega" name="data_entrega" type="date" required
+							class="w-full rounded-lg border border-[#e8d5c4] bg-[#fcf9f8] px-3 py-3 outline-none focus:border-[#5a262c] focus:ring-2 focus:ring-[#5a262c]/20" />
+					</div>
+				</div>
+				<div>
+					<label for="editar-pedido-observacoes" class="mb-1.5 block text-sm font-semibold">Observações</label>
+					<textarea id="editar-pedido-observacoes" name="observacoes" rows="4"
+						class="w-full rounded-lg border border-[#e8d5c4] bg-[#fcf9f8] px-3 py-3 outline-none focus:border-[#5a262c] focus:ring-2 focus:ring-[#5a262c]/20"></textarea>
+				</div>
+				<div class="flex flex-col-reverse justify-end gap-2 border-t border-[#e8d5c4] pt-5 sm:flex-row sm:gap-3">
+					<button id="cancelar-modal-editar-pedido" type="button"
+						class="rounded-lg border border-[#e8d5c4] px-4 py-2.5 text-sm font-semibold hover:bg-[#ffeae8]">Cancelar</button>
+					<button type="submit"
+						class="rounded-lg bg-[#5a262c] px-5 py-2.5 text-sm font-bold text-[#ffeae8] hover:bg-[#472025]">Salvar alterações</button>
 				</div>
 			</form>
 		</div>
@@ -185,6 +248,11 @@ templ PedidosLista(pedidos []modelos.Pedido, clientes []modelos.Cliente, produto
 					<td class="p-5 text-[#5a262c] font-bold">
 						<div class="flex items-center gap-2">
 							<span>#{ fmt.Sprintf("%d", p.ID) }</span>
+							<button type="button" data-editar-pedido data-id={ fmt.Sprintf("%d", p.ID) }
+								data-data-pedido={ p.DataPedido } data-data-entrega={ p.DataEntrega }
+								data-observacoes={ p.Observacoes } title={ "Editar pedido " + fmt.Sprintf("%d", p.ID) }
+								aria-label={ "Editar pedido " + fmt.Sprintf("%d", p.ID) }
+								class="grid size-9 shrink-0 place-items-center rounded-lg border border-[#e8d5c4] bg-white text-sm hover:bg-[#ffeae8]">Editar</button>
 							<button type="button" data-copiar-orcamento data-pedido-id={ fmt.Sprintf("%d", p.ID) }
 								title="Copiar orçamento do pedido" aria-label={ "Copiar orçamento do pedido " +
 								fmt.Sprintf("%d", p.ID) }
@@ -199,12 +267,20 @@ templ PedidosLista(pedidos []modelos.Pedido, clientes []modelos.Cliente, produto
 					<td class="p-5">
 						<div class="text-[#5a262c]/90 font-bold">{ obterNomeCliente(p.ClienteID, clientes) }</div>
 						<div class="text-[#5a262c]/70 text-sm">{ obterNomeProduto(p.ProdutoID, produtos) }</div>
+						if p.Brinde {
+						<span class="mt-1 inline-flex rounded-full bg-[#7a8c5f]/10 px-2 py-0.5 text-[10px] font-bold text-[#56653f]">Brinde · R$ 0,00</span>
+						if p.PedidoPrincipalID > 0 {
+						<div class="mt-1 text-xs text-[#5a262c]/60">Relacionado ao pedido #{ fmt.Sprintf("%d", p.PedidoPrincipalID) }</div>
+						}
+						}
 					</td>
 					<td class="p-5 text-[#5a262c]/80 text-sm max-w-xs truncate" title={ p.Observacoes }>{ p.Observacoes
 						}</td>
 					<td class="p-5 text-[#5a262c]/80 font-medium">{ formatarDataPedido(p.DataEntrega) }</td>
 					<td class="whitespace-nowrap p-5">
-						if len(p.Pagamentos) == 0 {
+						if p.Brinde {
+						<span class="text-xs font-semibold text-[#56653f]">Sem cobrança</span>
+						} else if len(p.Pagamentos) == 0 {
 						<span class="text-xs text-[#5a262c]/50">—</span>
 						} else {
 						<div class="space-y-2">
@@ -268,12 +344,12 @@ templ PedidosLista(pedidos []modelos.Pedido, clientes []modelos.Cliente, produto
 						<td class="p-5">
 						<div class="space-y-2">
 							@StatusLabel(p.Status)
-							if len(modelos.ProximosStatusPedido(p.Status)) > 0 {
+							if len(modelos.ProximosStatusPedidoComBrinde(p.Status, p.Brinde)) > 0 {
 							<form method="POST" action="/pedidos/status" class="flex flex-wrap items-center gap-2">
 								<input type="hidden" name="pedido_id" value={ fmt.Sprintf("%d", p.ID) } />
 								<select name="status" data-pedido-status
 									class="max-w-48 rounded-lg border border-[#e8d5c4] bg-white px-2 py-1.5 text-xs focus:border-[#5a262c] focus:outline-none">
-									for _, proximo := range modelos.ProximosStatusPedido(p.Status) {
+									for _, proximo := range modelos.ProximosStatusPedidoComBrinde(p.Status, p.Brinde) {
 									<option value={ proximo }>{ proximo }</option>
 									}
 								</select>

@@ -72,8 +72,11 @@ func criarTabelas(db *sql.DB) {
 		pix_parcelado BOOLEAN NOT NULL DEFAULT 0,
 		forma_pagamento TEXT NOT NULL DEFAULT '',
 		total_acordado REAL NOT NULL DEFAULT 0,
+		brinde BOOLEAN NOT NULL DEFAULT 0,
+		pedido_principal_id INTEGER,
 		FOREIGN KEY (cliente_id) REFERENCES clientes(id),
-		FOREIGN KEY (produto_id) REFERENCES produtos(id)
+		FOREIGN KEY (produto_id) REFERENCES produtos(id),
+		FOREIGN KEY (pedido_principal_id) REFERENCES pedidos(id)
 	);`
 
 	// query para criar a tabela de transacoes
@@ -146,7 +149,7 @@ func criarTabelas(db *sql.DB) {
 func migrarPagamentosPendentes(db *sql.DB) {
 	if _, err := db.Exec(`UPDATE pedidos
 		SET preco_base = (SELECT preco FROM produtos WHERE produtos.id = pedidos.produto_id)
-		WHERE preco_base = 0 AND EXISTS (SELECT 1 FROM produtos WHERE produtos.id = pedidos.produto_id)`); err != nil {
+		WHERE preco_base = 0 AND brinde = 0 AND EXISTS (SELECT 1 FROM produtos WHERE produtos.id = pedidos.produto_id)`); err != nil {
 		log.Fatalf("Erro ao recuperar valores dos pedidos existentes: %v", err)
 	}
 	if _, err := db.Exec(`UPDATE pedidos SET total_acordado = preco_base, forma_pagamento = 'Condições antigas'
@@ -178,6 +181,8 @@ func migrarColunasPedidos(db *sql.DB) {
 		"pix_parcelado":       `ALTER TABLE pedidos ADD COLUMN pix_parcelado BOOLEAN NOT NULL DEFAULT 0`,
 		"forma_pagamento":     `ALTER TABLE pedidos ADD COLUMN forma_pagamento TEXT NOT NULL DEFAULT ''`,
 		"total_acordado":      `ALTER TABLE pedidos ADD COLUMN total_acordado REAL NOT NULL DEFAULT 0`,
+		"brinde":              `ALTER TABLE pedidos ADD COLUMN brinde BOOLEAN NOT NULL DEFAULT 0`,
+		"pedido_principal_id": `ALTER TABLE pedidos ADD COLUMN pedido_principal_id INTEGER REFERENCES pedidos(id)`,
 	}
 	for coluna, alteracao := range colunas {
 		var encontrada bool

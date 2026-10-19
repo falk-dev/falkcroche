@@ -70,4 +70,16 @@ func TestCriarTabelasMigraPedidosERetemRecebimentosAnteriores(t *testing.T) {
 		t.Fatalf("pagamentos migrados = (%d, recebido %.2f, pendente %.2f, %q, %q); esperado (2, 30, 70, Pendente, 2026-08-01)",
 			quantidade, recebido, pendente, status, data)
 	}
+	if _, err := db.Exec(`INSERT INTO pedidos (id, produto_id, status, preco_base, brinde)
+		VALUES (8, 2, 'Em produção', 0, 1)`); err != nil {
+		t.Fatal(err)
+	}
+	criarTabelas(db)
+	var precoBrinde float64
+	if err := db.QueryRow(`SELECT preco_base FROM pedidos WHERE id = 8`).Scan(&precoBrinde); err != nil {
+		t.Fatal(err)
+	}
+	if precoBrinde != 0 {
+		t.Fatalf("migração alterou o preço zero do brinde para %.2f", precoBrinde)
+	}
 }

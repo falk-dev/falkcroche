@@ -116,6 +116,19 @@ func TestProximosStatusPedidoSegueFluxo(t *testing.T) {
 	if len(proximos) != 2 || proximos[0] != modelos.StatusEmProducao || proximos[1] != modelos.StatusCancelado {
 		t.Fatalf("próximos status inesperados: %v", proximos)
 	}
+	proximosBrinde := modelos.ProximosStatusPedidoComBrinde(modelos.StatusEmProducao, true)
+	if len(proximosBrinde) != 2 || proximosBrinde[0] != modelos.StatusEntregue || proximosBrinde[1] != modelos.StatusCancelado {
+		t.Fatalf("próximos status de brinde inesperados: %v", proximosBrinde)
+	}
+}
+
+func TestMensagemDeBrindeIndicaValorZeroEPedidoRelacionado(t *testing.T) {
+	mensagem := montarMensagemBrinde("Ana", "Mini flor", 12, time.Date(2026, time.November, 6, 0, 0, 0, 0, time.UTC))
+	for _, trecho := range []string{"brinde *Mini flor*", "pedido #12", "R$ 0,00", "06/11/2026"} {
+		if !strings.Contains(mensagem, trecho) {
+			t.Errorf("mensagem de brinde não contém %q: %s", trecho, mensagem)
+		}
+	}
 }
 
 func TestTodosPagamentosRecebidosExigeTodosOsItensConfirmados(t *testing.T) {

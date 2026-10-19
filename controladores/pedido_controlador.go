@@ -42,7 +42,8 @@ func (c *PedidoControlador) Inserir(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	temDescontoPixAvista := r.FormValue("desconto_pix_avista") == "on"
+	brinde := r.FormValue("pedido_brinde") == "on"
+	temDescontoPixAvista := !brinde && r.FormValue("desconto_pix_avista") == "on"
 	clienteID, erroCliente := strconv.Atoi(r.FormValue("cliente_id"))
 	produtoID, erroProduto := strconv.Atoi(r.FormValue("produto_id"))
 	if erroCliente != nil || erroProduto != nil {
@@ -60,7 +61,7 @@ func (c *PedidoControlador) Inserir(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	temDesconto := r.FormValue("tem_desconto") == "on"
+	temDesconto := !brinde && r.FormValue("tem_desconto") == "on"
 	percentualDesconto := 0.0
 	if temDesconto {
 		var erroPercentual error
@@ -70,7 +71,7 @@ func (c *PedidoControlador) Inserir(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
-	temPixParcelado := r.FormValue("pix_parcelado") == "on"
+	temPixParcelado := !brinde && r.FormValue("pix_parcelado") == "on"
 	temDescontoPixParcelado := r.FormValue("tem_desconto_pix_parcelado") == "on" && temPixParcelado
 	percentualDescontoPixParcelado := 0.0
 	if temDescontoPixParcelado {
@@ -82,6 +83,15 @@ func (c *PedidoControlador) Inserir(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	incluirBrinde := r.FormValue("incluir_brinde") == "on"
+	pedidoPrincipalID := 0
+	if brinde && r.FormValue("pedido_principal_id") != "" {
+		idPrincipal, err := strconv.Atoi(r.FormValue("pedido_principal_id"))
+		if err != nil || idPrincipal < 1 {
+			http.Error(w, "Selecione um pedido principal válido.", http.StatusBadRequest)
+			return
+		}
+		pedidoPrincipalID = idPrincipal
+	}
 
 	dataEntregaCalculada := calcularDataEntrega(dataPedido, prazoPadraoDiasUteis)
 	clientes, err := c.clienteDAO.BuscarTodos()
@@ -114,12 +124,20 @@ func (c *PedidoControlador) Inserir(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Cliente ou produto não encontrado.", http.StatusBadRequest)
 		return
 	}
-	mensagem := montarMensagemOrcamento(clienteNome, produtoNome, produtoPreco, prazoPadraoDiasUteis, dataEntregaCalculada, r.FormValue("linha_cores_nome"), r.FormValue("linha_cores_link"), temDesconto, percentualDesconto, temPixParcelado, incluirBrinde, temDescontoPixParcelado, percentualDescontoPixParcelado, temDescontoPixAvista)
+	status := modelos.StatusOrcamento
+	mensagem := ""
+	if brinde {
+		produtoPreco = 0
+		status = modelos.StatusEmProducao
+		mensagem = montarMensagemBrinde(clienteNome, produtoNome, pedidoPrincipalID, dataEntregaCalculada)
+	} else {
+		mensagem = montarMensagemOrcamento(clienteNome, produtoNome, produtoPreco, prazoPadraoDiasUteis, dataEntregaCalculada, r.FormValue("linha_cores_nome"), r.FormValue("linha_cores_link"), temDesconto, percentualDesconto, temPixParcelado, incluirBrinde, temDescontoPixParcelado, percentualDescontoPixParcelado, temDescontoPixAvista)
+	}
 
 	pedidoDTO := dtos.PedidoInputDTO{
 		ClienteID:         clienteID,
 		ProdutoID:         produtoID,
-		Status:            modelos.StatusOrcamento,
+		Status:            status,
 		DataPedido:        dataPedido.Format("2006-01-02"),
 		DiasPrazo:         prazoPadraoDiasUteis,
 		DataEntrega:       dataEntregaCalculada.Format("2006-01-02"),
@@ -130,10 +148,65 @@ func (c *PedidoControlador) Inserir(w http.ResponseWriter, r *http.Request) {
 		DescontoPix:       percentualDescontoPixParcelado,
 		DescontoPixAvista: temDescontoPixAvista,
 		PixParcelado:      temPixParcelado,
+		Brinde:            brinde,
+		PedidoPrincipalID: pedidoPrincipalID,
 	}
 
 	if _, err := c.dao.Inserir(pedidoDTO); err != nil {
+		if errors.Is(err, daos.ErrPedidoPrincipalNaoEncontrado) {
+			http.Error(w, "O pedido principal selecionado não existe.", http.StatusBadRequest)
+			return
+		}
+		if errors.Is(err, daos.ErrPedidoPrincipalInvalido) {
+			http.Error(w, "Um brinde não pode ser usado como pedido principal.", http.StatusBadRequest)
+			return
+		}
 		http.Error(w, "Erro ao registrar pedido.", http.StatusInternalServerError)
+		return
+	}
+	http.Redirect(w, r, "/pedidos", http.StatusSeeOther)
+}
+
+func montarMensagemBrinde(clienteNome string, produtoNome string, pedidoPrincipalID int, entrega time.Time) string {
+	relacao := ""
+	if pedidoPrincipalID > 0 {
+		relacao = fmt.Sprintf(" relacionado ao pedido #%d", pedidoPrincipalID)
+	}
+	return fmt.Sprintf(
+		"oi, %s! este pedido contém o brinde *%s*%s. Valor: %s. Previsão de entrega: %s.",
+		clienteNome, produtoNome, relacao, views.FormatarReais(0), entrega.Format("02/01/2006"))
+}
+
+func (c *PedidoControlador) Atualizar(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Método não permitido.", http.StatusMethodNotAllowed)
+		return
+	}
+	if err := r.ParseForm(); err != nil {
+		http.Error(w, "Erro ao processar formulário.", http.StatusBadRequest)
+		return
+	}
+	id, err := strconv.Atoi(r.FormValue("pedido_id"))
+	if err != nil || id < 1 {
+		http.Error(w, "Pedido inválido.", http.StatusBadRequest)
+		return
+	}
+	dataPedido := r.FormValue("data_pedido")
+	if _, err := time.Parse("2006-01-02", dataPedido); err != nil {
+		http.Error(w, "Informe uma data de pedido válida.", http.StatusBadRequest)
+		return
+	}
+	dataEntrega := r.FormValue("data_entrega")
+	if _, err := time.Parse("2006-01-02", dataEntrega); err != nil {
+		http.Error(w, "Informe uma data de entrega válida.", http.StatusBadRequest)
+		return
+	}
+	if err := c.dao.AtualizarDetalhes(id, dataPedido, dataEntrega, r.FormValue("observacoes")); err != nil {
+		if errors.Is(err, daos.ErrPedidoNaoEncontrado) {
+			http.NotFound(w, r)
+			return
+		}
+		http.Error(w, "Erro ao atualizar o pedido.", http.StatusInternalServerError)
 		return
 	}
 	http.Redirect(w, r, "/pedidos", http.StatusSeeOther)
