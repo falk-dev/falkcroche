@@ -27,17 +27,58 @@ document.getElementById("fechar-modal-pedido").addEventListener("click", () => m
 document.getElementById("cancelar-modal-pedido").addEventListener("click", () => modalPedido.close());
 
 const modalEditarPedido = document.getElementById("modal-editar-pedido");
+const checkboxEditarBrinde = document.getElementById("editar-pedido-brinde");
+const containerEditarPedidoPrincipal = document.getElementById("editar-pedido-principal-container");
+const selectEditarPedidoPrincipal = document.getElementById("editar-pedido-principal");
+const opcoesFinanceirasEditar = document.getElementById("editar-opcoes-financeiras");
+const avisoOpcoesBloqueadas = document.getElementById("editar-opcoes-bloqueadas");
+const atualizarOpcoesEdicao = (temPagamentos) => {
+    const brinde = checkboxEditarBrinde.checked;
+    containerEditarPedidoPrincipal.hidden = !brinde;
+    selectEditarPedidoPrincipal.disabled = !brinde;
+    document.getElementById("editar-opcoes-orcamento").hidden = brinde;
+    checkboxEditarBrinde.disabled = temPagamentos;
+    opcoesFinanceirasEditar.querySelectorAll("input").forEach((campo) => {
+        campo.disabled = temPagamentos;
+    });
+    avisoOpcoesBloqueadas.hidden = !temPagamentos;
+};
 document.querySelectorAll("[data-editar-pedido]").forEach((botao) => {
     botao.addEventListener("click", () => {
+        const temPagamentos = Number(botao.dataset.pagamentos) > 0;
         document.getElementById("editar-pedido-id").value = botao.dataset.id;
+        document.getElementById("editar-pedido-cliente").value = botao.dataset.clienteId;
+        document.getElementById("editar-pedido-produto").value = botao.dataset.produtoId;
         document.getElementById("editar-pedido-data").value = botao.dataset.dataPedido;
         document.getElementById("editar-pedido-entrega").value = botao.dataset.dataEntrega;
+        document.getElementById("editar-pedido-prazo").value = botao.dataset.diasPrazo;
         document.getElementById("editar-pedido-observacoes").value = botao.dataset.observacoes;
+        checkboxEditarBrinde.checked = botao.dataset.pedidoBrinde === "true";
+        selectEditarPedidoPrincipal.querySelectorAll("option[data-pedido-id]").forEach((opcao) => {
+            opcao.hidden = opcao.dataset.pedidoId === botao.dataset.id;
+        });
+        selectEditarPedidoPrincipal.value = botao.dataset.pedidoPrincipalId === "0" ? "" : botao.dataset.pedidoPrincipalId;
+        document.getElementById("editar-desconto-pix-avista").checked = botao.dataset.descontoPixAvista === "true";
+        document.getElementById("editar-tem-desconto-cartao").checked = Number(botao.dataset.descontoCartao) > 0;
+        document.getElementById("editar-percentual-desconto").value = botao.dataset.descontoCartao;
+        document.getElementById("editar-pix-parcelado").checked = botao.dataset.pixParcelado === "true";
+        document.getElementById("editar-tem-desconto-pix-parcelado").checked = Number(botao.dataset.descontoPix) > 0;
+        document.getElementById("editar-percentual-desconto-pix-parcelado").value = botao.dataset.descontoPix;
+        document.getElementById("editar-incluir-brinde").checked = botao.dataset.incluirBrinde === "true";
+        document.getElementById("editar-linha-cores-nome").value = botao.dataset.linhaCoresNome;
+        document.getElementById("editar-linha-cores-link").value = botao.dataset.linhaCoresLink;
+        atualizarOpcoesEdicao(temPagamentos);
         modalEditarPedido.showModal();
     });
 });
+checkboxEditarBrinde.addEventListener("change", () => atualizarOpcoesEdicao(false));
 document.getElementById("fechar-modal-editar-pedido").addEventListener("click", () => modalEditarPedido.close());
 document.getElementById("cancelar-modal-editar-pedido").addEventListener("click", () => modalEditarPedido.close());
+document.getElementById("form-editar-pedido").addEventListener("submit", (evento) => {
+    if (!window.confirm("Salvar as alterações do pedido e atualizar o orçamento conforme as opções escolhidas?")) {
+        evento.preventDefault();
+    }
+});
 
 function configurarBusca(tipo) {
     const campo = document.getElementById(tipo + "-campo");

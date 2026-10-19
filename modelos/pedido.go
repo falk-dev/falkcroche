@@ -50,6 +50,9 @@ type Pedido struct {
 	DataEntrega       string
 	Observacoes       string
 	MensagemOrcamento string
+	LinhaCoresNome    string
+	LinhaCoresLink    string
+	IncluirBrinde     bool
 	PrecoBase         float64
 	DescontoCartao    float64
 	DescontoPix       float64

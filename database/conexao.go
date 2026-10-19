@@ -73,6 +73,9 @@ func criarTabelas(db *sql.DB) {
 		forma_pagamento TEXT NOT NULL DEFAULT '',
 		total_acordado REAL NOT NULL DEFAULT 0,
 		brinde BOOLEAN NOT NULL DEFAULT 0,
+		incluir_brinde BOOLEAN NOT NULL DEFAULT 0,
+		linha_cores_nome TEXT NOT NULL DEFAULT '',
+		linha_cores_link TEXT NOT NULL DEFAULT '',
 		pedido_principal_id INTEGER,
 		FOREIGN KEY (cliente_id) REFERENCES clientes(id),
 		FOREIGN KEY (produto_id) REFERENCES produtos(id),
@@ -182,6 +185,9 @@ func migrarColunasPedidos(db *sql.DB) {
 		"forma_pagamento":     `ALTER TABLE pedidos ADD COLUMN forma_pagamento TEXT NOT NULL DEFAULT ''`,
 		"total_acordado":      `ALTER TABLE pedidos ADD COLUMN total_acordado REAL NOT NULL DEFAULT 0`,
 		"brinde":              `ALTER TABLE pedidos ADD COLUMN brinde BOOLEAN NOT NULL DEFAULT 0`,
+		"incluir_brinde":      `ALTER TABLE pedidos ADD COLUMN incluir_brinde BOOLEAN NOT NULL DEFAULT 0`,
+		"linha_cores_nome":    `ALTER TABLE pedidos ADD COLUMN linha_cores_nome TEXT NOT NULL DEFAULT ''`,
+		"linha_cores_link":    `ALTER TABLE pedidos ADD COLUMN linha_cores_link TEXT NOT NULL DEFAULT ''`,
 		"pedido_principal_id": `ALTER TABLE pedidos ADD COLUMN pedido_principal_id INTEGER REFERENCES pedidos(id)`,
 	}
 	for coluna, alteracao := range colunas {
@@ -203,6 +209,10 @@ func migrarColunasPedidos(db *sql.DB) {
 				encontrada = true
 				break
 			}
+		}
+		if err := linhas.Err(); err != nil {
+			linhas.Close()
+			log.Fatalf("Erro ao ler colunas de pedidos: %v", err)
 		}
 		if err := linhas.Close(); err != nil {
 			log.Fatalf("Erro ao fechar verificação de colunas de pedidos: %v", err)

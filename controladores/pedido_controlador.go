@@ -143,12 +143,15 @@ func (c *PedidoControlador) Inserir(w http.ResponseWriter, r *http.Request) {
 		DataEntrega:       dataEntregaCalculada.Format("2006-01-02"),
 		Observacoes:       r.FormValue("observacoes"),
 		MensagemOrcamento: mensagem,
+		LinhaCoresNome:    r.FormValue("linha_cores_nome"),
+		LinhaCoresLink:    r.FormValue("linha_cores_link"),
 		PrecoBase:         produtoPreco,
 		DescontoCartao:    percentualDesconto,
 		DescontoPix:       percentualDescontoPixParcelado,
 		DescontoPixAvista: temDescontoPixAvista,
 		PixParcelado:      temPixParcelado,
 		Brinde:            brinde,
+		IncluirBrinde:     incluirBrinde,
 		PedidoPrincipalID: pedidoPrincipalID,
 	}
 
@@ -191,6 +194,71 @@ func (c *PedidoControlador) Atualizar(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Pedido inválido.", http.StatusBadRequest)
 		return
 	}
+	pedidos, err := c.dao.BuscarTodos()
+	if err != nil {
+		http.Error(w, "Erro ao buscar pedido.", http.StatusInternalServerError)
+		return
+	}
+	var pedidoAtual modelos.Pedido
+	for _, pedido := range pedidos {
+		if pedido.ID == id {
+			pedidoAtual = pedido
+			break
+		}
+	}
+	if pedidoAtual.ID == 0 {
+		http.NotFound(w, r)
+		return
+	}
+	clienteID, err := strconv.Atoi(r.FormValue("cliente_id"))
+	if err != nil || clienteID < 1 {
+		http.Error(w, "Selecione um cliente válido.", http.StatusBadRequest)
+		return
+	}
+	produtoID, err := strconv.Atoi(r.FormValue("produto_id"))
+	if err != nil || produtoID < 1 {
+		http.Error(w, "Selecione um produto válido.", http.StatusBadRequest)
+		return
+	}
+	diasPrazo, err := strconv.Atoi(r.FormValue("dias_prazo"))
+	if err != nil || diasPrazo < 1 {
+		http.Error(w, "Informe um prazo válido.", http.StatusBadRequest)
+		return
+	}
+	clientes, err := c.clienteDAO.BuscarTodos()
+	if err != nil {
+		http.Error(w, "Erro ao buscar clientes.", http.StatusInternalServerError)
+		return
+	}
+	clienteNome := ""
+	for _, cliente := range clientes {
+		if cliente.ID == clienteID {
+			clienteNome = cliente.Nome
+			break
+		}
+	}
+	if clienteNome == "" {
+		http.Error(w, "Cliente não encontrado.", http.StatusBadRequest)
+		return
+	}
+	produtos, err := c.produtoDAO.BuscarTodos()
+	if err != nil {
+		http.Error(w, "Erro ao buscar produtos.", http.StatusInternalServerError)
+		return
+	}
+	var produtoNome string
+	var produtoPreco float64
+	for _, produto := range produtos {
+		if produto.ID == produtoID {
+			produtoNome = produto.NomePeca
+			produtoPreco = produto.Preco
+			break
+		}
+	}
+	if produtoNome == "" {
+		http.Error(w, "Produto não encontrado.", http.StatusBadRequest)
+		return
+	}
 	dataPedido := r.FormValue("data_pedido")
 	if _, err := time.Parse("2006-01-02", dataPedido); err != nil {
 		http.Error(w, "Informe uma data de pedido válida.", http.StatusBadRequest)
@@ -201,9 +269,97 @@ func (c *PedidoControlador) Atualizar(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Informe uma data de entrega válida.", http.StatusBadRequest)
 		return
 	}
-	if err := c.dao.AtualizarDetalhes(id, dataPedido, dataEntrega, r.FormValue("observacoes")); err != nil {
+	temPagamentos := len(pedidoAtual.Pagamentos) > 0
+	brinde := pedidoAtual.Brinde
+	if !temPagamentos {
+		brinde = r.FormValue("pedido_brinde") == "on"
+	}
+	pedidoPrincipalID := pedidoAtual.PedidoPrincipalID
+	if !brinde {
+		pedidoPrincipalID = 0
+	} else if !temPagamentos {
+		pedidoPrincipalID = 0
+		if valor := r.FormValue("pedido_principal_id"); valor != "" {
+			pedidoPrincipalID, err = strconv.Atoi(valor)
+			if err != nil || pedidoPrincipalID < 1 {
+				http.Error(w, "Selecione um pedido principal válido.", http.StatusBadRequest)
+				return
+			}
+		}
+	}
+
+	descontoCartao := pedidoAtual.DescontoCartao
+	descontoPix := pedidoAtual.DescontoPix
+	descontoPixAvista := pedidoAtual.DescontoPixAvista
+	pixParcelado := pedidoAtual.PixParcelado
+	precoBase := pedidoAtual.PrecoBase
+	incluirBrinde := pedidoAtual.IncluirBrinde
+	if !temPagamentos {
+		descontoCartao = 0
+		descontoPix = 0
+		descontoPixAvista = r.FormValue("desconto_pix_avista") == "on"
+		pixParcelado = r.FormValue("pix_parcelado") == "on"
+		incluirBrinde = r.FormValue("incluir_brinde") == "on"
+		if !brinde {
+			precoBase = produtoPreco
+			if r.FormValue("tem_desconto") == "on" {
+				descontoCartao, err = strconv.ParseFloat(r.FormValue("percentual_desconto"), 64)
+				if err != nil || descontoCartao <= 0 || descontoCartao > 100 || math.IsNaN(descontoCartao) || math.IsInf(descontoCartao, 0) {
+					http.Error(w, "Informe um percentual de desconto no cartão entre 0 e 100.", http.StatusBadRequest)
+					return
+				}
+			}
+			if pixParcelado && r.FormValue("tem_desconto_pix_parcelado") == "on" {
+				descontoPix, err = strconv.ParseFloat(r.FormValue("percentual_desconto_pix_parcelado"), 64)
+				if err != nil || descontoPix <= 0 || descontoPix > 100 || math.IsNaN(descontoPix) || math.IsInf(descontoPix, 0) {
+					http.Error(w, "Informe um percentual de desconto no Pix parcelado entre 0 e 100.", http.StatusBadRequest)
+					return
+				}
+			}
+		} else {
+			precoBase = 0
+			descontoCartao = 0
+			descontoPix = 0
+			descontoPixAvista = false
+			pixParcelado = false
+		}
+	}
+
+	linhaCoresNome := r.FormValue("linha_cores_nome")
+	linhaCoresLink := r.FormValue("linha_cores_link")
+	dataPedidoParsed, _ := time.Parse("2006-01-02", dataPedido)
+	dataEntregaParsed, _ := time.Parse("2006-01-02", dataEntrega)
+	mensagemOrcamento := ""
+	if brinde {
+		mensagemOrcamento = montarMensagemBrinde(clienteNome, produtoNome, pedidoPrincipalID, dataEntregaParsed)
+	} else {
+		precoMensagem := precoBase
+		if temPagamentos && precoBase == 0 {
+			precoMensagem = produtoPreco
+		}
+		mensagemOrcamento = montarMensagemOrcamento(clienteNome, produtoNome, precoMensagem, diasPrazo, dataEntregaParsed,
+			linhaCoresNome, linhaCoresLink, descontoCartao > 0, descontoCartao, pixParcelado, incluirBrinde,
+			descontoPix > 0, descontoPix, descontoPixAvista)
+	}
+	pedidoEdicao := dtos.PedidoEdicaoDTO{
+		ClienteID: clienteID, ProdutoID: produtoID, DataPedido: dataPedidoParsed.Format("2006-01-02"),
+		DiasPrazo: diasPrazo, DataEntrega: dataEntregaParsed.Format("2006-01-02"), Observacoes: r.FormValue("observacoes"),
+		MensagemOrcamento: mensagemOrcamento, LinhaCoresNome: linhaCoresNome, LinhaCoresLink: linhaCoresLink,
+		PrecoBase: precoBase, DescontoCartao: descontoCartao, DescontoPix: descontoPix,
+		DescontoPixAvista: descontoPixAvista, PixParcelado: pixParcelado, Brinde: brinde,
+		IncluirBrinde: incluirBrinde, PedidoPrincipalID: pedidoPrincipalID,
+	}
+	if err := c.dao.AtualizarDetalhes(id, pedidoEdicao); err != nil {
 		if errors.Is(err, daos.ErrPedidoNaoEncontrado) {
 			http.NotFound(w, r)
+			return
+		}
+		if errors.Is(err, daos.ErrPedidoPrincipalNaoEncontrado) || errors.Is(err, daos.ErrPedidoPrincipalInvalido) {
+			http.Error(w, "Pedido principal inválido.", http.StatusBadRequest)
+			return
+		}
+		if errors.Is(err, daos.ErrCondicoesPedidoBloqueadas) {
+			http.Error(w, "Não é possível alterar as condições deste pedido depois que os pagamentos foram gerados.", http.StatusConflict)
 			return
 		}
 		http.Error(w, "Erro ao atualizar o pedido.", http.StatusInternalServerError)

@@ -18,6 +18,7 @@ var ErrPagamentoJaRecebido = errors.New("pagamento já recebido")
 var ErrPedidoNaoEncontrado = errors.New("pedido não encontrado")
 var ErrPedidoPrincipalNaoEncontrado = errors.New("pedido principal não encontrado")
 var ErrPedidoPrincipalInvalido = errors.New("o pedido principal não pode ser um brinde")
+var ErrCondicoesPedidoBloqueadas = errors.New("as condições financeiras do pedido não podem ser alteradas após gerar pagamentos")
 var ErrFormaPagamentoInvalida = errors.New("forma de pagamento inválida")
 var ErrPixParceladoNaoOferecido = errors.New("Pix parcelado não foi oferecido neste orçamento")
 var ErrNumeroParcelasInvalido = errors.New("número de parcelas inválido")
@@ -52,16 +53,17 @@ func (dao *PedidoDAO) Inserir(pedido dtos.PedidoInputDTO) (int, error) {
 		pedido.DescontoPix = 0
 		pedido.DescontoPixAvista = false
 		pedido.PixParcelado = false
+		pedido.IncluirBrinde = false
 	} else {
 		pedido.PedidoPrincipalID = 0
 	}
-	query := `INSERT INTO pedidos (cliente_id, produto_id, status, data_pedido, dias_prazo, data_entrega, observacoes, mensagem_orcamento, preco_base, desconto_cartao, desconto_pix, desconto_pix_avista, pix_parcelado, brinde, pedido_principal_id)
-			  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NULLIF(?, 0))`
+	query := `INSERT INTO pedidos (cliente_id, produto_id, status, data_pedido, dias_prazo, data_entrega, observacoes, mensagem_orcamento, linha_cores_nome, linha_cores_link, preco_base, desconto_cartao, desconto_pix, desconto_pix_avista, pix_parcelado, brinde, incluir_brinde, pedido_principal_id)
+			  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NULLIF(?, 0))`
 
 	resultado, err := dao.db.Exec(query, pedido.ClienteID, pedido.ProdutoID, pedido.Status,
-		pedido.DataPedido, pedido.DiasPrazo, pedido.DataEntrega, pedido.Observacoes, pedido.MensagemOrcamento,
+		pedido.DataPedido, pedido.DiasPrazo, pedido.DataEntrega, pedido.Observacoes, pedido.MensagemOrcamento, pedido.LinhaCoresNome, pedido.LinhaCoresLink,
 		pedido.PrecoBase, pedido.DescontoCartao, pedido.DescontoPix, pedido.DescontoPixAvista, pedido.PixParcelado,
-		pedido.Brinde, pedido.PedidoPrincipalID)
+		pedido.Brinde, pedido.IncluirBrinde, pedido.PedidoPrincipalID)
 	if err != nil {
 		log.Printf("Erro ao inserir pedido: %v", err)
 		return 0, err
@@ -75,9 +77,68 @@ func (dao *PedidoDAO) Inserir(pedido dtos.PedidoInputDTO) (int, error) {
 	return int(id), nil
 }
 
-func (dao *PedidoDAO) AtualizarDetalhes(id int, dataPedido string, dataEntrega string, observacoes string) error {
-	resultado, err := dao.db.Exec(`UPDATE pedidos SET data_pedido = ?, data_entrega = ?, observacoes = ? WHERE id = ?`,
-		dataPedido, dataEntrega, observacoes, id)
+func (dao *PedidoDAO) AtualizarDetalhes(id int, pedido dtos.PedidoEdicaoDTO) error {
+	tx, err := dao.db.Begin()
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+
+	var status string
+	var brindeAtual, descontoPixAvistaAtual, pixParceladoAtual bool
+	var precoBaseAtual, descontoCartaoAtual, descontoPixAtual float64
+	if err := tx.QueryRow(`SELECT status, brinde, preco_base, desconto_cartao, desconto_pix, desconto_pix_avista, pix_parcelado
+		FROM pedidos WHERE id = ?`, id).Scan(&status, &brindeAtual, &precoBaseAtual, &descontoCartaoAtual,
+		&descontoPixAtual, &descontoPixAvistaAtual, &pixParceladoAtual); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return ErrPedidoNaoEncontrado
+		}
+		return err
+	}
+	var quantidadePagamentos int
+	if err := tx.QueryRow(`SELECT COUNT(*) FROM pagamentos WHERE pedido_id = ?`, id).Scan(&quantidadePagamentos); err != nil {
+		return err
+	}
+	if quantidadePagamentos > 0 && (pedido.Brinde != brindeAtual || pedido.DescontoCartao != descontoCartaoAtual ||
+		pedido.DescontoPix != descontoPixAtual || pedido.DescontoPixAvista != descontoPixAvistaAtual ||
+		pedido.PixParcelado != pixParceladoAtual || pedido.PrecoBase != precoBaseAtual) {
+		return ErrCondicoesPedidoBloqueadas
+	}
+	if pedido.Brinde {
+		pedido.PrecoBase = 0
+		pedido.DescontoCartao = 0
+		pedido.DescontoPix = 0
+		pedido.DescontoPixAvista = false
+		pedido.PixParcelado = false
+	} else {
+		pedido.PedidoPrincipalID = 0
+	}
+	if pedido.Brinde && pedido.PedidoPrincipalID > 0 {
+		if pedido.PedidoPrincipalID == id {
+			return ErrPedidoPrincipalInvalido
+		}
+		var principalBrinde bool
+		if err := tx.QueryRow(`SELECT brinde FROM pedidos WHERE id = ?`, pedido.PedidoPrincipalID).Scan(&principalBrinde); err != nil {
+			if errors.Is(err, sql.ErrNoRows) {
+				return ErrPedidoPrincipalNaoEncontrado
+			}
+			return err
+		}
+		if principalBrinde {
+			return ErrPedidoPrincipalInvalido
+		}
+	}
+	statusAtualizado := status
+	if !brindeAtual && pedido.Brinde && status == modelos.StatusOrcamento {
+		statusAtualizado = modelos.StatusEmProducao
+	} else if brindeAtual && !pedido.Brinde && status == modelos.StatusEmProducao {
+		statusAtualizado = modelos.StatusOrcamento
+	}
+	resultado, err := tx.Exec(`UPDATE pedidos SET cliente_id = ?, produto_id = ?, status = ?, data_pedido = ?, dias_prazo = ?, data_entrega = ?, observacoes = ?, mensagem_orcamento = ?, linha_cores_nome = ?, linha_cores_link = ?, preco_base = ?, desconto_cartao = ?, desconto_pix = ?, desconto_pix_avista = ?, pix_parcelado = ?, brinde = ?, incluir_brinde = ?, pedido_principal_id = NULLIF(?, 0) WHERE id = ?`,
+		pedido.ClienteID, pedido.ProdutoID, statusAtualizado, pedido.DataPedido, pedido.DiasPrazo, pedido.DataEntrega,
+		pedido.Observacoes, pedido.MensagemOrcamento, pedido.LinhaCoresNome, pedido.LinhaCoresLink, pedido.PrecoBase,
+		pedido.DescontoCartao, pedido.DescontoPix, pedido.DescontoPixAvista, pedido.PixParcelado, pedido.Brinde,
+		pedido.IncluirBrinde, pedido.PedidoPrincipalID, id)
 	if err != nil {
 		return err
 	}
@@ -88,11 +149,11 @@ func (dao *PedidoDAO) AtualizarDetalhes(id int, dataPedido string, dataEntrega s
 	if afetadas == 0 {
 		return ErrPedidoNaoEncontrado
 	}
-	return nil
+	return tx.Commit()
 }
 
 func (dao *PedidoDAO) BuscarTodos() ([]modelos.Pedido, error) {
-	query := `SELECT id, cliente_id, produto_id, status, data_pedido, dias_prazo, data_entrega, COALESCE(observacoes, ''), COALESCE(mensagem_orcamento, ''), preco_base, desconto_cartao, desconto_pix, desconto_pix_avista, pix_parcelado, forma_pagamento, total_acordado, brinde, COALESCE(pedido_principal_id, 0)
+	query := `SELECT id, cliente_id, produto_id, status, data_pedido, dias_prazo, data_entrega, COALESCE(observacoes, ''), COALESCE(mensagem_orcamento, ''), COALESCE(linha_cores_nome, ''), COALESCE(linha_cores_link, ''), preco_base, desconto_cartao, desconto_pix, desconto_pix_avista, pix_parcelado, forma_pagamento, total_acordado, brinde, incluir_brinde, COALESCE(pedido_principal_id, 0)
 		FROM pedidos ORDER BY id DESC`
 
 	linhas, err := dao.db.Query(query)
@@ -107,9 +168,9 @@ func (dao *PedidoDAO) BuscarTodos() ([]modelos.Pedido, error) {
 	for linhas.Next() {
 		var p modelos.Pedido
 		err := linhas.Scan(&p.ID, &p.ClienteID, &p.ProdutoID, &p.Status,
-			&p.DataPedido, &p.DiasPrazo, &p.DataEntrega, &p.Observacoes, &p.MensagemOrcamento,
+			&p.DataPedido, &p.DiasPrazo, &p.DataEntrega, &p.Observacoes, &p.MensagemOrcamento, &p.LinhaCoresNome, &p.LinhaCoresLink,
 			&p.PrecoBase, &p.DescontoCartao, &p.DescontoPix, &p.DescontoPixAvista, &p.PixParcelado, &p.FormaPagamento, &p.TotalAcordado,
-			&p.Brinde, &p.PedidoPrincipalID)
+			&p.Brinde, &p.IncluirBrinde, &p.PedidoPrincipalID)
 		if err != nil {
 			log.Printf("Erro ao ler pedido: %v", err)
 			return nil, err

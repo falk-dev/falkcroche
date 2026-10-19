@@ -189,32 +189,107 @@ templ PedidosLista(pedidos []modelos.Pedido, clientes []modelos.Cliente, produto
 
 	<dialog id="modal-editar-pedido"
 		class="w-[min(38rem,calc(100%-2rem))] max-w-none rounded-2xl border-0 p-0 shadow-2xl backdrop:bg-[#2b1719]/50">
-		<div class="bg-white p-4 sm:p-8">
+		<div class="max-h-[90vh] overflow-y-auto bg-white p-4 sm:p-8">
 			<div class="mb-6 flex items-start justify-between gap-4">
 				<div>
 					<p class="mb-1 text-sm font-semibold text-[#c17f6b]">Pedido</p>
 					<h3 class="text-2xl font-serif font-bold text-[#5a262c]">Editar pedido</h3>
-					<p class="mt-1 text-sm text-[#5a262c]/70">A edição não altera os valores acordados nem as parcelas.</p>
+					<p class="mt-1 text-sm text-[#5a262c]/70">Pedidos com pagamentos mantêm as condições financeiras registradas.</p>
 				</div>
 				<button id="fechar-modal-editar-pedido" type="button" aria-label="Fechar"
 					class="rounded-full px-3 py-1 text-2xl text-[#5a262c]/60 hover:bg-[#ffeae8]">&times;</button>
 			</div>
 			<form id="form-editar-pedido" method="POST" action="/pedidos/atualizar" class="space-y-5">
 				<input id="editar-pedido-id" type="hidden" name="pedido_id" />
+				<div>
+					<label for="editar-pedido-cliente" class="mb-1.5 block text-sm font-semibold">Cliente</label>
+					<select id="editar-pedido-cliente" name="cliente_id" required
+						class="w-full rounded-lg border border-[#e8d5c4] bg-[#fcf9f8] px-3 py-3 outline-none focus:border-[#5a262c] focus:ring-2 focus:ring-[#5a262c]/20">
+						for _, cliente := range clientes {
+						<option value={ fmt.Sprintf("%d", cliente.ID) }>{ cliente.Nome }</option>
+						}
+					</select>
+				</div>
+				<div>
+					<label for="editar-pedido-produto" class="mb-1.5 block text-sm font-semibold">Produto</label>
+					<select id="editar-pedido-produto" name="produto_id" required
+						class="w-full rounded-lg border border-[#e8d5c4] bg-[#fcf9f8] px-3 py-3 outline-none focus:border-[#5a262c] focus:ring-2 focus:ring-[#5a262c]/20">
+						for _, produto := range produtos {
+						<option value={ fmt.Sprintf("%d", produto.ID) }>{ produto.NomePeca }</option>
+						}
+					</select>
+				</div>
+				<label for="editar-pedido-brinde" class="flex items-start gap-2 rounded-lg border border-[#e8d5c4] p-4 text-sm font-semibold">
+					<input id="editar-pedido-brinde" name="pedido_brinde" type="checkbox" class="mt-0.5 size-4 shrink-0 accent-[#5a262c]" />
+					<span>Este pedido é um brinde: valor R$ 0,00 e sem cobrança.</span>
+				</label>
+				<div id="editar-pedido-principal-container" hidden>
+					<label for="editar-pedido-principal" class="mb-1.5 block text-sm font-semibold">Pedido principal (opcional)</label>
+					<select id="editar-pedido-principal" name="pedido_principal_id" disabled
+						class="w-full rounded-lg border border-[#e8d5c4] bg-[#fcf9f8] px-3 py-3 outline-none focus:border-[#5a262c] focus:ring-2 focus:ring-[#5a262c]/20">
+						<option value="">Sem vínculo com outro pedido</option>
+						for _, principal := range pedidos {
+						if !principal.Brinde {
+						<option value={ fmt.Sprintf("%d", principal.ID) } data-pedido-id={ fmt.Sprintf("%d", principal.ID) }>{ fmt.Sprintf("#%d · %s · %s", principal.ID, obterNomeCliente(principal.ClienteID, clientes), obterNomeProduto(principal.ProdutoID, produtos)) }</option>
+						}
+						}
+					</select>
+				</div>
+				<fieldset id="editar-opcoes-orcamento" class="space-y-3 rounded-lg border border-[#e8d5c4] p-4">
+					<legend class="px-1 text-sm font-bold text-[#5a262c]">Opções do orçamento</legend>
+					<div id="editar-opcoes-financeiras" class="space-y-3">
+						<label for="editar-desconto-pix-avista" class="flex items-center gap-2 text-sm font-semibold">
+							<input id="editar-desconto-pix-avista" name="desconto_pix_avista" type="checkbox" class="size-4 shrink-0 accent-[#5a262c]" />
+							<span>Aplicar desconto de 10% no Pix à vista</span>
+						</label>
+						<div class="flex flex-wrap items-center gap-3">
+							<label for="editar-tem-desconto-cartao" class="flex items-center gap-2 text-sm font-semibold">
+								<input id="editar-tem-desconto-cartao" name="tem_desconto" type="checkbox" class="size-4 shrink-0 accent-[#5a262c]" />
+								<span>Desconto no cartão</span>
+							</label>
+							<label for="editar-percentual-desconto" class="text-sm">Percentual</label>
+							<input id="editar-percentual-desconto" name="percentual_desconto" type="number" min="0.01" max="100" step="0.01" class="w-24 rounded-md border border-[#e8d5c4] bg-[#fcf9f8] px-2 py-1.5" />
+							<span class="text-sm font-semibold">%</span>
+						</div>
+						<label for="editar-pix-parcelado" class="flex items-start gap-2 text-sm font-semibold">
+							<input id="editar-pix-parcelado" name="pix_parcelado" type="checkbox" class="mt-0.5 size-4 shrink-0 accent-[#5a262c]" />
+							<span>Oferecer Pix parcelado (30% de sinal + até 3 parcelas)</span>
+						</label>
+						<div class="flex flex-wrap items-center gap-3 border-l-2 border-[#e8d5c4] pl-4">
+							<label for="editar-tem-desconto-pix-parcelado" class="flex items-center gap-2 text-sm">
+								<input id="editar-tem-desconto-pix-parcelado" name="tem_desconto_pix_parcelado" type="checkbox" class="size-4 shrink-0 accent-[#5a262c]" />
+								<span>Desconto no Pix parcelado</span>
+							</label>
+							<label for="editar-percentual-desconto-pix-parcelado" class="text-sm">Percentual</label>
+							<input id="editar-percentual-desconto-pix-parcelado" name="percentual_desconto_pix_parcelado" type="number" min="0.01" max="100" step="0.01" class="w-24 rounded-md border border-[#e8d5c4] bg-[#fcf9f8] px-2 py-1.5" />
+							<span class="text-sm font-semibold">%</span>
+						</div>
+					</div>
+					<label for="editar-incluir-brinde" class="flex items-center gap-2 text-sm font-semibold">
+						<input id="editar-incluir-brinde" name="incluir_brinde" type="checkbox" class="size-4 shrink-0 accent-[#5a262c]" />
+						<span>Incluir brinde pequeno nas cores escolhidas</span>
+					</label>
+					<p id="editar-opcoes-bloqueadas" class="text-xs text-[#5a262c]/60" hidden>As condições financeiras não podem ser alteradas depois que pagamentos forem gerados.</p>
+				</fieldset>
 				<div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
 					<div>
-						<label for="editar-pedido-data" class="mb-1.5 block text-sm font-semibold">Data do pedido</label>
-						<input id="editar-pedido-data" name="data_pedido" type="date" required
-							class="w-full rounded-lg border border-[#e8d5c4] bg-[#fcf9f8] px-3 py-3 outline-none focus:border-[#5a262c] focus:ring-2 focus:ring-[#5a262c]/20" />
+						<label for="editar-linha-cores-nome" class="mb-1.5 block text-sm font-semibold">Linha de fios para este orçamento</label>
+						<input id="editar-linha-cores-nome" name="linha_cores_nome" type="text" class="w-full rounded-lg border border-[#e8d5c4] bg-[#fcf9f8] px-3 py-3" />
 					</div>
 					<div>
-						<label for="editar-pedido-entrega" class="mb-1.5 block text-sm font-semibold">Data de entrega</label>
-						<input id="editar-pedido-entrega" name="data_entrega" type="date" required
-							class="w-full rounded-lg border border-[#e8d5c4] bg-[#fcf9f8] px-3 py-3 outline-none focus:border-[#5a262c] focus:ring-2 focus:ring-[#5a262c]/20" />
+						<label for="editar-linha-cores-link" class="mb-1.5 block text-sm font-semibold">Link da tabela oficial de cores</label>
+						<input id="editar-linha-cores-link" name="linha_cores_link" type="url" class="w-full rounded-lg border border-[#e8d5c4] bg-[#fcf9f8] px-3 py-3" />
 					</div>
 				</div>
 				<div>
-					<label for="editar-pedido-observacoes" class="mb-1.5 block text-sm font-semibold">Observações</label>
+					<label for="editar-pedido-data" class="mb-1.5 block text-sm font-semibold">Data do pedido</label>
+					<input id="editar-pedido-data" name="data_pedido" type="date" required
+						class="w-full rounded-lg border border-[#e8d5c4] bg-[#fcf9f8] px-3 py-3 outline-none focus:border-[#5a262c] focus:ring-2 focus:ring-[#5a262c]/20" />
+					<input id="editar-pedido-entrega" name="data_entrega" type="hidden" />
+					<input id="editar-pedido-prazo" name="dias_prazo" type="hidden" />
+				</div>
+				<div>
+					<label for="editar-pedido-observacoes" class="mb-1.5 block text-sm font-semibold">Detalhes do pedido</label>
 					<textarea id="editar-pedido-observacoes" name="observacoes" rows="4"
 						class="w-full rounded-lg border border-[#e8d5c4] bg-[#fcf9f8] px-3 py-3 outline-none focus:border-[#5a262c] focus:ring-2 focus:ring-[#5a262c]/20"></textarea>
 				</div>
@@ -240,28 +315,14 @@ templ PedidosLista(pedidos []modelos.Pedido, clientes []modelos.Cliente, produto
 					<th class="p-5 font-bold text-[#5a262c]">Entrega</th>
 					<th class="p-5 font-bold text-[#5a262c]">Pagamentos</th>
 					<th class="p-5 font-bold text-[#5a262c]">Fluxo do pedido</th>
+					<th class="p-5 font-bold text-[#5a262c]">Ações</th>
 				</tr>
 			</thead>
 			<tbody class="divide-y divide-[#e8d5c4]/50">
 				for _, p := range pedidos {
 				<tr id={ "pedido-" + fmt.Sprintf("%d", p.ID) } class="transition-colors hover:bg-[#ffeae8]/20">
 					<td class="p-5 text-[#5a262c] font-bold">
-						<div class="flex items-center gap-2">
-							<span>#{ fmt.Sprintf("%d", p.ID) }</span>
-							<button type="button" data-editar-pedido data-id={ fmt.Sprintf("%d", p.ID) }
-								data-data-pedido={ p.DataPedido } data-data-entrega={ p.DataEntrega }
-								data-observacoes={ p.Observacoes } title={ "Editar pedido " + fmt.Sprintf("%d", p.ID) }
-								aria-label={ "Editar pedido " + fmt.Sprintf("%d", p.ID) }
-								class="grid size-9 shrink-0 place-items-center rounded-lg border border-[#e8d5c4] bg-white text-sm hover:bg-[#ffeae8]">Editar</button>
-							<button type="button" data-copiar-orcamento data-pedido-id={ fmt.Sprintf("%d", p.ID) }
-								title="Copiar orçamento do pedido" aria-label={ "Copiar orçamento do pedido " +
-								fmt.Sprintf("%d", p.ID) }
-								class="grid size-9 shrink-0 place-items-center rounded-lg border border-[#e8d5c4] bg-white text-lg hover:bg-[#ffeae8]">📋</button>
-						</div>
-						<textarea id={ "mensagem-orcamento-" + fmt.Sprintf("%d", p.ID) } readonly
-							hidden>{ p.MensagemOrcamento }</textarea>
-						<span id={ "status-copia-orcamento-" + fmt.Sprintf("%d", p.ID) } class="sr-only"
-							aria-live="polite"></span>
+						#{ fmt.Sprintf("%d", p.ID) }
 					</td>
 					<td class="whitespace-nowrap p-5 text-sm text-[#5a262c]/80">{ formatarDataPedido(p.DataPedido) }</td>
 					<td class="p-5">
@@ -419,6 +480,34 @@ templ PedidosLista(pedidos []modelos.Pedido, clientes []modelos.Cliente, produto
 							}
 							}
 						</div>
+					</td>
+					<td class="p-5">
+						<div class="flex items-center gap-2">
+							<button type="button" data-editar-pedido data-id={ fmt.Sprintf("%d", p.ID) }
+								data-data-pedido={ p.DataPedido } data-data-entrega={ p.DataEntrega }
+								data-observacoes={ p.Observacoes } data-cliente-id={ fmt.Sprintf("%d", p.ClienteID) }
+								data-produto-id={ fmt.Sprintf("%d", p.ProdutoID) } data-dias-prazo={ fmt.Sprintf("%d", p.DiasPrazo) }
+								data-pedido-brinde={ fmt.Sprintf("%t", p.Brinde) }
+								data-pedido-principal-id={ fmt.Sprintf("%d", p.PedidoPrincipalID) }
+								data-desconto-cartao={ fmt.Sprintf("%g", p.DescontoCartao) }
+								data-desconto-pix={ fmt.Sprintf("%g", p.DescontoPix) }
+								data-desconto-pix-avista={ fmt.Sprintf("%t", p.DescontoPixAvista) }
+								data-pix-parcelado={ fmt.Sprintf("%t", p.PixParcelado) }
+								data-incluir-brinde={ fmt.Sprintf("%t", p.IncluirBrinde) }
+								data-linha-cores-nome={ p.LinhaCoresNome } data-linha-cores-link={ p.LinhaCoresLink }
+								data-pagamentos={ fmt.Sprintf("%d", len(p.Pagamentos)) }
+								title={ "Editar pedido " + fmt.Sprintf("%d", p.ID) }
+								aria-label={ "Editar pedido " + fmt.Sprintf("%d", p.ID) }
+								class="grid size-9 shrink-0 place-items-center rounded-lg border border-[#e8d5c4] bg-white text-lg hover:bg-[#ffeae8]">✏️</button>
+							<button type="button" data-copiar-orcamento data-pedido-id={ fmt.Sprintf("%d", p.ID) }
+								title="Copiar orçamento do pedido" aria-label={ "Copiar orçamento do pedido " +
+								fmt.Sprintf("%d", p.ID) }
+								class="grid size-9 shrink-0 place-items-center rounded-lg border border-[#e8d5c4] bg-white text-lg hover:bg-[#ffeae8]">📋</button>
+						</div>
+						<textarea id={ "mensagem-orcamento-" + fmt.Sprintf("%d", p.ID) } readonly
+							hidden>{ p.MensagemOrcamento }</textarea>
+						<span id={ "status-copia-orcamento-" + fmt.Sprintf("%d", p.ID) } class="sr-only"
+							aria-live="polite"></span>
 					</td>
 				</tr>
 				}

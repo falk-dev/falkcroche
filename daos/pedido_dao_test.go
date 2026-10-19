@@ -32,6 +32,8 @@ func TestPedidoAgendaERegistraRecebimentosSeparadamente(t *testing.T) {
 			data_entrega TEXT,
 			observacoes TEXT DEFAULT '',
 			mensagem_orcamento TEXT DEFAULT '',
+			linha_cores_nome TEXT NOT NULL DEFAULT '',
+			linha_cores_link TEXT NOT NULL DEFAULT '',
 			preco_base REAL NOT NULL DEFAULT 0,
 			desconto_cartao REAL NOT NULL DEFAULT 0,
 			desconto_pix REAL NOT NULL DEFAULT 0,
@@ -40,6 +42,7 @@ func TestPedidoAgendaERegistraRecebimentosSeparadamente(t *testing.T) {
 			forma_pagamento TEXT NOT NULL DEFAULT '',
 			total_acordado REAL NOT NULL DEFAULT 0,
 			brinde BOOLEAN NOT NULL DEFAULT 0,
+			incluir_brinde BOOLEAN NOT NULL DEFAULT 0,
 			pedido_principal_id INTEGER
 		)`,
 		`CREATE TABLE transacoes (id INTEGER PRIMARY KEY, tipo TEXT NOT NULL, descricao TEXT NOT NULL, valor REAL NOT NULL, data TEXT NOT NULL, pedido_id INTEGER, etapa TEXT)`,
@@ -192,10 +195,12 @@ func TestPedidoBrindeZeraPrecoEPermiteVinculoOpcional(t *testing.T) {
 		id INTEGER PRIMARY KEY AUTOINCREMENT,
 		cliente_id INTEGER, produto_id INTEGER, status TEXT NOT NULL,
 		data_pedido TEXT, dias_prazo INTEGER, data_entrega TEXT,
-		observacoes TEXT, mensagem_orcamento TEXT, preco_base REAL NOT NULL DEFAULT 0,
+		observacoes TEXT, mensagem_orcamento TEXT, linha_cores_nome TEXT NOT NULL DEFAULT '',
+		linha_cores_link TEXT NOT NULL DEFAULT '', preco_base REAL NOT NULL DEFAULT 0,
 		desconto_cartao REAL NOT NULL DEFAULT 0, desconto_pix REAL NOT NULL DEFAULT 0,
 		desconto_pix_avista BOOLEAN NOT NULL DEFAULT 1, pix_parcelado BOOLEAN NOT NULL DEFAULT 0,
-		brinde BOOLEAN NOT NULL DEFAULT 0, pedido_principal_id INTEGER
+		brinde BOOLEAN NOT NULL DEFAULT 0, incluir_brinde BOOLEAN NOT NULL DEFAULT 0,
+		pedido_principal_id INTEGER
 	);
 	CREATE TABLE pagamentos (id INTEGER PRIMARY KEY, pedido_id INTEGER)`); err != nil {
 		t.Fatal(err)
@@ -264,29 +269,50 @@ func TestAtualizarDetalhesPedidoPreservaCondicoesAcordadas(t *testing.T) {
 	}
 	defer db.Close()
 	if _, err := db.Exec(`CREATE TABLE pedidos (
-		id INTEGER PRIMARY KEY, data_pedido TEXT, data_entrega TEXT, observacoes TEXT,
-		total_acordado REAL, forma_pagamento TEXT
+		id INTEGER PRIMARY KEY, cliente_id INTEGER, produto_id INTEGER, status TEXT, dias_prazo INTEGER,
+		data_pedido TEXT, data_entrega TEXT, observacoes TEXT, mensagem_orcamento TEXT,
+		linha_cores_nome TEXT, linha_cores_link TEXT, preco_base REAL, desconto_cartao REAL, desconto_pix REAL,
+		desconto_pix_avista BOOLEAN, pix_parcelado BOOLEAN, total_acordado REAL, forma_pagamento TEXT,
+		brinde BOOLEAN, incluir_brinde BOOLEAN, pedido_principal_id INTEGER
 	);
-		INSERT INTO pedidos VALUES (1, '2026-01-01', '2026-02-01', 'Antes', 120, 'Pix parcelado')`); err != nil {
+		CREATE TABLE pagamentos (id INTEGER PRIMARY KEY, pedido_id INTEGER);
+		INSERT INTO pedidos VALUES (1, 1, 1, 'Orçamento', 20, '2026-01-01', '2026-02-01', 'Antes', 'Orçamento antigo', 'Linha', 'https://exemplo.com', 120, 0, 0, 1, 0, 120, 'Pix parcelado', 0, 0, NULL)`); err != nil {
 		t.Fatal(err)
 	}
 	dao := NovoPedidoDAO(db)
-	if err := dao.AtualizarDetalhes(1, "2026-01-02", "2026-02-10", "Novo detalhe"); err != nil {
+	pedidoEdicao := dtos.PedidoEdicaoDTO{
+		ClienteID: 2, ProdutoID: 3, DataPedido: "2026-01-02", DiasPrazo: 25,
+		DataEntrega: "2026-02-10", Observacoes: "Novo detalhe", MensagemOrcamento: "Novo orçamento",
+		LinhaCoresNome: "Nova linha", LinhaCoresLink: "https://novo.exemplo", PrecoBase: 120,
+		DescontoPixAvista: true,
+	}
+	if err := dao.AtualizarDetalhes(1, pedidoEdicao); err != nil {
 		t.Fatal(err)
 	}
-	var dataPedido, dataEntrega, observacoes, formaPagamento string
+	var dataPedido, dataEntrega, observacoes, mensagemOrcamento, linhaCoresNome, linhaCoresLink, formaPagamento string
+	var clienteID, produtoID, diasPrazo int
 	var total float64
-	if err := db.QueryRow(`SELECT data_pedido, data_entrega, observacoes, total_acordado, forma_pagamento FROM pedidos WHERE id = 1`).
-		Scan(&dataPedido, &dataEntrega, &observacoes, &total, &formaPagamento); err != nil {
+	if err := db.QueryRow(`SELECT cliente_id, produto_id, data_pedido, dias_prazo, data_entrega, observacoes, mensagem_orcamento, linha_cores_nome, linha_cores_link, total_acordado, forma_pagamento FROM pedidos WHERE id = 1`).
+		Scan(&clienteID, &produtoID, &dataPedido, &diasPrazo, &dataEntrega, &observacoes, &mensagemOrcamento, &linhaCoresNome, &linhaCoresLink, &total, &formaPagamento); err != nil {
 		t.Fatal(err)
 	}
-	if dataPedido != "2026-01-02" || dataEntrega != "2026-02-10" || observacoes != "Novo detalhe" ||
+	if clienteID != 2 || produtoID != 3 || dataPedido != "2026-01-02" || diasPrazo != 25 ||
+		dataEntrega != "2026-02-10" || observacoes != "Novo detalhe" || mensagemOrcamento != "Novo orçamento" ||
+		linhaCoresNome != "Nova linha" || linhaCoresLink != "https://novo.exemplo" ||
 		total != 120 || formaPagamento != "Pix parcelado" {
-		t.Fatalf("edição alterou dados incorretos do pedido: %q, %q, %q, %.2f, %q",
-			dataPedido, dataEntrega, observacoes, total, formaPagamento)
+		t.Fatalf("edição alterou dados incorretos do pedido: %d, %d, %q, %d, %q, %q, %q, %q, %q, %.2f, %q",
+			clienteID, produtoID, dataPedido, diasPrazo, dataEntrega, observacoes, mensagemOrcamento, linhaCoresNome, linhaCoresLink, total, formaPagamento)
 	}
-	if err := dao.AtualizarDetalhes(2, "2026-01-02", "2026-02-10", ""); err != ErrPedidoNaoEncontrado {
+	if err := dao.AtualizarDetalhes(2, pedidoEdicao); err != ErrPedidoNaoEncontrado {
 		t.Fatalf("pedido inexistente deveria ser reportado, recebeu: %v", err)
+	}
+	if _, err := db.Exec(`INSERT INTO pagamentos (pedido_id) VALUES (1)`); err != nil {
+		t.Fatal(err)
+	}
+	condicoesAlteradas := pedidoEdicao
+	condicoesAlteradas.PrecoBase = 130
+	if err := dao.AtualizarDetalhes(1, condicoesAlteradas); err != ErrCondicoesPedidoBloqueadas {
+		t.Fatalf("condições financeiras com pagamentos deveriam ser bloqueadas, recebeu: %v", err)
 	}
 }
 
@@ -309,6 +335,8 @@ func TestPedidoPersisteMensagemOrcamento(t *testing.T) {
 		data_entrega TEXT,
 		observacoes TEXT DEFAULT '',
 		mensagem_orcamento TEXT DEFAULT '',
+		linha_cores_nome TEXT NOT NULL DEFAULT '',
+		linha_cores_link TEXT NOT NULL DEFAULT '',
 		preco_base REAL NOT NULL DEFAULT 0,
 		desconto_cartao REAL NOT NULL DEFAULT 0,
 		desconto_pix REAL NOT NULL DEFAULT 0,
@@ -317,6 +345,7 @@ func TestPedidoPersisteMensagemOrcamento(t *testing.T) {
 		forma_pagamento TEXT NOT NULL DEFAULT '',
 		total_acordado REAL NOT NULL DEFAULT 0,
 		brinde BOOLEAN NOT NULL DEFAULT 0,
+		incluir_brinde BOOLEAN NOT NULL DEFAULT 0,
 		pedido_principal_id INTEGER
 	)`); err != nil {
 		t.Fatal(err)
@@ -342,6 +371,9 @@ func TestPedidoPersisteMensagemOrcamento(t *testing.T) {
 		ProdutoID:         1,
 		Status:            modelos.StatusOrcamento,
 		MensagemOrcamento: mensagem,
+		LinhaCoresNome:    "Linha de teste",
+		LinhaCoresLink:    "https://exemplo.com/cores",
+		IncluirBrinde:     true,
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -351,7 +383,8 @@ func TestPedidoPersisteMensagemOrcamento(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(pedidos) != 1 || pedidos[0].ID != id || pedidos[0].MensagemOrcamento != mensagem {
+	if len(pedidos) != 1 || pedidos[0].ID != id || pedidos[0].MensagemOrcamento != mensagem ||
+		pedidos[0].LinhaCoresNome != "Linha de teste" || pedidos[0].LinhaCoresLink != "https://exemplo.com/cores" || !pedidos[0].IncluirBrinde {
 		t.Fatalf("mensagem não foi recuperada para o pedido: %+v", pedidos)
 	}
 }
