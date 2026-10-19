@@ -9,6 +9,7 @@ import "github.com/a-h/templ"
 import templruntime "github.com/a-h/templ/runtime"
 
 import "falkcroche/modelos"
+import "strconv"
 
 func Financeiro(transacoes []modelos.Transacao, entradas float64, saidas float64, saldo float64) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
@@ -38,7 +39,7 @@ func Financeiro(transacoes []modelos.Transacao, entradas float64, saidas float64
 		var templ_7745c5c3_Var2 string
 		templ_7745c5c3_Var2, templ_7745c5c3_Err = templ.JoinStringErrs(FormatarReais(entradas))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/financeiro.templ`, Line: 10, Col: 88}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/financeiro.templ`, Line: 11, Col: 88}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var2))
 		if templ_7745c5c3_Err != nil {
@@ -51,7 +52,7 @@ func Financeiro(transacoes []modelos.Transacao, entradas float64, saidas float64
 		var templ_7745c5c3_Var3 string
 		templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs(FormatarReais(saidas))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/financeiro.templ`, Line: 14, Col: 86}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/financeiro.templ`, Line: 15, Col: 86}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
 		if templ_7745c5c3_Err != nil {
@@ -69,7 +70,7 @@ func Financeiro(transacoes []modelos.Transacao, entradas float64, saidas float64
 			var templ_7745c5c3_Var4 string
 			templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs(FormatarReais(saldo))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/financeiro.templ`, Line: 19, Col: 85}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/financeiro.templ`, Line: 20, Col: 85}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
 			if templ_7745c5c3_Err != nil {
@@ -87,7 +88,7 @@ func Financeiro(transacoes []modelos.Transacao, entradas float64, saidas float64
 			var templ_7745c5c3_Var5 string
 			templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(FormatarReais(saldo))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/financeiro.templ`, Line: 21, Col: 83}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/financeiro.templ`, Line: 22, Col: 83}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var5))
 			if templ_7745c5c3_Err != nil {
@@ -98,7 +99,7 @@ func Financeiro(transacoes []modelos.Transacao, entradas float64, saidas float64
 				return templ_7745c5c3_Err
 			}
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 8, "</div></div><div class=\"flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-center sm:gap-4\"><div><h3 class=\"text-xl font-serif font-bold text-[#5a262c]\">Movimentações financeiras</h3><p class=\"text-sm text-[#5a262c]/60\">Acompanhe as entradas e saídas do ateliê.</p></div><button id=\"abrir-modal-transacao\" type=\"button\" class=\"shrink-0 rounded-lg bg-[#5a262c] px-4 py-2.5 text-sm font-bold text-[#ffeae8] hover:bg-[#472025] transition-colors\">Novo lançamento</button></div><dialog id=\"modal-transacao\" class=\"w-[min(38rem,calc(100%-2rem))] max-w-none rounded-2xl border-0 p-0 shadow-2xl backdrop:bg-[#2b1719]/50\"><div class=\"bg-white p-4 sm:p-8\"><div class=\"mb-6 flex items-start justify-between gap-4\"><div><p class=\"mb-1 text-sm font-semibold text-[#c17f6b]\">Financeiro</p><h3 class=\"text-2xl font-serif font-bold text-[#5a262c]\">Novo lançamento</h3></div><button id=\"fechar-modal-transacao\" type=\"button\" aria-label=\"Fechar\" class=\"rounded-full px-3 py-1 text-2xl text-[#5a262c]/60 hover:bg-[#ffeae8]\">&times;</button></div><form method=\"POST\" action=\"/financeiro/inserir\" class=\"space-y-5\"><div><label for=\"transacao-tipo\" class=\"mb-1.5 block text-sm font-semibold\">Tipo</label> <select id=\"transacao-tipo\" name=\"tipo\" required class=\"w-full rounded-lg border border-[#e8d5c4] bg-[#fcf9f8] px-3 py-3 outline-none focus:border-[#5a262c] focus:ring-2 focus:ring-[#5a262c]/20\"><option value=\"Saída\" selected>Saída (Despesa)</option> <option value=\"Entrada\">Entrada (Receita)</option></select></div><div><label for=\"transacao-descricao\" class=\"mb-1.5 block text-sm font-semibold\">Descrição</label> <input id=\"transacao-descricao\" type=\"text\" name=\"descricao\" required placeholder=\"Ex.: Fios para produção\" class=\"w-full rounded-lg border border-[#e8d5c4] bg-[#fcf9f8] px-3 py-3 outline-none focus:border-[#5a262c] focus:ring-2 focus:ring-[#5a262c]/20\"></div><div class=\"grid grid-cols-1 gap-4 sm:grid-cols-2\"><div><label for=\"transacao-valor\" class=\"mb-1.5 block text-sm font-semibold\">Valor (R$)</label> <input id=\"transacao-valor\" type=\"number\" min=\"0.01\" step=\"0.01\" name=\"valor\" required class=\"w-full rounded-lg border border-[#e8d5c4] bg-[#fcf9f8] px-3 py-3 outline-none focus:border-[#5a262c] focus:ring-2 focus:ring-[#5a262c]/20\"></div><div><label for=\"transacao-data\" class=\"mb-1.5 block text-sm font-semibold\">Data</label> <input id=\"transacao-data\" type=\"date\" name=\"data\" required class=\"w-full rounded-lg border border-[#e8d5c4] bg-[#fcf9f8] px-3 py-3 outline-none focus:border-[#5a262c] focus:ring-2 focus:ring-[#5a262c]/20\"></div></div><div class=\"flex flex-col-reverse justify-end gap-2 border-t border-[#e8d5c4] pt-5 sm:flex-row sm:gap-3\"><button id=\"cancelar-modal-transacao\" type=\"button\" class=\"rounded-lg border border-[#e8d5c4] px-4 py-2.5 text-sm font-semibold hover:bg-[#ffeae8]\">Cancelar</button> <button type=\"submit\" class=\"rounded-lg bg-[#5a262c] px-5 py-2.5 text-sm font-bold text-[#ffeae8] hover:bg-[#472025]\">Registrar</button></div></form></div></dialog><div class=\"overflow-hidden rounded-3xl border border-[#e8d5c4] bg-white shadow-sm\"><div class=\"overflow-x-auto overscroll-x-contain\" role=\"region\" aria-label=\"Movimentações financeiras\" tabindex=\"0\"><table class=\"min-w-[580px] w-full text-left\"><thead class=\"border-b border-[#e8d5c4] bg-[#ffeae8]/40\"><tr><th class=\"p-5 font-bold text-[#5a262c]\">Data</th><th class=\"p-5 font-bold text-[#5a262c]\">Descrição</th><th class=\"p-5 font-bold text-[#5a262c]\">Tipo</th><th class=\"p-5 text-right font-bold text-[#5a262c]\">Valor</th></tr></thead> <tbody class=\"divide-y divide-[#e8d5c4]/50\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 8, "</div></div><div class=\"flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-center sm:gap-4\"><div><h3 class=\"text-xl font-serif font-bold text-[#5a262c]\">Movimentações financeiras</h3><p class=\"text-sm text-[#5a262c]/60\">Acompanhe as entradas e saídas do ateliê.</p></div><button id=\"abrir-modal-transacao\" type=\"button\" class=\"shrink-0 rounded-lg bg-[#5a262c] px-4 py-2.5 text-sm font-bold text-[#ffeae8] hover:bg-[#472025] transition-colors\">Novo lançamento</button></div><dialog id=\"modal-transacao\" class=\"w-[min(38rem,calc(100%-2rem))] max-w-none rounded-2xl border-0 p-0 shadow-2xl backdrop:bg-[#2b1719]/50\"><div class=\"bg-white p-4 sm:p-8\"><div class=\"mb-6 flex items-start justify-between gap-4\"><div><p class=\"mb-1 text-sm font-semibold text-[#c17f6b]\">Financeiro</p><h3 id=\"transacao-modal-titulo\" class=\"text-2xl font-serif font-bold text-[#5a262c]\">Novo lançamento</h3></div><button id=\"fechar-modal-transacao\" type=\"button\" aria-label=\"Fechar\" class=\"rounded-full px-3 py-1 text-2xl text-[#5a262c]/60 hover:bg-[#ffeae8]\">&times;</button></div><form id=\"form-transacao\" method=\"POST\" action=\"/financeiro/inserir\" class=\"space-y-5\"><input id=\"transacao-id\" type=\"hidden\" name=\"id\" disabled><div id=\"transacao-tipo-container\"><label for=\"transacao-tipo\" class=\"mb-1.5 block text-sm font-semibold\">Tipo</label> <select id=\"transacao-tipo\" name=\"tipo\" required class=\"w-full rounded-lg border border-[#e8d5c4] bg-[#fcf9f8] px-3 py-3 outline-none focus:border-[#5a262c] focus:ring-2 focus:ring-[#5a262c]/20\"><option value=\"Saída\" selected>Saída (Despesa)</option> <option value=\"Entrada\">Entrada (Receita)</option></select></div><div id=\"transacao-tipo-vinculado\" hidden><input type=\"hidden\" name=\"tipo\" value=\"Entrada\"><p class=\"text-sm font-semibold text-[#56653f]\">Entrada vinculada a um pagamento de pedido. O tipo não pode ser alterado.</p></div><div><label for=\"transacao-descricao\" class=\"mb-1.5 block text-sm font-semibold\">Descrição</label> <input id=\"transacao-descricao\" type=\"text\" name=\"descricao\" required placeholder=\"Ex.: Fios para produção\" class=\"w-full rounded-lg border border-[#e8d5c4] bg-[#fcf9f8] px-3 py-3 outline-none focus:border-[#5a262c] focus:ring-2 focus:ring-[#5a262c]/20\"></div><div class=\"grid grid-cols-1 gap-4 sm:grid-cols-2\"><div><label for=\"transacao-valor\" class=\"mb-1.5 block text-sm font-semibold\">Valor (R$)</label> <input id=\"transacao-valor\" type=\"number\" min=\"0.01\" step=\"0.01\" name=\"valor\" required class=\"w-full rounded-lg border border-[#e8d5c4] bg-[#fcf9f8] px-3 py-3 outline-none focus:border-[#5a262c] focus:ring-2 focus:ring-[#5a262c]/20\"></div><div><label for=\"transacao-data\" class=\"mb-1.5 block text-sm font-semibold\">Data</label> <input id=\"transacao-data\" type=\"date\" name=\"data\" required class=\"w-full rounded-lg border border-[#e8d5c4] bg-[#fcf9f8] px-3 py-3 outline-none focus:border-[#5a262c] focus:ring-2 focus:ring-[#5a262c]/20\"></div></div><div class=\"flex flex-col-reverse justify-end gap-2 border-t border-[#e8d5c4] pt-5 sm:flex-row sm:gap-3\"><button id=\"cancelar-modal-transacao\" type=\"button\" class=\"rounded-lg border border-[#e8d5c4] px-4 py-2.5 text-sm font-semibold hover:bg-[#ffeae8]\">Cancelar</button> <button id=\"transacao-submit\" type=\"submit\" class=\"rounded-lg bg-[#5a262c] px-5 py-2.5 text-sm font-bold text-[#ffeae8] hover:bg-[#472025]\">Registrar</button></div></form></div></dialog><div class=\"overflow-hidden rounded-3xl border border-[#e8d5c4] bg-white shadow-sm\"><div class=\"overflow-x-auto overscroll-x-contain\" role=\"region\" aria-label=\"Movimentações financeiras\" tabindex=\"0\"><table class=\"min-w-[580px] w-full text-left\"><thead class=\"border-b border-[#e8d5c4] bg-[#ffeae8]/40\"><tr><th class=\"p-5 font-bold text-[#5a262c]\">Data</th><th class=\"p-5 font-bold text-[#5a262c]\">Descrição</th><th class=\"p-5 font-bold text-[#5a262c]\">Tipo</th><th class=\"p-5 text-right font-bold text-[#5a262c]\">Valor</th><th class=\"p-5 text-right font-bold text-[#5a262c]\">Ações</th></tr></thead> <tbody class=\"divide-y divide-[#e8d5c4]/50\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -110,7 +111,7 @@ func Financeiro(transacoes []modelos.Transacao, entradas float64, saidas float64
 			var templ_7745c5c3_Var6 string
 			templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.JoinStringErrs(t.Data)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/financeiro.templ`, Line: 98, Col: 78}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/financeiro.templ`, Line: 105, Col: 78}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var6))
 			if templ_7745c5c3_Err != nil {
@@ -123,7 +124,7 @@ func Financeiro(transacoes []modelos.Transacao, entradas float64, saidas float64
 			var templ_7745c5c3_Var7 string
 			templ_7745c5c3_Var7, templ_7745c5c3_Err = templ.JoinStringErrs(t.Descricao)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/financeiro.templ`, Line: 99, Col: 60}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/financeiro.templ`, Line: 106, Col: 60}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var7))
 			if templ_7745c5c3_Err != nil {
@@ -151,28 +152,106 @@ func Financeiro(transacoes []modelos.Transacao, entradas float64, saidas float64
 			var templ_7745c5c3_Var8 string
 			templ_7745c5c3_Var8, templ_7745c5c3_Err = templ.JoinStringErrs(FormatarReais(t.Valor))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/financeiro.templ`, Line: 109, Col: 100}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/financeiro.templ`, Line: 116, Col: 100}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var8))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 15, "</td></tr>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 15, "</td><td class=\"whitespace-nowrap p-5 text-right\"><button type=\"button\" data-editar-transacao data-id=\"")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			var templ_7745c5c3_Var9 string
+			templ_7745c5c3_Var9, templ_7745c5c3_Err = templ.ResolveAttributeValue(strconv.Itoa(t.ID))
+			if templ_7745c5c3_Err != nil {
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/financeiro.templ`, Line: 119, Col: 79}
+			}
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var9)
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 16, "\" data-tipo=\"")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			var templ_7745c5c3_Var10 string
+			templ_7745c5c3_Var10, templ_7745c5c3_Err = templ.ResolveAttributeValue(t.Tipo)
+			if templ_7745c5c3_Err != nil {
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/financeiro.templ`, Line: 120, Col: 26}
+			}
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var10)
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 17, "\" data-descricao=\"")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			var templ_7745c5c3_Var11 string
+			templ_7745c5c3_Var11, templ_7745c5c3_Err = templ.ResolveAttributeValue(t.Descricao)
+			if templ_7745c5c3_Err != nil {
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/financeiro.templ`, Line: 120, Col: 57}
+			}
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var11)
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 18, "\" data-valor=\"")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			var templ_7745c5c3_Var12 string
+			templ_7745c5c3_Var12, templ_7745c5c3_Err = templ.ResolveAttributeValue(strconv.FormatFloat(t.Valor, 'f', 2, 64))
+			if templ_7745c5c3_Err != nil {
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/financeiro.templ`, Line: 121, Col: 61}
+			}
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var12)
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 19, "\" data-data=\"")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			var templ_7745c5c3_Var13 string
+			templ_7745c5c3_Var13, templ_7745c5c3_Err = templ.ResolveAttributeValue(t.Data)
+			if templ_7745c5c3_Err != nil {
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/financeiro.templ`, Line: 121, Col: 82}
+			}
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var13)
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 20, "\" data-vinculada=\"")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			var templ_7745c5c3_Var14 string
+			templ_7745c5c3_Var14, templ_7745c5c3_Err = templ.ResolveAttributeValue(strconv.FormatBool(t.PedidoID > 0))
+			if templ_7745c5c3_Err != nil {
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/financeiro.templ`, Line: 122, Col: 59}
+			}
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var14)
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 21, "\" class=\"rounded-md border border-[#e8d5c4] px-3 py-1.5 text-xs font-semibold text-[#5a262c] hover:bg-[#ffeae8]\">Editar</button></td></tr>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 16, "</tbody></table>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 22, "</tbody></table>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		if len(transacoes) == 0 {
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 17, "<div class=\"p-10 text-center text-[#5a262c]/50 font-medium\">Nenhuma movimentação financeira encontrada.</div>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 23, "<div class=\"p-10 text-center text-[#5a262c]/50 font-medium\">Nenhuma movimentação financeira encontrada.</div>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 18, "</div></div><script src=\"/static/js/financeiro.js\" defer></script></div>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 24, "</div></div><script src=\"/static/js/financeiro.js\" defer></script></div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

@@ -6,4 +6,5 @@ type Transacao struct {
 	Descricao string
 	Valor     float64
 	Data      string
+	PedidoID  int
 }
