@@ -363,6 +363,14 @@ func TestPedidoPersisteMensagemOrcamento(t *testing.T) {
 	)`); err != nil {
 		t.Fatal(err)
 	}
+	if _, err := db.Exec(`CREATE TABLE etiquetas_pedido (
+		id INTEGER PRIMARY KEY AUTOINCREMENT,
+		pedido_id INTEGER NOT NULL,
+		texto TEXT NOT NULL,
+		cor TEXT NOT NULL
+	)`); err != nil {
+		t.Fatal(err)
+	}
 
 	mensagem := "Orçamento individual da linha escolhida"
 	dao := NovoPedidoDAO(db)
@@ -378,6 +386,9 @@ func TestPedidoPersisteMensagemOrcamento(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	if err := dao.AdicionarEtiquetaPedido(id, "Presente", "rosa"); err != nil {
+		t.Fatal(err)
+	}
 
 	pedidos, err := dao.BuscarTodos()
 	if err != nil {
@@ -386,6 +397,15 @@ func TestPedidoPersisteMensagemOrcamento(t *testing.T) {
 	if len(pedidos) != 1 || pedidos[0].ID != id || pedidos[0].MensagemOrcamento != mensagem ||
 		pedidos[0].LinhaCoresNome != "Linha de teste" || pedidos[0].LinhaCoresLink != "https://exemplo.com/cores" || !pedidos[0].IncluirBrinde {
 		t.Fatalf("mensagem não foi recuperada para o pedido: %+v", pedidos)
+	}
+	if len(pedidos[0].Etiquetas) != 1 || pedidos[0].Etiquetas[0].Texto != "Presente" || pedidos[0].Etiquetas[0].Cor != "rosa" {
+		t.Fatalf("etiqueta não foi recuperada para o pedido: %+v", pedidos[0].Etiquetas)
+	}
+	if err := dao.ExcluirEtiquetaPedido(id, pedidos[0].Etiquetas[0].ID); err != nil {
+		t.Fatalf("não foi possível excluir a etiqueta: %v", err)
+	}
+	if err := dao.ExcluirEtiquetaPedido(id, pedidos[0].Etiquetas[0].ID); err != ErrEtiquetaPedidoNaoEncontrada {
+		t.Fatalf("esperava etiqueta não encontrada após exclusão, recebeu: %v", err)
 	}
 }
 

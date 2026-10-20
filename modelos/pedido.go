@@ -63,6 +63,14 @@ type Pedido struct {
 	Brinde            bool
 	PedidoPrincipalID int
 	Pagamentos        []Pagamento
+	Etiquetas         []EtiquetaPedido
+}
+
+type EtiquetaPedido struct {
+	ID       int
+	PedidoID int
+	Texto    string
+	Cor      string
 }
 
 type Pagamento struct {

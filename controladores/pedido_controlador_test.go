@@ -27,6 +27,25 @@ func TestPrazoPadraoDeVinteDiasUteis(t *testing.T) {
 	}
 }
 
+func TestCorEtiquetaPedidoValidaHexadecimal(t *testing.T) {
+	testes := []struct {
+		cor    string
+		valida bool
+	}{
+		{cor: "#D98C9A", valida: true},
+		{cor: "#00ff7F", valida: true},
+		{cor: "D98C9A", valida: false},
+		{cor: "#FFF", valida: false},
+		{cor: "#GGGGGG", valida: false},
+		{cor: "#12345678", valida: false},
+	}
+	for _, teste := range testes {
+		if valida := corEtiquetaPedidoValida(teste.cor); valida != teste.valida {
+			t.Errorf("corEtiquetaPedidoValida(%q) = %t; esperado %t", teste.cor, valida, teste.valida)
+		}
+	}
+}
+
 func TestMensagemOrcamentoComDescontoEParcelas(t *testing.T) {
 	entrega := time.Date(2026, time.November, 6, 12, 0, 0, 0, time.Local)
 	mensagem := montarMensagemOrcamento("Ana", "Blusa Vitória-Régia", 170, prazoPadraoDiasUteis, entrega, "Linha Exemplo", "https://exemplo.com/cores", false, 0, false, true, false, 0, true)

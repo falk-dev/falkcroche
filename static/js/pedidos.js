@@ -45,6 +45,7 @@ const atualizarOpcoesEdicao = (temPagamentos) => {
 };
 document.querySelectorAll("[data-editar-pedido]").forEach((botao) => {
     botao.addEventListener("click", () => {
+        botao.closest("details").open = false;
         const temPagamentos = Number(botao.dataset.pagamentos) > 0;
         document.getElementById("editar-pedido-id").value = botao.dataset.id;
         document.getElementById("editar-pedido-cliente").value = botao.dataset.clienteId;
@@ -163,24 +164,69 @@ document.querySelectorAll("[data-abrir-pagamentos]").forEach((botao) => {
     });
 });
 
+document.querySelectorAll("[data-abrir-detalhes]").forEach((botao) => {
+    const modal = document.getElementById(botao.dataset.modalId);
+    botao.addEventListener("click", () => {
+        botao.closest("details").open = false;
+        modal.showModal();
+    });
+    modal.querySelector("[data-fechar-detalhes]").addEventListener("click", () => modal.close());
+    modal.addEventListener("click", (evento) => {
+        if (evento.target === modal) modal.close();
+    });
+});
+
+const pedidoDetalhesId = new URLSearchParams(window.location.search).get("detalhes");
+if (pedidoDetalhesId) {
+    document.getElementById("modal-detalhes-" + pedidoDetalhesId)?.showModal();
+}
+
 document.querySelectorAll("[data-copiar-orcamento]").forEach((botao) => {
     botao.addEventListener("click", async () => {
+        botao.closest("details").open = false;
         const pedidoId = botao.dataset.pedidoId;
         const mensagem = document.getElementById("mensagem-orcamento-" + pedidoId);
-        try {
-            await navigator.clipboard.writeText(mensagem.value);
-        } catch {
+        const notificacao = document.getElementById("notificacao-copia-orcamento");
+        const copiarComFallback = () => {
             const temporaria = document.createElement("textarea");
             temporaria.value = mensagem.value;
+            temporaria.setAttribute("readonly", "");
+            temporaria.style.position = "fixed";
+            temporaria.style.opacity = "0";
             document.body.appendChild(temporaria);
             temporaria.select();
-            document.execCommand("copy");
+            const copiado = document.execCommand("copy");
             temporaria.remove();
+            if (!copiado) throw new Error("Não foi possível copiar o orçamento.");
+        };
+        try {
+            if (navigator.clipboard?.writeText) {
+                try {
+                    await navigator.clipboard.writeText(mensagem.value);
+                } catch {
+                    copiarComFallback();
+                }
+            } else {
+                copiarComFallback();
+            }
+            notificacao.hidden = false;
+            clearTimeout(notificacao.timeoutId);
+            notificacao.timeoutId = setTimeout(() => {
+                notificacao.hidden = true;
+            }, 3500);
+            document.getElementById("status-copia-orcamento-" + pedidoId).textContent = "Orçamento copiado.";
+        } catch (erro) {
+            notificacao.textContent = "Não foi possível copiar o orçamento.";
+            notificacao.classList.replace("bg-[#5a262c]", "bg-[#9b3b36]");
+            notificacao.hidden = false;
+            clearTimeout(notificacao.timeoutId);
+            notificacao.timeoutId = setTimeout(() => {
+                notificacao.hidden = true;
+                notificacao.textContent = "Orçamento copiado.";
+                notificacao.classList.replace("bg-[#9b3b36]", "bg-[#5a262c]");
+            }, 3500);
+            console.error(erro);
         }
-        botao.textContent = "✅";
-        botao.title = "Orçamento copiado";
-        botao.setAttribute("aria-label", "Orçamento copiado");
-        document.getElementById("status-copia-orcamento-" + pedidoId).textContent = "Orçamento copiado.";
     });
 });
 

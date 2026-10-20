@@ -116,6 +116,15 @@ func criarTabelas(db *sql.DB) {
 		FOREIGN KEY (pagamento_id) REFERENCES pagamentos(id)
 	);`
 
+	tabelaEtiquetasPedido := `
+	CREATE TABLE IF NOT EXISTS etiquetas_pedido (
+		id INTEGER PRIMARY KEY AUTOINCREMENT,
+		pedido_id INTEGER NOT NULL,
+		texto TEXT NOT NULL,
+		cor TEXT NOT NULL,
+		FOREIGN KEY (pedido_id) REFERENCES pedidos(id) ON DELETE CASCADE
+	);`
+
 	// executa as queries de criacao
 	if _, err := db.Exec(tabelaClientes); err != nil {
 		log.Fatalf("Erro ao criar tabela clientes: %v", err)
@@ -134,6 +143,9 @@ func criarTabelas(db *sql.DB) {
 	}
 	if _, err := db.Exec(tabelaNotificacoes); err != nil {
 		log.Fatalf("Erro ao criar tabela notificacoes: %v", err)
+	}
+	if _, err := db.Exec(tabelaEtiquetasPedido); err != nil {
+		log.Fatalf("Erro ao criar tabela de etiquetas dos pedidos: %v", err)
 	}
 	migrarColunasPedidos(db)
 	if _, err := db.Exec(`CREATE UNIQUE INDEX IF NOT EXISTS idx_transacoes_pedido_etapa ON transacoes(pedido_id, etapa) WHERE pedido_id IS NOT NULL`); err != nil {

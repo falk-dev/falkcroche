@@ -61,6 +61,8 @@ func main() {
 	mux.Handle("/pedidos", acessoCtrl.Proteger(http.HandlerFunc(pedidoCtrl.Listar)))
 	mux.Handle("/pedidos/inserir", acessoCtrl.Proteger(http.HandlerFunc(pedidoCtrl.Inserir)))
 	mux.Handle("/pedidos/atualizar", acessoCtrl.Proteger(http.HandlerFunc(pedidoCtrl.Atualizar)))
+	mux.Handle("/pedidos/etiquetas/adicionar", acessoCtrl.Proteger(http.HandlerFunc(pedidoCtrl.AdicionarEtiqueta)))
+	mux.Handle("/pedidos/etiquetas/excluir", acessoCtrl.Proteger(http.HandlerFunc(pedidoCtrl.ExcluirEtiqueta)))
 	mux.Handle("/pedidos/status", acessoCtrl.Proteger(http.HandlerFunc(pedidoCtrl.AtualizarStatus)))
 	mux.Handle("/pedidos/pagamentos/receber", acessoCtrl.Proteger(http.HandlerFunc(pedidoCtrl.ReceberPagamento)))
 

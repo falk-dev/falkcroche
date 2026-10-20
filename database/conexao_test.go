@@ -56,6 +56,13 @@ func TestCriarTabelasMigraPedidosERetemRecebimentosAnteriores(t *testing.T) {
 	if tabelasNotificacoes != 1 {
 		t.Fatal("a tabela de notificações deveria ser criada na migração")
 	}
+	var tabelasEtiquetas int
+	if err := db.QueryRow(`SELECT COUNT(*) FROM sqlite_master WHERE type = 'table' AND name = 'etiquetas_pedido'`).Scan(&tabelasEtiquetas); err != nil {
+		t.Fatal(err)
+	}
+	if tabelasEtiquetas != 1 {
+		t.Fatal("a tabela de etiquetas dos pedidos deveria ser criada na migração")
+	}
 
 	var quantidade int
 	var recebido, pendente float64

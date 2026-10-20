@@ -515,6 +515,79 @@ func (c *PedidoControlador) ReceberPagamento(w http.ResponseWriter, r *http.Requ
 	http.Redirect(w, r, "/pedidos", http.StatusSeeOther)
 }
 
+func (c *PedidoControlador) AdicionarEtiqueta(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Método não permitido.", http.StatusMethodNotAllowed)
+		return
+	}
+	if err := r.ParseForm(); err != nil {
+		http.Error(w, "Erro ao processar formulário.", http.StatusBadRequest)
+		return
+	}
+	pedidoID, err := strconv.Atoi(r.FormValue("pedido_id"))
+	if err != nil || pedidoID < 1 {
+		http.Error(w, "Pedido inválido.", http.StatusBadRequest)
+		return
+	}
+	texto := strings.TrimSpace(r.FormValue("texto"))
+	if texto == "" || len([]rune(texto)) > 100 {
+		http.Error(w, "A etiqueta deve ter entre 1 e 100 caracteres.", http.StatusBadRequest)
+		return
+	}
+	cor := r.FormValue("cor")
+	if !corEtiquetaPedidoValida(cor) {
+		http.Error(w, "Selecione uma cor válida para a etiqueta.", http.StatusBadRequest)
+		return
+	}
+	if err := c.dao.AdicionarEtiquetaPedido(pedidoID, texto, cor); err != nil {
+		if errors.Is(err, daos.ErrPedidoNaoEncontrado) {
+			http.NotFound(w, r)
+			return
+		}
+		http.Error(w, "Erro ao adicionar etiqueta ao pedido.", http.StatusInternalServerError)
+		return
+	}
+	http.Redirect(w, r, "/pedidos?detalhes="+strconv.Itoa(pedidoID), http.StatusSeeOther)
+}
+
+func (c *PedidoControlador) ExcluirEtiqueta(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Método não permitido.", http.StatusMethodNotAllowed)
+		return
+	}
+	if err := r.ParseForm(); err != nil {
+		http.Error(w, "Erro ao processar formulário.", http.StatusBadRequest)
+		return
+	}
+	pedidoID, err := strconv.Atoi(r.FormValue("pedido_id"))
+	if err != nil || pedidoID < 1 {
+		http.Error(w, "Pedido inválido.", http.StatusBadRequest)
+		return
+	}
+	etiquetaID, err := strconv.Atoi(r.FormValue("etiqueta_id"))
+	if err != nil || etiquetaID < 1 {
+		http.Error(w, "Etiqueta inválida.", http.StatusBadRequest)
+		return
+	}
+	if err := c.dao.ExcluirEtiquetaPedido(pedidoID, etiquetaID); err != nil {
+		if errors.Is(err, daos.ErrEtiquetaPedidoNaoEncontrada) {
+			http.NotFound(w, r)
+			return
+		}
+		http.Error(w, "Erro ao remover etiqueta do pedido.", http.StatusInternalServerError)
+		return
+	}
+	http.Redirect(w, r, "/pedidos?detalhes="+strconv.Itoa(pedidoID), http.StatusSeeOther)
+}
+
+func corEtiquetaPedidoValida(cor string) bool {
+	if len(cor) != 7 || cor[0] != '#' {
+		return false
+	}
+	_, err := strconv.ParseUint(cor[1:], 16, 24)
+	return err == nil
+}
+
 func (c *PedidoControlador) Listar(w http.ResponseWriter, r *http.Request) {
 	pedidos, err := c.dao.BuscarTodos()
 	if err != nil {

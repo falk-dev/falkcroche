@@ -2,6 +2,8 @@ package views
 
 import "falkcroche/modelos"
 import "fmt"
+import "strconv"
+import "strings"
 import "time"
 
 templ PedidosLista(pedidos []modelos.Pedido, clientes []modelos.Cliente, produtos []modelos.Produto) {
@@ -305,13 +307,12 @@ templ PedidosLista(pedidos []modelos.Pedido, clientes []modelos.Cliente, produto
 
 	<div class="bg-white rounded-3xl border border-[#e8d5c4] shadow-sm overflow-hidden">
 		<div class="overflow-x-auto overscroll-x-contain" role="region" aria-label="Tabela de pedidos" tabindex="0">
-		<table class="min-w-[1120px] w-full text-left">
+		<table class="min-w-[1000px] w-full text-left">
 			<thead class="bg-[#ffeae8]/40 border-b border-[#e8d5c4]">
 				<tr>
 					<th class="p-5 font-bold text-[#5a262c]">Nº Pedido</th>
 					<th class="p-5 font-bold text-[#5a262c]">Data</th>
 					<th class="p-5 font-bold text-[#5a262c]">Cliente / Produto</th>
-					<th class="p-5 font-bold text-[#5a262c]">Observações</th>
 					<th class="p-5 font-bold text-[#5a262c]">Entrega</th>
 					<th class="p-5 font-bold text-[#5a262c]">Pagamentos</th>
 					<th class="p-5 font-bold text-[#5a262c]">Fluxo do pedido</th>
@@ -335,8 +336,6 @@ templ PedidosLista(pedidos []modelos.Pedido, clientes []modelos.Cliente, produto
 						}
 						}
 					</td>
-					<td class="p-5 text-[#5a262c]/80 text-sm max-w-xs truncate" title={ p.Observacoes }>{ p.Observacoes
-						}</td>
 					<td class="p-5 text-[#5a262c]/80 font-medium">{ formatarDataPedido(p.DataEntrega) }</td>
 					<td class="whitespace-nowrap p-5">
 						if p.Brinde {
@@ -482,28 +481,167 @@ templ PedidosLista(pedidos []modelos.Pedido, clientes []modelos.Cliente, produto
 						</div>
 					</td>
 					<td class="p-5">
-						<div class="flex items-center gap-2">
-							<button type="button" data-editar-pedido data-id={ fmt.Sprintf("%d", p.ID) }
-								data-data-pedido={ p.DataPedido } data-data-entrega={ p.DataEntrega }
-								data-observacoes={ p.Observacoes } data-cliente-id={ fmt.Sprintf("%d", p.ClienteID) }
-								data-produto-id={ fmt.Sprintf("%d", p.ProdutoID) } data-dias-prazo={ fmt.Sprintf("%d", p.DiasPrazo) }
-								data-pedido-brinde={ fmt.Sprintf("%t", p.Brinde) }
-								data-pedido-principal-id={ fmt.Sprintf("%d", p.PedidoPrincipalID) }
-								data-desconto-cartao={ fmt.Sprintf("%g", p.DescontoCartao) }
-								data-desconto-pix={ fmt.Sprintf("%g", p.DescontoPix) }
-								data-desconto-pix-avista={ fmt.Sprintf("%t", p.DescontoPixAvista) }
-								data-pix-parcelado={ fmt.Sprintf("%t", p.PixParcelado) }
-								data-incluir-brinde={ fmt.Sprintf("%t", p.IncluirBrinde) }
-								data-linha-cores-nome={ p.LinhaCoresNome } data-linha-cores-link={ p.LinhaCoresLink }
-								data-pagamentos={ fmt.Sprintf("%d", len(p.Pagamentos)) }
-								title={ "Editar pedido " + fmt.Sprintf("%d", p.ID) }
-								aria-label={ "Editar pedido " + fmt.Sprintf("%d", p.ID) }
-								class="grid size-9 shrink-0 place-items-center rounded-lg border border-[#e8d5c4] bg-white text-lg hover:bg-[#ffeae8]">✏️</button>
-							<button type="button" data-copiar-orcamento data-pedido-id={ fmt.Sprintf("%d", p.ID) }
-								title="Copiar orçamento do pedido" aria-label={ "Copiar orçamento do pedido " +
-								fmt.Sprintf("%d", p.ID) }
-								class="grid size-9 shrink-0 place-items-center rounded-lg border border-[#e8d5c4] bg-white text-lg hover:bg-[#ffeae8]">📋</button>
-						</div>
+						<details class="relative">
+							<summary aria-label={ "Ações do pedido " + fmt.Sprintf("%d", p.ID) }
+								class="grid size-9 cursor-pointer list-none place-items-center rounded-lg border border-[#e8d5c4] bg-white text-lg font-bold tracking-widest hover:bg-[#ffeae8] [&::-webkit-details-marker]:hidden">...</summary>
+							<div class="absolute right-0 z-20 mt-1 min-w-44 overflow-hidden rounded-lg border border-[#e8d5c4] bg-white py-1 shadow-lg">
+								<button type="button" data-abrir-detalhes data-modal-id={ "modal-detalhes-" + fmt.Sprintf("%d", p.ID) }
+									class="block w-full px-4 py-2 text-left text-sm hover:bg-[#ffeae8]">Ver detalhes</button>
+								<button type="button" data-editar-pedido data-id={ fmt.Sprintf("%d", p.ID) }
+									data-data-pedido={ p.DataPedido } data-data-entrega={ p.DataEntrega }
+									data-observacoes={ p.Observacoes } data-cliente-id={ fmt.Sprintf("%d", p.ClienteID) }
+									data-produto-id={ fmt.Sprintf("%d", p.ProdutoID) } data-dias-prazo={ fmt.Sprintf("%d", p.DiasPrazo) }
+									data-pedido-brinde={ fmt.Sprintf("%t", p.Brinde) }
+									data-pedido-principal-id={ fmt.Sprintf("%d", p.PedidoPrincipalID) }
+									data-desconto-cartao={ fmt.Sprintf("%g", p.DescontoCartao) }
+									data-desconto-pix={ fmt.Sprintf("%g", p.DescontoPix) }
+									data-desconto-pix-avista={ fmt.Sprintf("%t", p.DescontoPixAvista) }
+									data-pix-parcelado={ fmt.Sprintf("%t", p.PixParcelado) }
+									data-incluir-brinde={ fmt.Sprintf("%t", p.IncluirBrinde) }
+									data-linha-cores-nome={ p.LinhaCoresNome } data-linha-cores-link={ p.LinhaCoresLink }
+									data-pagamentos={ fmt.Sprintf("%d", len(p.Pagamentos)) }
+									class="block w-full px-4 py-2 text-left text-sm hover:bg-[#ffeae8]">Editar pedido</button>
+								<button type="button" data-copiar-orcamento data-pedido-id={ fmt.Sprintf("%d", p.ID) }
+									class="block w-full px-4 py-2 text-left text-sm hover:bg-[#ffeae8]">Copiar orçamento</button>
+							</div>
+						</details>
+						<dialog id={ "modal-detalhes-" + fmt.Sprintf("%d", p.ID) }
+							class="w-[min(48rem,calc(100%-2rem))] max-w-none rounded-2xl border-0 p-0 shadow-2xl backdrop:bg-[#2b1719]/50">
+							<div class="max-h-[90vh] overflow-y-auto bg-white p-4 sm:p-8">
+								<div class="mb-6 flex items-start justify-between gap-4">
+									<div>
+										<p class="mb-1 text-sm font-semibold text-[#c17f6b]">Pedido #{ fmt.Sprintf("%d", p.ID) }</p>
+										<h3 class="text-2xl font-serif font-bold text-[#5a262c]">Detalhes do pedido</h3>
+										<p class="mt-1 text-sm text-[#5a262c]/70">{ obterNomeCliente(p.ClienteID, clientes) } · { obterNomeProduto(p.ProdutoID, produtos) }</p>
+									</div>
+									<button type="button" data-fechar-detalhes aria-label="Fechar"
+										class="rounded-full px-3 py-1 text-2xl text-[#5a262c]/60 hover:bg-[#ffeae8]">&times;</button>
+								</div>
+								<section class="grid gap-3 rounded-xl border border-[#e8d5c4] bg-[#fcf9f8] p-4 sm:grid-cols-2">
+									<div>
+										<h4 class="mb-2 font-bold text-[#5a262c]">Pedido</h4>
+										<dl class="space-y-1.5 text-sm">
+											<div><dt class="inline font-semibold">Status: </dt><dd class="inline">{ p.Status }</dd></div>
+											<div><dt class="inline font-semibold">Data: </dt><dd class="inline">{ formatarDataPedido(p.DataPedido) }</dd></div>
+											<div><dt class="inline font-semibold">Entrega prevista: </dt><dd class="inline">{ formatarDataPedido(p.DataEntrega) }</dd></div>
+											<div><dt class="inline font-semibold">Prazo: </dt><dd class="inline">{ fmt.Sprintf("%d dias úteis", p.DiasPrazo) }</dd></div>
+											<div><dt class="inline font-semibold">Tipo: </dt><dd class="inline">{ tipoPedido(p.Brinde) }</dd></div>
+											if p.PedidoPrincipalID > 0 {
+											<div><dt class="inline font-semibold">Pedido principal: </dt><dd class="inline">#{ fmt.Sprintf("%d", p.PedidoPrincipalID) }</dd></div>
+											}
+										</dl>
+									</div>
+									<div>
+										<h4 class="mb-2 font-bold text-[#5a262c]">Cliente</h4>
+										<dl class="space-y-1.5 text-sm">
+											<div><dt class="inline font-semibold">Nome: </dt><dd class="inline">{ obterNomeCliente(p.ClienteID, clientes) }</dd></div>
+											<div><dt class="inline font-semibold">WhatsApp: </dt><dd class="inline">{ valorOuTraco(obterClientePedido(p.ClienteID, clientes).Whatsapp) }</dd></div>
+											<div><dt class="inline font-semibold">Cidade/UF: </dt><dd class="inline">{ localizacaoCliente(obterClientePedido(p.ClienteID, clientes)) }</dd></div>
+										</dl>
+									</div>
+									<div>
+										<h4 class="mb-2 font-bold text-[#5a262c]">Produto e valores</h4>
+										<dl class="space-y-1.5 text-sm">
+											<div><dt class="inline font-semibold">Produto: </dt><dd class="inline">{ obterNomeProduto(p.ProdutoID, produtos) }</dd></div>
+											<div><dt class="inline font-semibold">Preço base do pedido: </dt><dd class="inline">{ FormatarReais(p.PrecoBase) }</dd></div>
+											<div><dt class="inline font-semibold">Forma de pagamento: </dt><dd class="inline">{ valorOuTraco(p.FormaPagamento) }</dd></div>
+											<div><dt class="inline font-semibold">Total acordado: </dt><dd class="inline">{ FormatarReais(p.TotalAcordado) }</dd></div>
+											<div><dt class="inline font-semibold">Desconto no cartão: </dt><dd class="inline">{ percentualOuTraco(p.DescontoCartao) }</dd></div>
+											<div><dt class="inline font-semibold">Desconto no Pix parcelado: </dt><dd class="inline">{ percentualOuTraco(p.DescontoPix) }</dd></div>
+											<div><dt class="inline font-semibold">Desconto no Pix à vista: </dt><dd class="inline">{ opcionalSimNao(p.DescontoPixAvista) }</dd></div>
+											<div><dt class="inline font-semibold">Pix parcelado oferecido: </dt><dd class="inline">{ simNao(p.PixParcelado) }</dd></div>
+										</dl>
+									</div>
+									<div>
+										<h4 class="mb-2 font-bold text-[#5a262c]">Personalização</h4>
+										<dl class="space-y-1.5 text-sm">
+											<div><dt class="inline font-semibold">Linha de fios: </dt><dd class="inline">{ valorOuTraco(p.LinhaCoresNome) }</dd></div>
+											<div><dt class="inline font-semibold">Tabela de cores: </dt><dd class="inline">
+												if p.LinhaCoresLink != "" {
+												<a href={ p.LinhaCoresLink } target="_blank" rel="noreferrer" class="break-all text-[#8b4c41] underline">{ p.LinhaCoresLink }</a>
+												} else {
+												{ "—" }
+												}
+											</dd></div>
+											<div><dt class="inline font-semibold">Inclui brinde: </dt><dd class="inline">{ simNao(p.IncluirBrinde) }</dd></div>
+										</dl>
+									</div>
+								</section>
+								<section class="space-y-2 rounded-xl border border-[#e8d5c4] bg-[#fcf9f8] p-4">
+									<h4 class="font-bold text-[#5a262c]">Observações</h4>
+									if strings.TrimSpace(p.Observacoes) == "" {
+									<p class="text-sm text-[#5a262c]/50">Nenhuma observação registrada.</p>
+									} else {
+									<p class="whitespace-pre-wrap text-sm text-[#5a262c]/80">{ p.Observacoes }</p>
+									}
+								</section>
+								<section class="mt-5 space-y-2 rounded-xl border border-[#e8d5c4] p-4">
+									<h4 class="font-bold text-[#5a262c]">Pagamentos</h4>
+									if len(p.Pagamentos) == 0 {
+									<p class="text-sm text-[#5a262c]/50">Nenhum pagamento registrado.</p>
+									} else {
+									<div class="divide-y divide-[#e8d5c4]">
+										for _, pagamento := range p.Pagamentos {
+										<div class="flex flex-wrap items-start justify-between gap-2 py-2 text-sm">
+											<div>
+												<p class="font-semibold text-[#5a262c]">{ pagamento.Descricao } · { FormatarReais(pagamento.Valor) }</p>
+												if pagamento.Status == "Recebido" {
+												<p class="text-[#56653f]">Recebido em { formatarDataPedido(pagamento.DataRecebimento) }</p>
+												} else {
+												<p class="text-[#5a262c]/70">Pendente · vence em { formatarDataPedido(pagamento.DataVencimento) }</p>
+												}
+											</div>
+											<span class="text-xs font-semibold">{ pagamento.Status }</span>
+										</div>
+										}
+									</div>
+									}
+								</section>
+								<section class="mt-5 space-y-3">
+									<div>
+										<h4 class="font-bold text-[#5a262c]">Etiquetas</h4>
+										<p class="text-xs text-[#5a262c]/60">Adicione várias etiquetas curtas para organizar este pedido.</p>
+									</div>
+									if len(p.Etiquetas) > 0 {
+									<div class="flex flex-wrap gap-2">
+										for _, etiqueta := range p.Etiquetas {
+										<div style={ "background-color: " + corEtiquetaPedido(etiqueta.Cor) + "; color: #5a262c" }
+											class="inline-flex items-center gap-1 rounded-full px-3 py-1 text-sm font-semibold">
+											<span>{ etiqueta.Texto }</span>
+											<form method="POST" action="/pedidos/etiquetas/excluir">
+												<input type="hidden" name="pedido_id" value={ fmt.Sprintf("%d", p.ID) } />
+												<input type="hidden" name="etiqueta_id" value={ fmt.Sprintf("%d", etiqueta.ID) } />
+												<button type="submit" aria-label={ "Remover etiqueta " + etiqueta.Texto }
+													class="rounded-full px-1 leading-5 hover:bg-black/10">&times;</button>
+											</form>
+										</div>
+										}
+									</div>
+									} else {
+									<p class="text-sm text-[#5a262c]/50">Nenhuma etiqueta adicionada.</p>
+									}
+									<form method="POST" action="/pedidos/etiquetas/adicionar" class="grid gap-3 rounded-xl border border-dashed border-[#e8d5c4] p-4 sm:grid-cols-[minmax(0,1fr)_auto_auto] sm:items-end">
+										<input type="hidden" name="pedido_id" value={ fmt.Sprintf("%d", p.ID) } />
+										<label class="text-sm font-semibold text-[#5a262c]">Texto da etiqueta
+											<input name="texto" type="text" maxlength="100" required placeholder="Ex.: presente, urgente..."
+												class="mt-1 w-full rounded-lg border border-[#e8d5c4] bg-[#fcf9f8] px-3 py-2.5 font-normal" />
+										</label>
+										<label class="text-sm font-semibold text-[#5a262c]">Cor em hexadecimal
+											<input name="cor" type="text" required minlength="7" maxlength="7" pattern="#[0-9A-Fa-f]{6}"
+												placeholder="#D98C9A" title="Informe a cor no formato #RRGGBB"
+												class="mt-1 block w-full rounded-lg border border-[#e8d5c4] bg-[#fcf9f8] px-3 py-2.5 font-mono font-normal" />
+										</label>
+										<button type="submit" class="rounded-lg bg-[#5a262c] px-4 py-2.5 text-sm font-bold text-[#ffeae8] hover:bg-[#472025]">Adicionar</button>
+									</form>
+								</section>
+								if p.MensagemOrcamento != "" {
+								<details class="mt-5 rounded-xl border border-[#e8d5c4] p-4">
+									<summary class="cursor-pointer text-sm font-bold text-[#5a262c]">Mensagem completa do orçamento</summary>
+									<p class="mt-3 whitespace-pre-wrap text-sm text-[#5a262c]/80">{ p.MensagemOrcamento }</p>
+								</details>
+								}
+							</div>
+						</dialog>
 						<textarea id={ "mensagem-orcamento-" + fmt.Sprintf("%d", p.ID) } readonly
 							hidden>{ p.MensagemOrcamento }</textarea>
 						<span id={ "status-copia-orcamento-" + fmt.Sprintf("%d", p.ID) } class="sr-only"
@@ -517,6 +655,10 @@ templ PedidosLista(pedidos []modelos.Pedido, clientes []modelos.Cliente, produto
 		if len(pedidos) == 0 {
 		<div class="p-10 text-center text-[#5a262c]/50 font-medium">Você ainda não tem nenhum pedido cadastrado.</div>
 		}
+	</div>
+	<div id="notificacao-copia-orcamento" role="status" aria-live="polite" hidden
+		class="fixed bottom-4 right-4 z-50 max-w-sm rounded-xl bg-[#5a262c] px-5 py-3 text-sm font-semibold text-white shadow-xl transition-opacity">
+		Orçamento copiado.
 	</div>
 	<script src="/static/js/pedidos.js" defer></script>
 </div>
@@ -538,6 +680,66 @@ if err != nil {
 return data
 }
 return dataConvertida.Format("02-01-2006")
+}
+
+func tipoPedido(brinde bool) string {
+	if brinde {
+		return "Brinde"
+	}
+	return "Encomenda"
+}
+
+func valorOuTraco(valor string) string {
+	if strings.TrimSpace(valor) == "" {
+		return "—"
+	}
+	return valor
+}
+
+func localizacaoCliente(cliente modelos.Cliente) string {
+	cidade := strings.TrimSpace(cliente.Cidade)
+	estado := strings.TrimSpace(cliente.Estado)
+	if cidade == "" && estado == "" {
+		return "—"
+	}
+	if cidade == "" {
+		return estado
+	}
+	if estado == "" {
+		return cidade
+	}
+	return cidade + "/" + estado
+}
+
+func percentualOuTraco(valor float64) string {
+	if valor <= 0 {
+		return "—"
+	}
+	return fmt.Sprintf("%.2g%%", valor)
+}
+
+func simNao(valor bool) string {
+	if valor {
+		return "Sim"
+	}
+	return "Não"
+}
+
+func opcionalSimNao(valor bool) string {
+	if valor {
+		return "10%"
+	}
+	return "Não"
+}
+
+func corEtiquetaPedido(cor string) string {
+	if len(cor) != 7 || cor[0] != '#' {
+		return "#ffeae8"
+	}
+	if _, err := strconv.ParseUint(cor[1:], 16, 24); err != nil {
+		return "#ffeae8"
+	}
+	return cor
 }
 
 templ StatusLabel(status string) {
@@ -582,4 +784,22 @@ return p.NomePeca
 }
 }
 return "Desconhecido"
+}
+
+func obterClientePedido(id int, clientes []modelos.Cliente) modelos.Cliente {
+	for _, cliente := range clientes {
+		if cliente.ID == id {
+			return cliente
+		}
+	}
+	return modelos.Cliente{Nome: "Desconhecido"}
+}
+
+func obterProdutoPedido(id int, produtos []modelos.Produto) modelos.Produto {
+	for _, produto := range produtos {
+		if produto.ID == id {
+			return produto
+		}
+	}
+	return modelos.Produto{NomePeca: "Desconhecido"}
 }

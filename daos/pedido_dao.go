@@ -16,6 +16,7 @@ var ErrTransicaoPedidoInvalida = errors.New("transição de status inválida")
 var ErrPagamentoNaoEncontrado = errors.New("pagamento não encontrado")
 var ErrPagamentoJaRecebido = errors.New("pagamento já recebido")
 var ErrPedidoNaoEncontrado = errors.New("pedido não encontrado")
+var ErrEtiquetaPedidoNaoEncontrada = errors.New("etiqueta do pedido não encontrada")
 var ErrPedidoPrincipalNaoEncontrado = errors.New("pedido principal não encontrado")
 var ErrPedidoPrincipalInvalido = errors.New("o pedido principal não pode ser um brinde")
 var ErrCondicoesPedidoBloqueadas = errors.New("as condições financeiras do pedido não podem ser alteradas após gerar pagamentos")
@@ -196,7 +197,65 @@ func (dao *PedidoDAO) BuscarTodos() ([]modelos.Pedido, error) {
 		}
 	}
 
+	etiquetas, err := dao.buscarEtiquetasPedidos()
+	if err != nil {
+		return nil, err
+	}
+	for _, etiqueta := range etiquetas {
+		if i, ok := pedidosPorID[etiqueta.PedidoID]; ok {
+			pedidos[i].Etiquetas = append(pedidos[i].Etiquetas, etiqueta)
+		}
+	}
+
 	return pedidos, nil
+}
+
+func (dao *PedidoDAO) AdicionarEtiquetaPedido(pedidoID int, texto string, cor string) error {
+	var existe bool
+	if err := dao.db.QueryRow(`SELECT EXISTS(SELECT 1 FROM pedidos WHERE id = ?)`, pedidoID).Scan(&existe); err != nil {
+		return err
+	}
+	if !existe {
+		return ErrPedidoNaoEncontrado
+	}
+	_, err := dao.db.Exec(`INSERT INTO etiquetas_pedido (pedido_id, texto, cor) VALUES (?, ?, ?)`, pedidoID, texto, cor)
+	return err
+}
+
+func (dao *PedidoDAO) ExcluirEtiquetaPedido(pedidoID int, etiquetaID int) error {
+	resultado, err := dao.db.Exec(`DELETE FROM etiquetas_pedido WHERE id = ? AND pedido_id = ?`, etiquetaID, pedidoID)
+	if err != nil {
+		return err
+	}
+	afetadas, err := resultado.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if afetadas == 0 {
+		return ErrEtiquetaPedidoNaoEncontrada
+	}
+	return nil
+}
+
+func (dao *PedidoDAO) buscarEtiquetasPedidos() ([]modelos.EtiquetaPedido, error) {
+	linhas, err := dao.db.Query(`SELECT id, pedido_id, texto, cor FROM etiquetas_pedido ORDER BY id`)
+	if err != nil {
+		return nil, err
+	}
+	defer linhas.Close()
+
+	var etiquetas []modelos.EtiquetaPedido
+	for linhas.Next() {
+		var etiqueta modelos.EtiquetaPedido
+		if err := linhas.Scan(&etiqueta.ID, &etiqueta.PedidoID, &etiqueta.Texto, &etiqueta.Cor); err != nil {
+			return nil, err
+		}
+		etiquetas = append(etiquetas, etiqueta)
+	}
+	if err := linhas.Err(); err != nil {
+		return nil, err
+	}
+	return etiquetas, nil
 }
 
 func (dao *PedidoDAO) AtualizarStatus(id int, novoStatus string) error {
