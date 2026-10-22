@@ -347,14 +347,14 @@ func PublicLayout(title string, content templ.Component, logoURL string, staticP
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 22, "<script type=\"text/javascript\">\n\t(function(c,l,a,r,i,t,y){\n\t\tc[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};\n\t\tt=l.createElement(r);t.async=1;t.src=\"https://www.clarity.ms/tag/\"+i;\n\t\ty=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);\n\t})(window, document, \"clarity\", \"script\", \"z085lt3fid\");\n</script><body class=\"bg-[#ffeae8] text-[#5a262c] font-sans antialiased min-h-screen flex flex-col\"><header class=\"px-4 pb-3 pt-6 text-center sm:pt-8\"><img src=\"")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 22, "<script type=\"text/javascript\">\n\t(function(c,l,a,r,i,t,y){\n\t\tc[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};\n\t\tt=l.createElement(r);t.async=1;t.src=\"https://www.clarity.ms/tag/\"+i;\n\t\ty=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);\n\t})(window, document, \"clarity\", \"script\", \"z085lt3fid\");\n</script><body class=\"flex min-h-screen items-start justify-center bg-[#e8d5c4]/40 p-2 font-sans text-[#5a262c] antialiased sm:p-4 lg:items-center lg:p-8\"><div class=\"flex min-h-[calc(100vh-1rem)] w-full max-w-[1400px] flex-col overflow-hidden rounded-2xl border border-white bg-[#fdfbf9] shadow-xl sm:min-h-[calc(100vh-2rem)] sm:rounded-[2rem] lg:min-h-[calc(100vh-4rem)]\"><header class=\"px-4 pb-3 pt-6 text-center sm:pt-8\"><img src=\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var16 string
 		templ_7745c5c3_Var16, templ_7745c5c3_Err = templ.ResolveAttributeValue(logoURL)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/layout.templ`, Line: 160, Col: 20}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/layout.templ`, Line: 161, Col: 20}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var16)
 		if templ_7745c5c3_Err != nil {
@@ -368,7 +368,7 @@ func PublicLayout(title string, content templ.Component, logoURL string, staticP
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 24, "</main><footer class=\"py-6 text-center text-xs font-medium text-[#5a262c]/60 sm:text-sm\">&copy; 2026 Falk Crochê. Todos os direitos reservados.</footer></body></html>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 24, "</main><footer class=\"py-6 text-center text-xs font-medium text-[#5a262c]/60 sm:text-sm\">&copy; 2026 Falk Crochê. Todos os direitos reservados.</footer></div><script src=\"/static/js/vitrine.js\" defer></script></body></html>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
