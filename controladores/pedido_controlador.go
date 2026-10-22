@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"math"
 	"net/http"
+	"net/url"
+	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -45,9 +47,8 @@ func (c *PedidoControlador) Inserir(w http.ResponseWriter, r *http.Request) {
 	brinde := r.FormValue("pedido_brinde") == "on"
 	temDescontoPixAvista := !brinde && r.FormValue("desconto_pix_avista") == "on"
 	clienteID, erroCliente := strconv.Atoi(r.FormValue("cliente_id"))
-	produtoID, erroProduto := strconv.Atoi(r.FormValue("produto_id"))
-	if erroCliente != nil || erroProduto != nil {
-		http.Error(w, "Selecione um cliente e um produto.", http.StatusBadRequest)
+	if erroCliente != nil || clienteID < 1 {
+		http.Error(w, "Selecione um cliente.", http.StatusBadRequest)
 		return
 	}
 
@@ -111,19 +112,17 @@ func (c *PedidoControlador) Inserir(w http.ResponseWriter, r *http.Request) {
 			break
 		}
 	}
-	var produtoNome string
-	var produtoPreco float64
-	for _, produto := range produtos {
-		if produto.ID == produtoID {
-			produtoNome = produto.NomePeca
-			produtoPreco = produto.Preco
-			break
-		}
-	}
-	if clienteNome == "" || produtoNome == "" {
-		http.Error(w, "Cliente ou produto não encontrado.", http.StatusBadRequest)
+	itens, produtoPreco, err := construirItensPedido(r.Form, produtos)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
+	if clienteNome == "" {
+		http.Error(w, "Cliente não encontrado.", http.StatusBadRequest)
+		return
+	}
+	produtoNome := nomesItensPedidoDTO(itens)
+	produtoID := itens[0].ProdutoID
 	status := modelos.StatusOrcamento
 	mensagem := ""
 	if brinde {
@@ -137,6 +136,7 @@ func (c *PedidoControlador) Inserir(w http.ResponseWriter, r *http.Request) {
 	pedidoDTO := dtos.PedidoInputDTO{
 		ClienteID:         clienteID,
 		ProdutoID:         produtoID,
+		Itens:             itens,
 		Status:            status,
 		DataPedido:        dataPedido.Format("2006-01-02"),
 		DiasPrazo:         prazoPadraoDiasUteis,
@@ -180,6 +180,67 @@ func montarMensagemBrinde(clienteNome string, produtoNome string, pedidoPrincipa
 		clienteNome, produtoNome, relacao, views.FormatarReais(0), entrega.Format("02/01/2006"))
 }
 
+func construirItensPedido(form url.Values, produtos []modelos.Produto) ([]dtos.ItemPedidoInputDTO, float64, error) {
+	ids := form["produto_id"]
+	if len(ids) == 0 {
+		return nil, 0, daos.ErrPedidoSemItens
+	}
+	produtosPorID := make(map[int]modelos.Produto, len(produtos))
+	for _, produto := range produtos {
+		produtosPorID[produto.ID] = produto
+	}
+	selecionados := make(map[int]bool, len(ids))
+	itens := make([]dtos.ItemPedidoInputDTO, 0, len(ids))
+	total := 0.0
+	for _, valorID := range ids {
+		produtoID, err := strconv.Atoi(valorID)
+		if err != nil || produtoID < 1 || selecionados[produtoID] {
+			return nil, 0, daos.ErrPedidoSemItens
+		}
+		produto, existe := produtosPorID[produtoID]
+		if !existe {
+			return nil, 0, fmt.Errorf("Um dos produtos selecionados não existe.")
+		}
+		quantidade := 1
+		if valorQuantidade := form.Get("quantidade_" + strconv.Itoa(produtoID)); valorQuantidade != "" {
+			quantidade, err = strconv.Atoi(valorQuantidade)
+			if err != nil || quantidade < 1 || quantidade > 999 {
+				return nil, 0, fmt.Errorf("Informe uma quantidade válida para %s.", produto.NomePeca)
+			}
+		}
+		selecionados[produtoID] = true
+		itens = append(itens, dtos.ItemPedidoInputDTO{
+			ProdutoID: produto.ID, NomeProduto: produto.NomePeca, Categoria: produto.Categoria,
+			Quantidade: quantidade, PrecoUnitario: produto.Preco,
+		})
+		total += float64(quantidade) * produto.Preco
+	}
+	return itens, math.Round(total*100) / 100, nil
+}
+
+func nomesItensPedidoDTO(itens []dtos.ItemPedidoInputDTO) string {
+	nomes := make([]string, 0, len(itens))
+	for _, item := range itens {
+		if item.Quantidade > 1 {
+			nomes = append(nomes, fmt.Sprintf("%dx %s", item.Quantidade, item.NomeProduto))
+		} else {
+			nomes = append(nomes, item.NomeProduto)
+		}
+	}
+	return strings.Join(nomes, ", ")
+}
+
+func itensPedidoDTO(itens []modelos.ItemPedido) []dtos.ItemPedidoInputDTO {
+	resultado := make([]dtos.ItemPedidoInputDTO, 0, len(itens))
+	for _, item := range itens {
+		resultado = append(resultado, dtos.ItemPedidoInputDTO{
+			ProdutoID: item.ProdutoID, NomeProduto: item.NomeProduto, Categoria: item.Categoria,
+			Quantidade: item.Quantidade, PrecoUnitario: item.PrecoUnitario,
+		})
+	}
+	return resultado
+}
+
 func (c *PedidoControlador) Atualizar(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Método não permitido.", http.StatusMethodNotAllowed)
@@ -210,14 +271,15 @@ func (c *PedidoControlador) Atualizar(w http.ResponseWriter, r *http.Request) {
 		http.NotFound(w, r)
 		return
 	}
+	temPagamentos := len(pedidoAtual.Pagamentos) > 0
+	itens := itensPedidoDTO(pedidoAtual.Itens)
+	produtoPreco := pedidoAtual.PrecoBase
+	if !temPagamentos {
+		itens = nil
+	}
 	clienteID, err := strconv.Atoi(r.FormValue("cliente_id"))
 	if err != nil || clienteID < 1 {
 		http.Error(w, "Selecione um cliente válido.", http.StatusBadRequest)
-		return
-	}
-	produtoID, err := strconv.Atoi(r.FormValue("produto_id"))
-	if err != nil || produtoID < 1 {
-		http.Error(w, "Selecione um produto válido.", http.StatusBadRequest)
 		return
 	}
 	diasPrazo, err := strconv.Atoi(r.FormValue("dias_prazo"))
@@ -246,17 +308,26 @@ func (c *PedidoControlador) Atualizar(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Erro ao buscar produtos.", http.StatusInternalServerError)
 		return
 	}
-	var produtoNome string
-	var produtoPreco float64
-	for _, produto := range produtos {
-		if produto.ID == produtoID {
-			produtoNome = produto.NomePeca
-			produtoPreco = produto.Preco
-			break
+	if temPagamentos {
+		produtoPreco = 0
+		for _, item := range itens {
+			produtoPreco += float64(item.Quantidade) * item.PrecoUnitario
+		}
+	} else {
+		itens, produtoPreco, err = construirItensPedido(r.Form, produtos)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
 		}
 	}
+	if len(itens) == 0 {
+		http.Error(w, "O pedido não possui produtos para edição.", http.StatusConflict)
+		return
+	}
+	produtoID := itens[0].ProdutoID
+	produtoNome := nomesItensPedidoDTO(itens)
 	if produtoNome == "" {
-		http.Error(w, "Produto não encontrado.", http.StatusBadRequest)
+		http.Error(w, "Selecione ao menos um produto.", http.StatusBadRequest)
 		return
 	}
 	dataPedido := r.FormValue("data_pedido")
@@ -269,7 +340,6 @@ func (c *PedidoControlador) Atualizar(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Informe uma data de entrega válida.", http.StatusBadRequest)
 		return
 	}
-	temPagamentos := len(pedidoAtual.Pagamentos) > 0
 	brinde := pedidoAtual.Brinde
 	if !temPagamentos {
 		brinde = r.FormValue("pedido_brinde") == "on"
@@ -342,7 +412,7 @@ func (c *PedidoControlador) Atualizar(w http.ResponseWriter, r *http.Request) {
 			descontoPix > 0, descontoPix, descontoPixAvista)
 	}
 	pedidoEdicao := dtos.PedidoEdicaoDTO{
-		ClienteID: clienteID, ProdutoID: produtoID, DataPedido: dataPedidoParsed.Format("2006-01-02"),
+		ClienteID: clienteID, ProdutoID: produtoID, Itens: itens, DataPedido: dataPedidoParsed.Format("2006-01-02"),
 		DiasPrazo: diasPrazo, DataEntrega: dataEntregaParsed.Format("2006-01-02"), Observacoes: r.FormValue("observacoes"),
 		MensagemOrcamento: mensagemOrcamento, LinhaCoresNome: linhaCoresNome, LinhaCoresLink: linhaCoresLink,
 		PrecoBase: precoBase, DescontoCartao: descontoCartao, DescontoPix: descontoPix,
@@ -608,13 +678,20 @@ func (c *PedidoControlador) Listar(w http.ResponseWriter, r *http.Request) {
 				break
 			}
 		}
-		produtoNome := "Desconhecido"
-		var produtoPreco float64
-		for _, produto := range produtos {
-			if produto.ID == pedidos[i].ProdutoID {
-				produtoNome = produto.NomePeca
-				produtoPreco = produto.Preco
-				break
+		itens := itensPedidoDTO(pedidos[i].Itens)
+		produtoNome := nomesItensPedidoDTO(itens)
+		produtoPreco := 0.0
+		for _, item := range itens {
+			produtoPreco += float64(item.Quantidade) * item.PrecoUnitario
+		}
+		if len(itens) == 0 {
+			produtoNome = "Desconhecido"
+			for _, produto := range produtos {
+				if produto.ID == pedidos[i].ProdutoID {
+					produtoNome = produto.NomePeca
+					produtoPreco = produto.Preco
+					break
+				}
 			}
 		}
 		for j := range pedidos[i].Pagamentos {
@@ -639,6 +716,71 @@ func (c *PedidoControlador) Listar(w http.ResponseWriter, r *http.Request) {
 
 	componente := views.AdminLayout("Gestão de Pedidos", views.PedidosLista(pedidos, clientes, produtos))
 	componente.Render(r.Context(), w)
+}
+
+func (c *PedidoControlador) ImprimirOrcamento(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "Método não permitido.", http.StatusMethodNotAllowed)
+		return
+	}
+	pedidoID, err := strconv.Atoi(r.URL.Query().Get("pedido_id"))
+	if err != nil || pedidoID < 1 {
+		http.Error(w, "Pedido inválido.", http.StatusBadRequest)
+		return
+	}
+
+	pedidos, err := c.dao.BuscarTodos()
+	if err != nil {
+		http.Error(w, "Erro ao buscar pedido.", http.StatusInternalServerError)
+		return
+	}
+	var pedido modelos.Pedido
+	for _, item := range pedidos {
+		if item.ID == pedidoID {
+			pedido = item
+			break
+		}
+	}
+	if pedido.ID == 0 {
+		http.NotFound(w, r)
+		return
+	}
+
+	clientes, err := c.clienteDAO.BuscarTodos()
+	if err != nil {
+		http.Error(w, "Erro ao buscar cliente.", http.StatusInternalServerError)
+		return
+	}
+	produtos, err := c.produtoDAO.BuscarTodos()
+	if err != nil {
+		http.Error(w, "Erro ao buscar produto.", http.StatusInternalServerError)
+		return
+	}
+	var cliente modelos.Cliente
+	for _, item := range clientes {
+		if item.ID == pedido.ClienteID {
+			cliente = item
+			break
+		}
+	}
+	var produto modelos.Produto
+	for _, item := range produtos {
+		if item.ID == pedido.ProdutoID {
+			produto = item
+			break
+		}
+	}
+	if cliente.ID == 0 || produto.ID == 0 {
+		http.Error(w, "Cliente ou produto do pedido não encontrado.", http.StatusNotFound)
+		return
+	}
+
+	w.Header().Set("Cache-Control", "no-store, no-cache, must-revalidate")
+	w.Header().Set("Pragma", "no-cache")
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	if err := views.OrcamentoImpressao(pedido, cliente, produto, os.Getenv("WHATSAPP_NUMERO")).Render(r.Context(), w); err != nil {
+		http.Error(w, "Erro ao gerar orçamento.", http.StatusInternalServerError)
+	}
 }
 
 func calcularDataEntrega(inicio time.Time, diasUteis int) time.Time {

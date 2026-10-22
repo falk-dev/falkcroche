@@ -20,6 +20,7 @@ func TestLembretesDeVencimentoFicamNaoLidosAteSeremMarcados(t *testing.T) {
 		`CREATE TABLE clientes (id INTEGER PRIMARY KEY, nome TEXT NOT NULL)`,
 		`CREATE TABLE produtos (id INTEGER PRIMARY KEY, nome_peca TEXT NOT NULL)`,
 		`CREATE TABLE pedidos (id INTEGER PRIMARY KEY, cliente_id INTEGER, produto_id INTEGER, status TEXT)`,
+		`CREATE TABLE itens_pedido (pedido_id INTEGER, nome_produto TEXT, quantidade INTEGER)`,
 		`CREATE TABLE pagamentos (
 			id INTEGER PRIMARY KEY,
 			pedido_id INTEGER NOT NULL,
@@ -35,6 +36,7 @@ func TestLembretesDeVencimentoFicamNaoLidosAteSeremMarcados(t *testing.T) {
 		)`,
 		`INSERT INTO clientes (id, nome) VALUES (1, 'Camila')`,
 		`INSERT INTO produtos (id, nome_peca) VALUES (1, 'Amigurumi Coelho')`,
+		`INSERT INTO itens_pedido (pedido_id, nome_produto, quantidade) VALUES (12, 'Amigurumi Coelho', 1), (12, 'Touca', 2)`,
 		`INSERT INTO pedidos (id, cliente_id, produto_id, status)
 			VALUES (12, 1, 1, 'Em produção'), (13, 1, 1, 'Cancelado')`,
 		`INSERT INTO pagamentos (id, pedido_id, descricao, valor, data_vencimento, status)
@@ -60,7 +62,7 @@ func TestLembretesDeVencimentoFicamNaoLidosAteSeremMarcados(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(notificacoes) != 2 || notificacoes[1].Cliente != "Camila" || notificacoes[1].Produto != "Amigurumi Coelho" {
+	if len(notificacoes) != 2 || notificacoes[1].Cliente != "Camila" || notificacoes[1].Produto != "Amigurumi Coelho, 2x Touca" {
 		t.Fatalf("lembretes não lidos após novo vencimento = %+v; esperado dois com dados do pedido", notificacoes)
 	}
 	if err := dao.MarcarComoLida(notificacoes[0].ID); err != nil {

@@ -3,6 +3,7 @@ package dtos
 type PedidoInputDTO struct {
 	ClienteID         int
 	ProdutoID         int
+	Itens             []ItemPedidoInputDTO
 	Status            string
 	DataPedido        string
 	DiasPrazo         int
@@ -24,6 +25,7 @@ type PedidoInputDTO struct {
 type PedidoEdicaoDTO struct {
 	ClienteID         int
 	ProdutoID         int
+	Itens             []ItemPedidoInputDTO
 	DataPedido        string
 	DiasPrazo         int
 	DataEntrega       string
@@ -39,4 +41,12 @@ type PedidoEdicaoDTO struct {
 	Brinde            bool
 	IncluirBrinde     bool
 	PedidoPrincipalID int
+}
+
+type ItemPedidoInputDTO struct {
+	ProdutoID     int
+	NomeProduto   string
+	Categoria     string
+	Quantidade    int
+	PrecoUnitario float64
 }

@@ -27,7 +27,9 @@ func (dao *NotificacaoDAO) ListarVencidas(dataHoje string) ([]modelos.Notificaca
 	}
 
 	linhas, err := dao.db.Query(`SELECT notificacoes.id, pagamentos.id, pedidos.id, clientes.nome,
-		produtos.nome_peca, pagamentos.descricao, pagamentos.valor, pagamentos.data_vencimento
+		COALESCE((SELECT group_concat(CASE WHEN quantidade > 1 THEN quantidade || 'x ' || nome_produto ELSE nome_produto END, ', ')
+			FROM itens_pedido WHERE itens_pedido.pedido_id = pedidos.id), produtos.nome_peca),
+		pagamentos.descricao, pagamentos.valor, pagamentos.data_vencimento
 		FROM notificacoes
 		JOIN pagamentos ON pagamentos.id = notificacoes.pagamento_id
 		JOIN pedidos ON pedidos.id = pagamentos.pedido_id

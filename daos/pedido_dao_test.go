@@ -202,7 +202,8 @@ func TestPedidoBrindeZeraPrecoEPermiteVinculoOpcional(t *testing.T) {
 		brinde BOOLEAN NOT NULL DEFAULT 0, incluir_brinde BOOLEAN NOT NULL DEFAULT 0,
 		pedido_principal_id INTEGER
 	);
-	CREATE TABLE pagamentos (id INTEGER PRIMARY KEY, pedido_id INTEGER)`); err != nil {
+	CREATE TABLE pagamentos (id INTEGER PRIMARY KEY, pedido_id INTEGER);
+	CREATE TABLE itens_pedido (id INTEGER PRIMARY KEY, pedido_id INTEGER, produto_id INTEGER, nome_produto TEXT, categoria TEXT, quantidade INTEGER, preco_unitario REAL)`); err != nil {
 		t.Fatal(err)
 	}
 	dao := NovoPedidoDAO(db)
@@ -254,10 +255,10 @@ func TestPedidoBrindeZeraPrecoEPermiteVinculoOpcional(t *testing.T) {
 	if preco != 0 || principal.Valid {
 		t.Fatalf("brinde avulso ficou com valor %.2f ou vínculo %+v", preco, principal)
 	}
-	if _, err := dao.Inserir(dtos.PedidoInputDTO{Brinde: true, PedidoPrincipalID: 99}); err != ErrPedidoPrincipalNaoEncontrado {
+	if _, err := dao.Inserir(dtos.PedidoInputDTO{ProdutoID: 4, Brinde: true, PedidoPrincipalID: 99}); err != ErrPedidoPrincipalNaoEncontrado {
 		t.Fatalf("pedido principal inexistente deveria ser rejeitado, recebeu: %v", err)
 	}
-	if _, err := dao.Inserir(dtos.PedidoInputDTO{Brinde: true, PedidoPrincipalID: brindeID}); err != ErrPedidoPrincipalInvalido {
+	if _, err := dao.Inserir(dtos.PedidoInputDTO{ProdutoID: 4, Brinde: true, PedidoPrincipalID: brindeID}); err != ErrPedidoPrincipalInvalido {
 		t.Fatalf("brinde não deveria aceitar outro brinde como principal, recebeu: %v", err)
 	}
 }
@@ -276,6 +277,7 @@ func TestAtualizarDetalhesPedidoPreservaCondicoesAcordadas(t *testing.T) {
 		brinde BOOLEAN, incluir_brinde BOOLEAN, pedido_principal_id INTEGER
 	);
 		CREATE TABLE pagamentos (id INTEGER PRIMARY KEY, pedido_id INTEGER);
+		CREATE TABLE itens_pedido (id INTEGER PRIMARY KEY, pedido_id INTEGER, produto_id INTEGER, nome_produto TEXT, categoria TEXT, quantidade INTEGER, preco_unitario REAL);
 		INSERT INTO pedidos VALUES (1, 1, 1, 'Orçamento', 20, '2026-01-01', '2026-02-01', 'Antes', 'Orçamento antigo', 'Linha', 'https://exemplo.com', 120, 0, 0, 1, 0, 120, 'Pix parcelado', 0, 0, NULL)`); err != nil {
 		t.Fatal(err)
 	}
@@ -371,12 +373,27 @@ func TestPedidoPersisteMensagemOrcamento(t *testing.T) {
 	)`); err != nil {
 		t.Fatal(err)
 	}
+	if _, err := db.Exec(`CREATE TABLE itens_pedido (
+		id INTEGER PRIMARY KEY AUTOINCREMENT,
+		pedido_id INTEGER NOT NULL,
+		produto_id INTEGER NOT NULL,
+		nome_produto TEXT NOT NULL,
+		categoria TEXT NOT NULL DEFAULT '',
+		quantidade INTEGER NOT NULL DEFAULT 1,
+		preco_unitario REAL NOT NULL DEFAULT 0
+	)`); err != nil {
+		t.Fatal(err)
+	}
 
 	mensagem := "Orçamento individual da linha escolhida"
 	dao := NovoPedidoDAO(db)
 	id, err := dao.Inserir(dtos.PedidoInputDTO{
-		ClienteID:         1,
-		ProdutoID:         1,
+		ClienteID: 1,
+		ProdutoID: 1,
+		Itens: []dtos.ItemPedidoInputDTO{
+			{ProdutoID: 1, NomeProduto: "Boina", Categoria: "Acessórios", Quantidade: 2, PrecoUnitario: 30},
+			{ProdutoID: 2, NomeProduto: "Bolsa", Categoria: "Bolsas", Quantidade: 1, PrecoUnitario: 20},
+		},
 		Status:            modelos.StatusOrcamento,
 		MensagemOrcamento: mensagem,
 		LinhaCoresNome:    "Linha de teste",
@@ -397,6 +414,9 @@ func TestPedidoPersisteMensagemOrcamento(t *testing.T) {
 	if len(pedidos) != 1 || pedidos[0].ID != id || pedidos[0].MensagemOrcamento != mensagem ||
 		pedidos[0].LinhaCoresNome != "Linha de teste" || pedidos[0].LinhaCoresLink != "https://exemplo.com/cores" || !pedidos[0].IncluirBrinde {
 		t.Fatalf("mensagem não foi recuperada para o pedido: %+v", pedidos)
+	}
+	if len(pedidos[0].Itens) != 2 || pedidos[0].PrecoBase != 80 || pedidos[0].Itens[0].Quantidade != 2 || pedidos[0].Itens[1].NomeProduto != "Bolsa" {
+		t.Fatalf("itens ou total do pedido foram recuperados incorretamente: %+v", pedidos[0])
 	}
 	if len(pedidos[0].Etiquetas) != 1 || pedidos[0].Etiquetas[0].Texto != "Presente" || pedidos[0].Etiquetas[0].Cor != "rosa" {
 		t.Fatalf("etiqueta não foi recuperada para o pedido: %+v", pedidos[0].Etiquetas)

@@ -25,6 +25,7 @@ var ErrPixParceladoNaoOferecido = errors.New("Pix parcelado não foi oferecido n
 var ErrNumeroParcelasInvalido = errors.New("número de parcelas inválido")
 var ErrDataParcelaInvalida = errors.New("data da primeira parcela inválida")
 var ErrValorTotalInvalido = errors.New("valor total do pedido inválido")
+var ErrPedidoSemItens = errors.New("o pedido precisa conter ao menos um produto")
 
 type PedidoDAO struct {
 	db *sql.DB
@@ -35,6 +36,13 @@ func NovoPedidoDAO(db *sql.DB) *PedidoDAO {
 }
 
 func (dao *PedidoDAO) Inserir(pedido dtos.PedidoInputDTO) (int, error) {
+	itens, precoBase, err := prepararItensPedido(pedido.Itens, pedido.ProdutoID, pedido.PrecoBase, pedido.Brinde)
+	if err != nil {
+		return 0, err
+	}
+	pedido.Itens = itens
+	pedido.ProdutoID = itens[0].ProdutoID
+	pedido.PrecoBase = precoBase
 	if pedido.PedidoPrincipalID > 0 {
 		var principalBrinde bool
 		if err := dao.db.QueryRow(`SELECT brinde FROM pedidos WHERE id = ?`, pedido.PedidoPrincipalID).Scan(&principalBrinde); err != nil {
@@ -58,10 +66,27 @@ func (dao *PedidoDAO) Inserir(pedido dtos.PedidoInputDTO) (int, error) {
 	} else {
 		pedido.PedidoPrincipalID = 0
 	}
+	tx, err := dao.db.Begin()
+	if err != nil {
+		return 0, err
+	}
+	defer tx.Rollback()
+	if pedido.PedidoPrincipalID > 0 {
+		var principalBrinde bool
+		if err := tx.QueryRow(`SELECT brinde FROM pedidos WHERE id = ?`, pedido.PedidoPrincipalID).Scan(&principalBrinde); err != nil {
+			if errors.Is(err, sql.ErrNoRows) {
+				return 0, ErrPedidoPrincipalNaoEncontrado
+			}
+			return 0, err
+		}
+		if principalBrinde {
+			return 0, ErrPedidoPrincipalInvalido
+		}
+	}
 	query := `INSERT INTO pedidos (cliente_id, produto_id, status, data_pedido, dias_prazo, data_entrega, observacoes, mensagem_orcamento, linha_cores_nome, linha_cores_link, preco_base, desconto_cartao, desconto_pix, desconto_pix_avista, pix_parcelado, brinde, incluir_brinde, pedido_principal_id)
 			  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NULLIF(?, 0))`
 
-	resultado, err := dao.db.Exec(query, pedido.ClienteID, pedido.ProdutoID, pedido.Status,
+	resultado, err := tx.Exec(query, pedido.ClienteID, pedido.ProdutoID, pedido.Status,
 		pedido.DataPedido, pedido.DiasPrazo, pedido.DataEntrega, pedido.Observacoes, pedido.MensagemOrcamento, pedido.LinhaCoresNome, pedido.LinhaCoresLink,
 		pedido.PrecoBase, pedido.DescontoCartao, pedido.DescontoPix, pedido.DescontoPixAvista, pedido.PixParcelado,
 		pedido.Brinde, pedido.IncluirBrinde, pedido.PedidoPrincipalID)
@@ -74,11 +99,24 @@ func (dao *PedidoDAO) Inserir(pedido dtos.PedidoInputDTO) (int, error) {
 	if err != nil {
 		return 0, err
 	}
+	if err := inserirItensPedido(tx, int(id), pedido.Itens); err != nil {
+		return 0, err
+	}
+	if err := tx.Commit(); err != nil {
+		return 0, err
+	}
 
 	return int(id), nil
 }
 
 func (dao *PedidoDAO) AtualizarDetalhes(id int, pedido dtos.PedidoEdicaoDTO) error {
+	itens, precoBase, err := prepararItensPedido(pedido.Itens, pedido.ProdutoID, pedido.PrecoBase, pedido.Brinde)
+	if err != nil {
+		return err
+	}
+	pedido.Itens = itens
+	pedido.ProdutoID = itens[0].ProdutoID
+	pedido.PrecoBase = precoBase
 	tx, err := dao.db.Begin()
 	if err != nil {
 		return err
@@ -100,7 +138,12 @@ func (dao *PedidoDAO) AtualizarDetalhes(id int, pedido dtos.PedidoEdicaoDTO) err
 	if err := tx.QueryRow(`SELECT COUNT(*) FROM pagamentos WHERE pedido_id = ?`, id).Scan(&quantidadePagamentos); err != nil {
 		return err
 	}
-	if quantidadePagamentos > 0 && (pedido.Brinde != brindeAtual || pedido.DescontoCartao != descontoCartaoAtual ||
+	itensAtuais, err := buscarItensPedido(tx, id)
+	if err != nil {
+		return err
+	}
+	itensFinanceirosAlterados := !itensPedidoIguais(pedido.Itens, itensAtuais)
+	if quantidadePagamentos > 0 && (itensFinanceirosAlterados || pedido.Brinde != brindeAtual || pedido.DescontoCartao != descontoCartaoAtual ||
 		pedido.DescontoPix != descontoPixAtual || pedido.DescontoPixAvista != descontoPixAvistaAtual ||
 		pedido.PixParcelado != pixParceladoAtual || pedido.PrecoBase != precoBaseAtual) {
 		return ErrCondicoesPedidoBloqueadas
@@ -150,7 +193,83 @@ func (dao *PedidoDAO) AtualizarDetalhes(id int, pedido dtos.PedidoEdicaoDTO) err
 	if afetadas == 0 {
 		return ErrPedidoNaoEncontrado
 	}
+	if quantidadePagamentos == 0 {
+		if _, err := tx.Exec(`DELETE FROM itens_pedido WHERE pedido_id = ?`, id); err != nil {
+			return err
+		}
+		if err := inserirItensPedido(tx, id, pedido.Itens); err != nil {
+			return err
+		}
+	}
 	return tx.Commit()
+}
+
+func prepararItensPedido(itens []dtos.ItemPedidoInputDTO, produtoID int, precoBase float64, brinde bool) ([]dtos.ItemPedidoInputDTO, float64, error) {
+	if len(itens) == 0 && produtoID > 0 {
+		itens = []dtos.ItemPedidoInputDTO{{ProdutoID: produtoID, NomeProduto: "Produto", Quantidade: 1, PrecoUnitario: precoBase}}
+	}
+	if len(itens) == 0 {
+		return nil, 0, ErrPedidoSemItens
+	}
+	total := 0.0
+	for indice := range itens {
+		item := &itens[indice]
+		if item.ProdutoID < 1 || item.Quantidade < 1 || item.PrecoUnitario < 0 || math.IsNaN(item.PrecoUnitario) || math.IsInf(item.PrecoUnitario, 0) {
+			return nil, 0, ErrValorTotalInvalido
+		}
+		if item.NomeProduto == "" {
+			item.NomeProduto = "Produto"
+		}
+		if brinde {
+			item.PrecoUnitario = 0
+		}
+		total += float64(item.Quantidade) * item.PrecoUnitario
+	}
+	if brinde {
+		total = 0
+	}
+	return itens, math.Round(total*100) / 100, nil
+}
+
+func inserirItensPedido(tx *sql.Tx, pedidoID int, itens []dtos.ItemPedidoInputDTO) error {
+	for _, item := range itens {
+		if _, err := tx.Exec(`INSERT INTO itens_pedido (pedido_id, produto_id, nome_produto, categoria, quantidade, preco_unitario) VALUES (?, ?, ?, ?, ?, ?)`,
+			pedidoID, item.ProdutoID, item.NomeProduto, item.Categoria, item.Quantidade, item.PrecoUnitario); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func buscarItensPedido(tx *sql.Tx, pedidoID int) ([]modelos.ItemPedido, error) {
+	linhas, err := tx.Query(`SELECT produto_id, nome_produto, categoria, quantidade, preco_unitario FROM itens_pedido WHERE pedido_id = ? ORDER BY id`, pedidoID)
+	if err != nil {
+		return nil, err
+	}
+	defer linhas.Close()
+	var itens []modelos.ItemPedido
+	for linhas.Next() {
+		var item modelos.ItemPedido
+		item.PedidoID = pedidoID
+		if err := linhas.Scan(&item.ProdutoID, &item.NomeProduto, &item.Categoria, &item.Quantidade, &item.PrecoUnitario); err != nil {
+			return nil, err
+		}
+		itens = append(itens, item)
+	}
+	return itens, linhas.Err()
+}
+
+func itensPedidoIguais(novos []dtos.ItemPedidoInputDTO, atuais []modelos.ItemPedido) bool {
+	if len(novos) != len(atuais) {
+		return false
+	}
+	for indice, novo := range novos {
+		atual := atuais[indice]
+		if novo.ProdutoID != atual.ProdutoID || novo.Quantidade != atual.Quantidade || novo.PrecoUnitario != atual.PrecoUnitario {
+			return false
+		}
+	}
+	return true
 }
 
 func (dao *PedidoDAO) BuscarTodos() ([]modelos.Pedido, error) {
@@ -207,7 +326,34 @@ func (dao *PedidoDAO) BuscarTodos() ([]modelos.Pedido, error) {
 		}
 	}
 
+	itens, err := dao.buscarItensPedidos()
+	if err != nil {
+		return nil, err
+	}
+	for _, item := range itens {
+		if i, ok := pedidosPorID[item.PedidoID]; ok {
+			pedidos[i].Itens = append(pedidos[i].Itens, item)
+		}
+	}
+
 	return pedidos, nil
+}
+
+func (dao *PedidoDAO) buscarItensPedidos() ([]modelos.ItemPedido, error) {
+	linhas, err := dao.db.Query(`SELECT pedido_id, produto_id, nome_produto, categoria, quantidade, preco_unitario FROM itens_pedido ORDER BY pedido_id, id`)
+	if err != nil {
+		return nil, err
+	}
+	defer linhas.Close()
+	var itens []modelos.ItemPedido
+	for linhas.Next() {
+		var item modelos.ItemPedido
+		if err := linhas.Scan(&item.PedidoID, &item.ProdutoID, &item.NomeProduto, &item.Categoria, &item.Quantidade, &item.PrecoUnitario); err != nil {
+			return nil, err
+		}
+		itens = append(itens, item)
+	}
+	return itens, linhas.Err()
 }
 
 func (dao *PedidoDAO) AdicionarEtiquetaPedido(pedidoID int, texto string, cor string) error {

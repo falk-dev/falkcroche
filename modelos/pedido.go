@@ -64,6 +64,16 @@ type Pedido struct {
 	PedidoPrincipalID int
 	Pagamentos        []Pagamento
 	Etiquetas         []EtiquetaPedido
+	Itens             []ItemPedido
+}
+
+type ItemPedido struct {
+	PedidoID      int
+	ProdutoID     int
+	NomeProduto   string
+	Categoria     string
+	Quantidade    int
+	PrecoUnitario float64
 }
 
 type EtiquetaPedido struct {

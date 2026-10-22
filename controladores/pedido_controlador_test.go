@@ -1,6 +1,8 @@
 package controladores
 
 import (
+	"context"
+	"net/url"
 	"strings"
 	"testing"
 	"time"
@@ -15,6 +17,26 @@ func TestCalcularDataEntregaContaSomenteDiasUteis(t *testing.T) {
 	esperado := time.Date(2026, time.October, 12, 12, 0, 0, 0, time.Local)
 	if !resultado.Equal(esperado) {
 		t.Fatalf("data calculada = %s; esperado %s", resultado.Format("2006-01-02"), esperado.Format("2006-01-02"))
+	}
+}
+
+func TestConstruirItensPedidoCalculaTotalComDadosDoCatalogo(t *testing.T) {
+	form := url.Values{
+		"produto_id":     {"1", "2"},
+		"quantidade_1":   {"2"},
+		"quantidade_2":   {"1"},
+		"preco_unitario": {"0.01"},
+	}
+	produtos := []modelos.Produto{
+		{ID: 1, NomePeca: "Boina", Categoria: "Acessórios", Preco: 30},
+		{ID: 2, NomePeca: "Bolsa", Categoria: "Bolsas", Preco: 20},
+	}
+	itens, total, err := construirItensPedido(form, produtos)
+	if err != nil {
+		t.Fatalf("erro ao construir itens: %v", err)
+	}
+	if total != 80 || len(itens) != 2 || itens[0].Quantidade != 2 || itens[0].PrecoUnitario != 30 || itens[1].PrecoUnitario != 20 {
+		t.Fatalf("itens e total = %+v, %.2f; esperado duas linhas e total 80,00", itens, total)
 	}
 }
 
@@ -147,6 +169,89 @@ func TestMensagemDeBrindeIndicaValorZeroEPedidoRelacionado(t *testing.T) {
 		if !strings.Contains(mensagem, trecho) {
 			t.Errorf("mensagem de brinde não contém %q: %s", trecho, mensagem)
 		}
+	}
+}
+
+func TestOrcamentoImpressaoRenderizaValoresECondicoes(t *testing.T) {
+	var html strings.Builder
+	err := views.OrcamentoImpressao(
+		modelos.Pedido{
+			ID:                42,
+			DataPedido:        "2026-10-22",
+			DataEntrega:       "2026-11-19",
+			DiasPrazo:         20,
+			PrecoBase:         170,
+			DescontoCartao:    5,
+			DescontoPix:       10,
+			DescontoPixAvista: true,
+			PixParcelado:      true,
+			Observacoes:       "Cores personalizadas",
+		},
+		modelos.Cliente{ID: 3, Nome: "Ana"},
+		modelos.Produto{ID: 7, NomePeca: "Blusa Vitória-Régia"},
+		"5568920017470",
+	).Render(context.Background(), &html)
+	if err != nil {
+		t.Fatalf("erro ao renderizar orçamento: %v", err)
+	}
+	for _, trecho := range []string{
+		"Orçamento",
+		"falkcroche.com.br",
+		"falkcroche@gmail.com",
+		"+55 (68) 92001-7470",
+		"class=\"watermark\"",
+		"#c17f6b",
+		"#7a8c5f",
+		"Ana",
+		"Blusa Vitória-Régia",
+		"R$ 170,00",
+		"R$ 153,00",
+		"R$ 161,50",
+		"R$ 48,45",
+		"R$ 45,90",
+		"Cores personalizadas",
+	} {
+		if !strings.Contains(html.String(), trecho) {
+			t.Errorf("orçamento impresso não contém %q", trecho)
+		}
+	}
+	if strings.Contains(html.String(), "A/C:") {
+		t.Fatal("orçamento não deve exibir o rótulo A/C")
+	}
+}
+
+func TestOrcamentoImpressaoRenderizaTodosOsItensEUmIdentificador(t *testing.T) {
+	var html strings.Builder
+	err := views.OrcamentoImpressao(
+		modelos.Pedido{
+			ID:                42,
+			DataPedido:        "2026-10-22",
+			DataEntrega:       "2026-11-19",
+			DiasPrazo:         20,
+			PrecoBase:         80,
+			LinhaCoresNome:    "Amigurumi",
+			DescontoPix:       5,
+			DescontoPixAvista: true,
+			PixParcelado:      true,
+			Itens: []modelos.ItemPedido{
+				{ProdutoID: 1, NomeProduto: "Boina", Categoria: "Acessórios", Quantidade: 2, PrecoUnitario: 30},
+				{ProdutoID: 2, NomeProduto: "Bolsa", Categoria: "Bolsas", Quantidade: 1, PrecoUnitario: 20},
+			},
+		},
+		modelos.Cliente{ID: 3, Nome: "Ana", Whatsapp: "68920017470", Cidade: "Rio Branco", Estado: "AC"},
+		modelos.Produto{},
+		"",
+	).Render(context.Background(), &html)
+	if err != nil {
+		t.Fatalf("erro ao renderizar orçamento multi-item: %v", err)
+	}
+	for _, trecho := range []string{"Boina", "2</td>", "R$ 60,00", "Bolsa", "R$ 20,00", "R$ 80,00", "VALOR TOTAL:", "Cidade / UF", "Rio Branco/AC", "10% de desconto", "5% de desconto"} {
+		if !strings.Contains(html.String(), trecho) {
+			t.Errorf("orçamento multi-item não contém %q", trecho)
+		}
+	}
+	if strings.Contains(html.String(), "Pedido #42") || strings.Contains(html.String(), "A peça é feita à mão") || strings.Contains(html.String(), "Linha de fios") {
+		t.Fatal("orçamento repetiu o identificador ou manteve texto removido")
 	}
 }
 

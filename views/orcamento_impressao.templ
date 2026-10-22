@@ -1,0 +1,228 @@
+package views
+
+import "falkcroche/modelos"
+import "fmt"
+import "math"
+import "strings"
+import "time"
+
+templ OrcamentoImpressao(pedido modelos.Pedido, cliente modelos.Cliente, produto modelos.Produto, whatsappAtelie string) {
+	<!DOCTYPE html>
+	<html lang="pt-BR">
+		<head>
+			<meta charset="utf-8" />
+			<meta name="viewport" content="width=device-width, initial-scale=1" />
+			<title>{ fmt.Sprintf("Orçamento %d · Falk Crochê", pedido.ID) }</title>
+			<style>
+				:root { color-scheme: light; font-family: Arial, sans-serif; color: #5a262c; background: #ffeae8; }
+				* { box-sizing: border-box; }
+				body { margin: 0; padding: 28px 16px; }
+				.toolbar { display: flex; justify-content: center; margin: 0 auto 18px; }
+				.toolbar button { border: 0; border-radius: 5px; padding: 11px 18px; background: #5a262c; color: white; font: 600 14px system-ui, sans-serif; cursor: pointer; }
+				.sheet { position: relative; isolation: isolate; max-width: 900px; margin: 0 auto; padding: 52px 64px; background: white; box-shadow: 0 8px 36px #5a262c1a; }
+				.watermark { position: absolute; z-index: -1; top: 50%; left: 50%; width: 62%; height: 62%; transform: translate(-50%, -50%); opacity: .055; pointer-events: none; }
+				.watermark img { width: 100%; height: 100%; object-fit: contain; }
+				.topline { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 28px; padding-bottom: 24px; border-bottom: 2px solid #c17f6b; }
+				.identity { display: flex; align-items: center; gap: 18px; }
+				.logo { width: 92px; height: 76px; object-fit: contain; }
+				.brand { color: #5a262c; font: 700 20px Georgia, serif; }
+				.contacts { display: grid; gap: 7px; text-align: right; font: 12px/1.4 system-ui, sans-serif; }
+				.contacts a { color: #5a262c; text-decoration: none; }
+				.title-row { display: flex; align-items: end; justify-content: space-between; gap: 18px; margin-top: 22px; }
+				h1 { margin: 0; color: #5a262c; font: 700 23px/1.15 system-ui, sans-serif; }
+				.meta { margin-top: 8px; color: #5a262c; font: 13px system-ui, sans-serif; }
+				.number { color: #c17f6b; font: 700 14px system-ui, sans-serif; white-space: nowrap; }
+				section { margin-top: 20px; }
+				h2 { margin: 0 0 8px; color: #5a262c; font: 700 13px system-ui, sans-serif; letter-spacing: 1px; text-transform: uppercase; }
+				.client-block { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 20px; font: 13px/1.4 system-ui, sans-serif; }
+				.client-field { display: grid; gap: 2px; }
+				.client-name { grid-column: 1 / -1; padding-bottom: 5px; border-bottom: 1px solid #e8d5c4; font-size: 16px; font-weight: 700; }
+				.client-label { color: #7d5c58; font-size: 10px; font-weight: 700; letter-spacing: .7px; text-transform: uppercase; }
+				.client-value { color: #5a262c; }
+				table { width: 100%; border-collapse: collapse; font: 13px/1.4 system-ui, sans-serif; }
+				th, td { padding: 8px; border: 1px solid #e8d5c4; text-align: left; }
+				th { border-width: 2px 0; background: #ffeae8; color: #5a262c; font-size: 11px; letter-spacing: .5px; }
+				.item-name { font-weight: 700; }
+				.total { display: flex; justify-content: flex-end; margin-top: 12px; }
+				.total strong { border: 2px solid #c17f6b; border-radius: 5px; padding: 7px 14px; background: #f0dcb0; color: #5a262c; font: 700 13px system-ui, sans-serif; letter-spacing: .5px; }
+				.payment-table th, .payment-table td { border-color: #e8d5c4; }
+				.payment-table { font-size: 11px; line-height: 1.25; }
+				.payment-table th, .payment-table td { padding: 5px 8px; }
+				.payment-table th { border-top: 0; }
+				.payment-table .note { margin-top: 1px; font-size: 9px; line-height: 1.2; }
+				.amount { text-align: right; white-space: nowrap; font-weight: 700; }
+				.note { display: block; margin-top: 3px; color: #c17f6b; font-size: 11px; font-weight: 400; }
+				.terms { margin: 0; padding-left: 19px; color: #5a262c; font: 13px/1.65 system-ui, sans-serif; }
+				.terms li::marker { color: #7a8c5f; }
+				.footer { margin-top: 34px; padding-top: 12px; border-top: 1px solid #e8d5c4; color: #5a262c; font: 11px/1.5 system-ui, sans-serif; }
+				.break { overflow-wrap: anywhere; }
+				@media (max-width: 600px) { body { padding: 12px 8px; } .sheet { padding: 28px 22px; } .topline { grid-template-columns: 1fr; } .contacts { text-align: left; } .title-row { align-items: flex-start; flex-direction: column; } .client-block { grid-template-columns: 1fr; } }
+				@media print { @page { size: A4; margin: 0; } :root { background: white; } body { padding: 0; } .toolbar { display: none; } .sheet { width: 210mm; max-width: none; min-height: 0; margin: 0; padding: 16mm 18mm; box-shadow: none; } section, table, header { break-inside: avoid; } }
+			</style>
+		</head>
+		<body>
+			<div class="toolbar"><button type="button" onclick="window.print()">Imprimir ou salvar como PDF</button></div>
+			<main class="sheet">
+				<div class="watermark" aria-hidden="true"><img src="/static/logo.png" alt="" /></div>
+				<div class="topline">
+					<div class="identity">
+						<img class="logo" src="/static/logo.png" alt="Falk Crochê" />
+						<div class="brand">Falk Crochê</div>
+					</div>
+					<div class="contacts">
+						if whatsappAtelie != "" {
+						<a href={ "https://wa.me/" + strings.Map(func(r rune) rune { if r >= '0' && r <= '9' { return r }; return -1 }, whatsappAtelie) }>{ formatarTelefoneOrcamento(whatsappAtelie) }</a>
+						}
+						<a href="https://falkcroche.com.br">falkcroche.com.br</a>
+						<a href="mailto:falkcroche@gmail.com">falkcroche@gmail.com</a>
+					</div>
+				</div>
+				<div class="title-row">
+					<div>
+						<h1>ORÇAMENTO #{ fmt.Sprintf("%05d", pedido.ID) }</h1>
+						<div class="meta">Emitido em { time.Now().Format("02/01/2006") }</div>
+					</div>
+				</div>
+				<section>
+					<h2>Cliente</h2>
+					<div class="client-block">
+						<div class="client-name">{ cliente.Nome }</div>
+						<div class="client-field"><span class="client-label">WhatsApp</span><span class="client-value">{ valorOuTraco(cliente.Whatsapp) }</span></div>
+						<div class="client-field"><span class="client-label">Cidade / UF</span><span class="client-value">{ localizacaoCliente(cliente) }</span></div>
+						<div class="client-field"><span class="client-label">Data do pedido</span><span class="client-value">{ formatarDataImpressao(pedido.DataPedido) }</span></div>
+						<div class="client-field"><span class="client-label">Previsão de entrega</span><span class="client-value">{ formatarDataImpressao(pedido.DataEntrega) }</span></div>
+					</div>
+				</section>
+				<section>
+					<table>
+						<thead><tr><th>PEÇA</th><th>QTD.</th><th>VALOR UNITÁRIO</th><th>SUBTOTAL</th></tr></thead>
+						<tbody>
+							if len(pedido.Itens) > 0 {
+							for _, item := range pedido.Itens {
+							<tr>
+								<td class="item-name">
+									{ item.NomeProduto }
+									if item.Categoria != "" {
+									<span class="note">{ item.Categoria }</span>
+									}
+								</td>
+								<td>{ item.Quantidade }</td>
+								<td class="amount">{ FormatarReais(item.PrecoUnitario) }</td>
+								<td class="amount">{ FormatarReais(float64(item.Quantidade) * item.PrecoUnitario) }</td>
+							</tr>
+							}
+							} else {
+							<tr>
+								<td class="item-name">{ produto.NomePeca }
+									if produto.Categoria != "" {
+									<span class="note">{ produto.Categoria }</span>
+									}
+								</td>
+								<td>1</td>
+								<td class="amount">{ FormatarReais(pedido.PrecoBase) }</td>
+								<td class="amount">{ FormatarReais(pedido.PrecoBase) }</td>
+							</tr>
+							}
+						</tbody>
+					</table>
+					if pedido.Observacoes != "" || pedido.IncluirBrinde {
+					<div class="note" style="margin-top: 12px; font-size: 12px; line-height: 1.6;">
+						if pedido.Observacoes != "" {
+						<div><strong>Detalhes:</strong> { pedido.Observacoes }</div>
+						}
+						if pedido.IncluirBrinde {
+						<div>Inclui pequeno brinde nas cores escolhidas.</div>
+						}
+					</div>
+					}
+					<div class="total"><strong>VALOR TOTAL: { FormatarReais(pedido.PrecoBase) }</strong></div>
+				</section>
+				if !pedido.Brinde {
+				<section class="payment-section">
+					<h2>Condições de pagamento</h2>
+					<table class="payment-table">
+						<thead><tr><th>FORMA DE PAGAMENTO</th><th class="amount">VALOR</th></tr></thead>
+						<tbody>
+							<tr>
+								<td>Pix à vista
+									if pedido.DescontoPixAvista {
+									<span class="note">10% de desconto</span>
+									}
+								</td>
+								<td class="amount">{ FormatarReais(valorPixVista(pedido.PrecoBase, pedido.DescontoPixAvista)) }</td>
+							</tr>
+							<tr><td>Cartão de crédito<span class="note">Sinal de 30% via Pix: { FormatarReais(valorSinalOrcamento(valorCartaoOrcamento(pedido.PrecoBase, pedido.DescontoCartao))) }; restante em até 3x sem juros</span></td><td class="amount">{ FormatarReais(valorCartaoOrcamento(pedido.PrecoBase, pedido.DescontoCartao)) }</td></tr>
+							if pedido.PixParcelado {
+							<tr><td>Pix parcelado
+								if pedido.DescontoPix > 0 {
+								<span class="note">{ fmt.Sprintf("%g%% de desconto", pedido.DescontoPix) }</span>
+								}
+								<span class="note">Sinal de 30%: { FormatarReais(valorSinalOrcamento(valorPixParcelado(pedido.PrecoBase, pedido.DescontoPix))) }; restante em até 3 parcelas</span>
+							</td><td class="amount">{ FormatarReais(valorPixParcelado(pedido.PrecoBase, pedido.DescontoPix)) }</td></tr>
+							}
+						</tbody>
+					</table>
+				</section>
+				}
+				<section>
+					<h2>Termos e condições</h2>
+					<ul class="terms">
+						<li>Este orçamento é válido por 15 dias.</li>
+						<li>O prazo de produção é de { fmt.Sprintf("%d dias úteis", pedido.DiasPrazo) }, com previsão de entrega em { formatarDataImpressao(pedido.DataEntrega) }.</li>
+						if !pedido.Brinde {
+						<li>Para confirmar a encomenda, é necessário um sinal de 30% do valor total.</li>
+						}
+					</ul>
+				</section>
+				<footer class="footer">Falk Crochê · Peças feitas à mão, com carinho.</footer>
+			</main>
+			<script>window.addEventListener("load", () => window.print());</script>
+		</body>
+	</html>
+}
+
+func formatarDataImpressao(data string) string {
+	convertida, err := time.Parse("2006-01-02", data)
+	if err != nil {
+		return "—"
+	}
+	return convertida.Format("02/01/2006")
+}
+
+func formatarTelefoneOrcamento(telefone string) string {
+	digitos := strings.Map(func(r rune) rune {
+		if r >= '0' && r <= '9' {
+			return r
+		}
+		return -1
+	}, telefone)
+	if strings.HasPrefix(digitos, "55") && len(digitos) == 13 {
+		return fmt.Sprintf("+55 (%s) %s-%s", digitos[2:4], digitos[4:9], digitos[9:])
+	}
+	if len(digitos) == 11 {
+		return fmt.Sprintf("(%s) %s-%s", digitos[:2], digitos[2:7], digitos[7:])
+	}
+	if len(digitos) == 10 {
+		return fmt.Sprintf("(%s) %s-%s", digitos[:2], digitos[2:6], digitos[6:])
+	}
+	return telefone
+}
+
+func valorCartaoOrcamento(base float64, desconto float64) float64 {
+	return base - math.Round(base*desconto)/100
+}
+
+func valorPixParcelado(base float64, desconto float64) float64 {
+	return valorCartaoOrcamento(base, desconto)
+}
+
+func valorPixVista(base float64, desconto bool) float64 {
+	if desconto {
+		return math.Round(base*0.9*100) / 100
+	}
+	return base
+}
+
+func valorSinalOrcamento(total float64) float64 {
+	return math.Round(total*0.3*100) / 100
+}
