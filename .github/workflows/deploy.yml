@@ -74,6 +74,7 @@ jobs:
              systemctl is-active --quiet falkcroche'
 
       
+      
       - name: Deploy na VPS
         env:
           VM_HOST: ${{ secrets.VM_HOST }}
@@ -81,25 +82,37 @@ jobs:
         run: |
           set -e
 
-          echo "Enviando executável para a VPS..."
+          echo "Verificando executável..."
+          ls -l /tmp/falkcroche-app
 
+          echo "Enviando executável para a VPS..."
           scp -i ~/.ssh/deploy_key \
             -o StrictHostKeyChecking=yes \
             /tmp/falkcroche-app \
             "$VM_USER@$VM_HOST:/tmp/falkcroche-app"
 
-          echo "Instalando aplicação e reiniciando serviço..."
-
+          echo "Instalando e reiniciando aplicação..."
           ssh -i ~/.ssh/deploy_key \
             -o StrictHostKeyChecking=yes \
             "$VM_USER@$VM_HOST" \
             'set -ex
+             echo "Verificando diretório..."
+             ls -ld /home/ubuntu/falkcroche
+
+             echo "Instalando executável..."
              install -m 755 /tmp/falkcroche-app /home/ubuntu/falkcroche/falkcroche-app
+
+             echo "Removendo arquivo temporário..."
              rm -f /tmp/falkcroche-app
+
+             echo "Reiniciando serviço..."
              sudo systemctl restart falkcroche
-             sleep 2
+
+             echo "Verificando status..."
              sudo systemctl status falkcroche --no-pager -l
+
+             echo "Confirmando serviço ativo..."
              systemctl is-active --quiet falkcroche'
 
-      - name: Deployment complete
-        run: echo "Deploy concluído com sucesso!"
+          echo "Deploy concluído!"
+
