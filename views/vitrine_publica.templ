@@ -31,11 +31,11 @@ if len(produtos) == 0 {
     }
 </section>
 } else {
-<div id="catalogo-produtos" class="space-y-5 sm:space-y-8">
     <style>
         [data-filtro-vitrine][aria-pressed="true"] { background: #5a262c; color: #fdfbf9; box-shadow: 0 1px 3px #5a262c26; }
         [data-filtro-vitrine]:focus-visible { outline: 2px solid #c17f6b; outline-offset: 2px; }
     </style>
+<div id="catalogo-produtos" class="space-y-5 sm:space-y-8">
     <nav aria-label="Filtrar produtos por categoria" class="mx-auto flex w-fit max-w-full flex-wrap justify-center gap-1 rounded-2xl border border-[#ffeae8] bg-[#ffeae8]/60 p-1 sm:gap-1.5 sm:rounded-full sm:p-1.5">
         <button type="button" data-filtro-vitrine="*" aria-pressed="true" class="rounded-xl px-3 py-1.5 text-sm font-bold text-[#5a262c] transition-all duration-200 hover:bg-white hover:shadow-sm sm:rounded-full sm:px-4 sm:py-2">Todos</button>
         for _, grupo := range agruparProdutos(produtos) {
