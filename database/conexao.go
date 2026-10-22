@@ -47,6 +47,7 @@ func criarTabelas(db *sql.DB) {
 	CREATE TABLE IF NOT EXISTS produtos (
 		id INTEGER PRIMARY KEY AUTOINCREMENT,
 		nome_peca TEXT NOT NULL,
+		categoria TEXT NOT NULL DEFAULT '',
 		preco REAL NOT NULL,
 		foto_url TEXT,
 		pronta_entrega BOOLEAN NOT NULL DEFAULT 0,
@@ -80,6 +81,19 @@ func criarTabelas(db *sql.DB) {
 		FOREIGN KEY (cliente_id) REFERENCES clientes(id),
 		FOREIGN KEY (produto_id) REFERENCES produtos(id),
 		FOREIGN KEY (pedido_principal_id) REFERENCES pedidos(id)
+	);`
+
+	tabelaItensPedido := `
+	CREATE TABLE IF NOT EXISTS itens_pedido (
+		id INTEGER PRIMARY KEY AUTOINCREMENT,
+		pedido_id INTEGER NOT NULL,
+		produto_id INTEGER NOT NULL,
+		nome_produto TEXT NOT NULL,
+		categoria TEXT NOT NULL DEFAULT '',
+		quantidade INTEGER NOT NULL DEFAULT 1 CHECK (quantidade > 0),
+		preco_unitario REAL NOT NULL DEFAULT 0,
+		FOREIGN KEY (pedido_id) REFERENCES pedidos(id) ON DELETE CASCADE,
+		FOREIGN KEY (produto_id) REFERENCES produtos(id)
 	);`
 
 	// query para criar a tabela de transacoes
@@ -132,8 +146,12 @@ func criarTabelas(db *sql.DB) {
 	if _, err := db.Exec(tabelaProdutos); err != nil {
 		log.Fatalf("Erro ao criar tabela produtos: %v", err)
 	}
+	migrarColunaCategoriaProduto(db)
 	if _, err := db.Exec(tabelaPedidos); err != nil {
 		log.Fatalf("Erro ao criar tabela pedidos: %v", err)
+	}
+	if _, err := db.Exec(tabelaItensPedido); err != nil {
+		log.Fatalf("Erro ao criar tabela de itens do pedido: %v", err)
 	}
 	if _, err := db.Exec(tabelaTransacoes); err != nil {
 		log.Fatalf("Erro ao criar tabela transacoes: %v", err)
@@ -148,6 +166,7 @@ func criarTabelas(db *sql.DB) {
 		log.Fatalf("Erro ao criar tabela de etiquetas dos pedidos: %v", err)
 	}
 	migrarColunasPedidos(db)
+	migrarItensPedido(db)
 	if _, err := db.Exec(`CREATE UNIQUE INDEX IF NOT EXISTS idx_transacoes_pedido_etapa ON transacoes(pedido_id, etapa) WHERE pedido_id IS NOT NULL`); err != nil {
 		log.Fatalf("Erro ao criar índice de recebimentos do pedido: %v", err)
 	}
@@ -159,6 +178,50 @@ func criarTabelas(db *sql.DB) {
 	migrarPagamentosPendentes(db)
 
 	log.Println("Tabelas verificadas/criadas com sucesso!")
+}
+
+func migrarItensPedido(db *sql.DB) {
+	_, err := db.Exec(`INSERT INTO itens_pedido (pedido_id, produto_id, nome_produto, categoria, quantidade, preco_unitario)
+		SELECT pedidos.id, produtos.id, produtos.nome_peca, COALESCE(produtos.categoria, ''), 1,
+			CASE WHEN pedidos.brinde = 1 THEN 0 WHEN pedidos.preco_base > 0 THEN pedidos.preco_base ELSE produtos.preco END
+		FROM pedidos JOIN produtos ON produtos.id = pedidos.produto_id
+		WHERE NOT EXISTS (SELECT 1 FROM itens_pedido WHERE itens_pedido.pedido_id = pedidos.id)`)
+	if err != nil {
+		log.Fatalf("Erro ao migrar itens de pedidos antigos: %v", err)
+	}
+}
+
+func migrarColunaCategoriaProduto(db *sql.DB) {
+	linhas, err := db.Query(`PRAGMA table_info(produtos)`)
+	if err != nil {
+		log.Fatalf("Erro ao verificar coluna categoria de produtos: %v", err)
+	}
+	for linhas.Next() {
+		var cid int
+		var nome, tipo string
+		var notNull, primaryKey int
+		var valorPadrao sql.NullString
+		if err := linhas.Scan(&cid, &nome, &tipo, &notNull, &valorPadrao, &primaryKey); err != nil {
+			linhas.Close()
+			log.Fatalf("Erro ao ler colunas de produtos: %v", err)
+		}
+		if nome == "categoria" {
+			if err := linhas.Close(); err != nil {
+				log.Fatalf("Erro ao fechar verificação de coluna categoria: %v", err)
+			}
+			return
+		}
+	}
+	if err := linhas.Err(); err != nil {
+		linhas.Close()
+		log.Fatalf("Erro ao ler colunas de produtos: %v", err)
+	}
+	if err := linhas.Close(); err != nil {
+		log.Fatalf("Erro ao fechar verificação de coluna categoria: %v", err)
+	}
+	if _, err := db.Exec(`ALTER TABLE produtos ADD COLUMN categoria TEXT NOT NULL DEFAULT ''`); err != nil {
+		log.Fatalf("Erro ao migrar coluna categoria de produtos: %v", err)
+	}
 }
 
 func migrarPagamentosPendentes(db *sql.DB) {

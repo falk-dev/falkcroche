@@ -11,6 +11,7 @@ function abrirModalProduto(produto) {
     if (produto) {
         document.getElementById("produto-id").value = produto.id;
         document.getElementById("produto-nome").value = produto.nome;
+        document.getElementById("produto-categoria").value = produto.categoria;
         document.getElementById("produto-preco").value = produto.preco;
         document.getElementById("produto-foto").value = produto.foto;
         formProduto.querySelector("[name='pronta_entrega']").checked = produto.prontaEntrega === "true";

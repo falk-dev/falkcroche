@@ -31,8 +31,18 @@ if len(produtos) == 0 {
     }
 </section>
 } else {
-<div class="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3">
-    for _, p := range produtos {
+<div id="catalogo-produtos" class="space-y-8">
+    <nav aria-label="Categorias de produtos" class="flex flex-wrap gap-2 border-b border-[#e8d5c4] pb-4">
+        <a href="#catalogo-produtos" class="rounded-md bg-[#5a262c] px-3 py-2 text-sm font-semibold text-white">Todos</a>
+        for _, grupo := range agruparProdutos(produtos) {
+        <a href={ "#" + grupo.ID } class="rounded-md border border-[#e8d5c4] px-3 py-2 text-sm font-semibold text-[#5a262c] hover:bg-[#ffeae8]">{ grupo.Nome }</a>
+        }
+    </nav>
+    for _, grupo := range agruparProdutos(produtos) {
+    <section id={ grupo.ID } class="scroll-mt-6 space-y-4">
+        <h2 class="border-b border-[#e8d5c4] pb-2 font-serif text-xl font-bold text-[#5a262c]">{ grupo.Nome }</h2>
+        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3">
+    for _, p := range grupo.Produtos {
     <article
         class="relative rounded-lg border border-[#e8d5c4]/70 bg-white p-3 shadow-sm transition-shadow hover:shadow-md">
         if p.ProntaEntrega {
@@ -70,6 +80,9 @@ if len(produtos) == 0 {
             }
         </div>
     </article>
+    }
+        </div>
+    </section>
     }
 </div>
 

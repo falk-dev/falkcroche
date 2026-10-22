@@ -43,6 +43,19 @@ templ Produtos(produtos []modelos.Produto) {
 					</div>
 				</div>
 				<div>
+					<label for="produto-categoria" class="mb-1.5 block text-sm font-semibold">Categoria</label>
+					<input id="produto-categoria" type="text" name="categoria" list="categorias-produto" maxlength="60"
+						placeholder="Ex.: Boina, Chapéu ou Bolsa"
+						class="w-full rounded-lg border border-[#e8d5c4] bg-[#fcf9f8] px-3 py-3 outline-none focus:border-[#5a262c] focus:ring-2 focus:ring-[#5a262c]/20" />
+					<datalist id="categorias-produto">
+						for _, grupo := range agruparProdutos(produtos) {
+						if grupo.chave != "" {
+						<option value={ grupo.Nome } />
+						}
+						}
+					</datalist>
+				</div>
+				<div>
 					<label for="produto-foto" class="mb-1.5 block text-sm font-semibold">URL da foto</label>
 					<input id="produto-foto" type="url" name="foto_url" placeholder="https://..."
 						class="w-full rounded-lg border border-[#e8d5c4] bg-[#fcf9f8] px-3 py-3 outline-none focus:border-[#5a262c] focus:ring-2 focus:ring-[#5a262c]/20" />
@@ -81,7 +94,11 @@ templ Produtos(produtos []modelos.Produto) {
 					</tr>
 				</thead>
 				<tbody class="divide-y divide-[#e8d5c4]/50">
-					for _, p := range produtos {
+					for _, grupo := range agruparProdutos(produtos) {
+					<tr class="bg-[#fcf9f8]">
+						<th colspan="5" class="px-5 py-3 text-left font-serif text-base font-bold text-[#5a262c]">{ grupo.Nome }</th>
+					</tr>
+					for _, p := range grupo.Produtos {
 					<tr class="transition-colors hover:bg-[#ffeae8]/20">
 						<td class="p-4 sm:p-5">
 							<div class="flex min-w-52 items-center gap-3">
@@ -118,13 +135,14 @@ templ Produtos(produtos []modelos.Produto) {
 						</td>
 						<td class="p-5 text-right">
 							<button type="button" data-editar-produto data-id={ fmt.Sprintf("%d", p.ID) } data-nome={
-								p.NomePeca } data-preco={ fmt.Sprintf("%.2f", p.Preco) } data-foto={ p.FotoURL }
+								p.NomePeca } data-categoria={ p.Categoria } data-preco={ fmt.Sprintf("%.2f", p.Preco) } data-foto={ p.FotoURL }
 								data-pronta-entrega={ fmt.Sprintf("%t", p.ProntaEntrega) } data-publicado={
 								fmt.Sprintf("%t", p.Publicado) } title={ "Editar produto " + p.NomePeca }
 								aria-label={ "Editar produto " + p.NomePeca }
 								class="ml-auto grid size-9 place-items-center rounded-lg border border-[#e8d5c4] bg-white text-lg hover:bg-[#ffeae8]">✎</button>
 						</td>
 					</tr>
+					}
 					}
 				</tbody>
 			</table>

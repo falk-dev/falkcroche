@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"falkcroche/daos"
 	"falkcroche/dtos"
@@ -33,9 +34,15 @@ func (c *ProdutoControlador) Inserir(w http.ResponseWriter, r *http.Request) {
 	preco, _ := strconv.ParseFloat(r.FormValue("preco"), 64)
 	prontaEntrega := r.FormValue("pronta_entrega") == "on"
 	publicado := r.FormValue("publicado") == "on"
+	categoria := strings.TrimSpace(r.FormValue("categoria"))
+	if len([]rune(categoria)) > 60 {
+		http.Error(w, "A categoria deve ter até 60 caracteres.", http.StatusBadRequest)
+		return
+	}
 
 	produtoDTO := dtos.ProdutoInputDTO{
 		NomePeca:      r.FormValue("nome_peca"),
+		Categoria:     categoria,
 		Preco:         preco,
 		FotoURL:       r.FormValue("foto_url"),
 		ProntaEntrega: prontaEntrega,
@@ -65,8 +72,14 @@ func (c *ProdutoControlador) Atualizar(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Preço inválido.", http.StatusBadRequest)
 		return
 	}
+	categoria := strings.TrimSpace(r.FormValue("categoria"))
+	if len([]rune(categoria)) > 60 {
+		http.Error(w, "A categoria deve ter até 60 caracteres.", http.StatusBadRequest)
+		return
+	}
 	dto := dtos.ProdutoInputDTO{
 		NomePeca:      r.FormValue("nome_peca"),
+		Categoria:     categoria,
 		Preco:         preco,
 		FotoURL:       r.FormValue("foto_url"),
 		ProntaEntrega: r.FormValue("pronta_entrega") == "on",

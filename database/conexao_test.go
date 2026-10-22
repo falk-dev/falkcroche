@@ -16,7 +16,7 @@ func TestCriarTabelasMigraPedidosERetemRecebimentosAnteriores(t *testing.T) {
 	db.SetMaxOpenConns(1)
 
 	for _, query := range []string{
-		`CREATE TABLE produtos (id INTEGER PRIMARY KEY, preco REAL NOT NULL)`,
+		`CREATE TABLE produtos (id INTEGER PRIMARY KEY, nome_peca TEXT NOT NULL, categoria TEXT NOT NULL DEFAULT '', preco REAL NOT NULL)`,
 		`CREATE TABLE pedidos (
 			id INTEGER PRIMARY KEY,
 			cliente_id INTEGER,
@@ -37,7 +37,7 @@ func TestCriarTabelasMigraPedidosERetemRecebimentosAnteriores(t *testing.T) {
 			pedido_id INTEGER,
 			etapa TEXT
 		)`,
-		`INSERT INTO produtos (id, preco) VALUES (2, 100)`,
+		`INSERT INTO produtos (id, nome_peca, preco) VALUES (2, 'Peça antiga', 100)`,
 		`INSERT INTO pedidos (id, produto_id, status) VALUES (7, 2, 'Sinal recebido')`,
 		`INSERT INTO transacoes (tipo, descricao, valor, data, pedido_id, etapa)
 			VALUES ('Entrada', 'Pedido #7 - sinal', 30, '2026-08-01', 7, 'sinal')`,
@@ -62,6 +62,21 @@ func TestCriarTabelasMigraPedidosERetemRecebimentosAnteriores(t *testing.T) {
 	}
 	if tabelasEtiquetas != 1 {
 		t.Fatal("a tabela de etiquetas dos pedidos deveria ser criada na migração")
+	}
+	var categoria string
+	if err := db.QueryRow(`SELECT categoria FROM produtos WHERE id = 2`).Scan(&categoria); err != nil {
+		t.Fatal(err)
+	}
+	if categoria != "" {
+		t.Fatalf("categoria migrada = %q; esperada vazia para produto antigo", categoria)
+	}
+	var quantidadeItens int
+	var nomeItem string
+	if err := db.QueryRow(`SELECT COUNT(*), MAX(nome_produto) FROM itens_pedido WHERE pedido_id = 7`).Scan(&quantidadeItens, &nomeItem); err != nil {
+		t.Fatal(err)
+	}
+	if quantidadeItens != 1 || nomeItem != "Peça antiga" {
+		t.Fatalf("itens migrados = %d, %q; esperado um item Peça antiga", quantidadeItens, nomeItem)
 	}
 
 	var quantidade int

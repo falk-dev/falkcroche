@@ -20,10 +20,10 @@ func NovoProdutoDAO(db *sql.DB) *ProdutoDAO {
 
 // Inserir adiciona um novo produto usando os dados do DTO e retorna o ID criado.
 func (dao *ProdutoDAO) Inserir(produto dtos.ProdutoInputDTO) (int, error) {
-	query := `INSERT INTO produtos (nome_peca, preco, foto_url, pronta_entrega, publicado) VALUES (?, ?, ?, ?, ?)`
+	query := `INSERT INTO produtos (nome_peca, categoria, preco, foto_url, pronta_entrega, publicado) VALUES (?, ?, ?, ?, ?, ?)`
 
 	// db.Exec executa a query sem retornar linhas (ideal para INSERT, UPDATE, DELETE)
-	resultado, err := dao.db.Exec(query, produto.NomePeca, produto.Preco, produto.FotoURL, produto.ProntaEntrega, produto.Publicado)
+	resultado, err := dao.db.Exec(query, produto.NomePeca, produto.Categoria, produto.Preco, produto.FotoURL, produto.ProntaEntrega, produto.Publicado)
 	if err != nil {
 		log.Printf("Erro ao inserir produto: %v", err)
 		return 0, err
@@ -39,7 +39,7 @@ func (dao *ProdutoDAO) Inserir(produto dtos.ProdutoInputDTO) (int, error) {
 }
 
 func (dao *ProdutoDAO) Atualizar(id int, produto dtos.ProdutoInputDTO) error {
-	resultado, err := dao.db.Exec(`UPDATE produtos SET nome_peca = ?, preco = ?, foto_url = ?, pronta_entrega = ?, publicado = ? WHERE id = ?`, produto.NomePeca, produto.Preco, produto.FotoURL, produto.ProntaEntrega, produto.Publicado, id)
+	resultado, err := dao.db.Exec(`UPDATE produtos SET nome_peca = ?, categoria = ?, preco = ?, foto_url = ?, pronta_entrega = ?, publicado = ? WHERE id = ?`, produto.NomePeca, produto.Categoria, produto.Preco, produto.FotoURL, produto.ProntaEntrega, produto.Publicado, id)
 	if err != nil {
 		return err
 	}
@@ -55,11 +55,11 @@ func (dao *ProdutoDAO) Atualizar(id int, produto dtos.ProdutoInputDTO) error {
 
 // BuscarTodos retorna todos os produtos cadastrados.
 func (dao *ProdutoDAO) BuscarTodos() ([]modelos.Produto, error) {
-	return dao.buscar(`SELECT id, nome_peca, preco, foto_url, pronta_entrega, publicado FROM produtos ORDER BY id DESC`)
+	return dao.buscar(`SELECT id, nome_peca, categoria, preco, foto_url, pronta_entrega, publicado FROM produtos ORDER BY CASE WHEN TRIM(categoria) = '' THEN 1 ELSE 0 END, categoria COLLATE NOCASE, nome_peca COLLATE NOCASE, id DESC`)
 }
 
 func (dao *ProdutoDAO) BuscarPublicados() ([]modelos.Produto, error) {
-	return dao.buscar(`SELECT id, nome_peca, preco, foto_url, pronta_entrega, publicado FROM produtos WHERE publicado = 1 ORDER BY id DESC`)
+	return dao.buscar(`SELECT id, nome_peca, categoria, preco, foto_url, pronta_entrega, publicado FROM produtos WHERE publicado = 1 ORDER BY CASE WHEN TRIM(categoria) = '' THEN 1 ELSE 0 END, categoria COLLATE NOCASE, nome_peca COLLATE NOCASE, id DESC`)
 }
 
 func (dao *ProdutoDAO) buscar(query string) ([]modelos.Produto, error) {
@@ -76,7 +76,7 @@ func (dao *ProdutoDAO) buscar(query string) ([]modelos.Produto, error) {
 	for linhas.Next() {
 		var p modelos.Produto
 		// Scan copia os valores das colunas para os campos da struct
-		err := linhas.Scan(&p.ID, &p.NomePeca, &p.Preco, &p.FotoURL, &p.ProntaEntrega, &p.Publicado)
+		err := linhas.Scan(&p.ID, &p.NomePeca, &p.Categoria, &p.Preco, &p.FotoURL, &p.ProntaEntrega, &p.Publicado)
 		if err != nil {
 			log.Printf("Erro ao ler produto: %v", err)
 			continue
