@@ -31,7 +31,7 @@ templ PedidosLista(pedidos []modelos.Pedido, clientes []modelos.Cliente, produto
 					class="rounded-full px-3 py-1 text-2xl text-[#5a262c]/60 hover:bg-[#ffeae8]">&times;</button>
 			</div>
 			<form method="POST" action="/pedidos/inserir" class="space-y-5">
-				<div class="relative" id="cliente-campo">
+				<div class="relative z-40" id="cliente-campo">
 					<label for="cliente-busca" class="mb-1.5 block text-sm font-semibold">Cliente</label>
 					<input id="cliente-busca" type="search" autocomplete="off" required
 						placeholder="Digite o nome ou WhatsApp"
@@ -487,10 +487,10 @@ templ PedidosLista(pedidos []modelos.Pedido, clientes []modelos.Cliente, produto
 						</div>
 					</td>
 					<td class="p-5">
-						<details class="relative">
+						<details data-menu-acoes-pedido class="relative">
 							<summary aria-label={ "Ações do pedido " + fmt.Sprintf("%d", p.ID) }
 								class="grid size-9 cursor-pointer list-none place-items-center rounded-lg border border-[#e8d5c4] bg-white text-lg font-bold tracking-widest hover:bg-[#ffeae8] [&::-webkit-details-marker]:hidden">...</summary>
-							<div class="absolute right-0 z-20 mt-1 min-w-44 overflow-hidden rounded-lg border border-[#e8d5c4] bg-white py-1 shadow-lg">
+							<div popover="manual" data-conteudo-menu-acoes-pedido class="fixed m-0 max-h-[calc(100vh-1rem)] min-w-44 overflow-y-auto rounded-lg border border-[#e8d5c4] bg-white py-1 shadow-lg">
 								<button type="button" data-abrir-detalhes data-modal-id={ "modal-detalhes-" + fmt.Sprintf("%d", p.ID) }
 									class="block w-full px-4 py-2 text-left text-sm hover:bg-[#ffeae8]">Ver detalhes</button>
 								<button type="button" data-editar-pedido data-id={ fmt.Sprintf("%d", p.ID) }

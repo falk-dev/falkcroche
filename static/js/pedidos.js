@@ -79,6 +79,41 @@ document.querySelectorAll("[data-editar-pedido]").forEach((botao) => {
         modalEditarPedido.showModal();
     });
 });
+document.querySelectorAll("[data-menu-acoes-pedido]").forEach((menu) => {
+    const painel = menu.querySelector("[data-conteudo-menu-acoes-pedido]");
+    menu.addEventListener("toggle", () => {
+        if (!menu.open) {
+            if (painel.matches(":popover-open")) painel.hidePopover();
+            return;
+        }
+
+        document.querySelectorAll("[data-menu-acoes-pedido][open]").forEach((outroMenu) => {
+            if (outroMenu !== menu) outroMenu.open = false;
+        });
+
+        painel.style.inset = "auto";
+        painel.showPopover();
+        const resumo = menu.querySelector("summary").getBoundingClientRect();
+        const dimensoesPainel = painel.getBoundingClientRect();
+        const margem = 8;
+        const left = Math.min(window.innerWidth - dimensoesPainel.width - margem, Math.max(margem, resumo.right - dimensoesPainel.width));
+        const espacoAbaixo = window.innerHeight - resumo.bottom - margem;
+        const top = dimensoesPainel.height <= espacoAbaixo
+            ? resumo.bottom + 4
+            : Math.max(margem, resumo.top - dimensoesPainel.height - 4);
+
+        painel.style.left = `${left}px`;
+        painel.style.top = `${top}px`;
+    });
+    painel.addEventListener("click", () => {
+        menu.open = false;
+    });
+});
+document.addEventListener("click", (evento) => {
+    document.querySelectorAll("[data-menu-acoes-pedido][open]").forEach((menu) => {
+        if (!menu.contains(evento.target)) menu.open = false;
+    });
+});
 checkboxEditarBrinde.addEventListener("change", () => atualizarOpcoesEdicao(false));
 document.getElementById("fechar-modal-editar-pedido").addEventListener("click", () => modalEditarPedido.close());
 document.getElementById("cancelar-modal-editar-pedido").addEventListener("click", () => modalEditarPedido.close());
