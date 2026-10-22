@@ -55,6 +55,7 @@ func exportarVitrine() error {
 	}
 	for _, arquivoStatic := range []string{
 		"logo.png",
+		"logo-mobile.png",
 		"favicon.ico",
 		"favicon-16x16.png",
 		"favicon-32x32.png",

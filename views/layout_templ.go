@@ -355,20 +355,33 @@ func PublicLayout(title string, content templ.Component, logoURL string, staticP
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 22, "<script type=\"text/javascript\">\n\t(function(c,l,a,r,i,t,y){\n\t\tc[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};\n\t\tt=l.createElement(r);t.async=1;t.src=\"https://www.clarity.ms/tag/\"+i;\n\t\ty=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);\n\t})(window, document, \"clarity\", \"script\", \"z085lt3fid\");\n</script><body class=\"flex min-h-screen items-start justify-center bg-[#e8d5c4]/40 p-2 font-sans text-[#5a262c] antialiased sm:p-4 lg:items-center lg:p-8\"><div class=\"flex min-h-[calc(100vh-1rem)] w-full max-w-[1400px] flex-col overflow-hidden rounded-2xl border border-white bg-[#fdfbf9] shadow-xl sm:min-h-[calc(100vh-2rem)] sm:rounded-[2rem] lg:min-h-[calc(100vh-4rem)]\"><header class=\"px-4 pb-1 pt-6 text-center sm:pb-3 sm:pt-8\"><img src=\"")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 22, "<script type=\"text/javascript\">\n\t(function(c,l,a,r,i,t,y){\n\t\tc[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};\n\t\tt=l.createElement(r);t.async=1;t.src=\"https://www.clarity.ms/tag/\"+i;\n\t\ty=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);\n\t})(window, document, \"clarity\", \"script\", \"z085lt3fid\");\n</script><body class=\"flex min-h-screen items-start justify-center bg-[#e8d5c4]/40 p-2 font-sans text-[#5a262c] antialiased sm:p-4 lg:items-center lg:p-8\"><div class=\"flex min-h-[calc(100vh-1rem)] w-full max-w-[1400px] flex-col overflow-hidden rounded-2xl border border-white bg-[#fdfbf9] shadow-xl sm:min-h-[calc(100vh-2rem)] sm:rounded-[2rem] lg:min-h-[calc(100vh-4rem)]\"><header class=\"px-4 pb-0 pt-6 text-center sm:pb-3 sm:pt-8\"><picture class=\"mx-auto mb-1 block h-12 w-full max-w-sm overflow-hidden sm:mb-2 sm:h-28 sm:w-48\"><source media=\"(max-width: 639px)\" srcset=\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var16 string
-		templ_7745c5c3_Var16, templ_7745c5c3_Err = templ.ResolveAttributeValue(logoURL)
+		templ_7745c5c3_Var16, templ_7745c5c3_Err = templ.ResolveAttributeValue(staticPrefix + "/logo-mobile.png")
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/layout.templ`, Line: 168, Col: 20}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/layout.templ`, Line: 169, Col: 80}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var16)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 23, "\" alt=\"Falk Crochê\" class=\"mx-auto mb-2 h-24 w-40 object-contain sm:h-28 sm:w-48\"><p class=\"text-[#c17f6b] text-sm font-medium sm:text-base\">Feito à mão, com o coração.</p></header><main class=\"mx-auto w-full max-w-6xl flex-1 px-4 pt-2 pb-5 sm:px-6 sm:py-6\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 23, "\"> <img src=\"")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		var templ_7745c5c3_Var17 string
+		templ_7745c5c3_Var17, templ_7745c5c3_Err = templ.ResolveAttributeValue(logoURL)
+		if templ_7745c5c3_Err != nil {
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/layout.templ`, Line: 170, Col: 21}
+		}
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var17)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 24, "\" alt=\"Falk Crochê\" class=\"h-full w-full object-cover sm:object-contain\"></picture></header><main class=\"mx-auto w-full max-w-6xl flex-1 px-4 pt-1 pb-4 sm:px-6 sm:py-6\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -376,7 +389,7 @@ func PublicLayout(title string, content templ.Component, logoURL string, staticP
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 24, "</main><footer class=\"py-6 text-center text-xs font-medium text-[#5a262c]/60 sm:text-sm\">&copy; 2026 Falk Crochê. Todos os direitos reservados.</footer></div><script src=\"/static/js/vitrine.js?v=2\" defer></script></body></html>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 25, "</main><footer class=\"py-6 text-center text-xs font-medium text-[#5a262c]/60 sm:text-sm\">&copy; 2026 Falk Crochê. Todos os direitos reservados.</footer></div><script src=\"/static/js/vitrine.js?v=2\" defer></script></body></html>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

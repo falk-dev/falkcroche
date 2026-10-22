@@ -65,7 +65,7 @@ func VitrinePublica(produtos []modelos.Produto, whatsapp string) templ.Component
 				return templ_7745c5c3_Err
 			}
 		} else {
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "<div id=\"catalogo-produtos\" class=\"space-y-8\"><style>\n        [data-filtro-vitrine][aria-pressed=\"true\"] { background: #5a262c; color: #fdfbf9; box-shadow: 0 1px 3px #5a262c26; }\n        [data-filtro-vitrine]:focus-visible { outline: 2px solid #c17f6b; outline-offset: 2px; }\n    </style><nav aria-label=\"Filtrar produtos por categoria\" class=\"mx-auto flex w-fit max-w-full flex-wrap justify-center gap-1.5 rounded-full border border-[#ffeae8] bg-[#ffeae8]/60 p-1.5\"><button type=\"button\" data-filtro-vitrine=\"*\" aria-pressed=\"true\" class=\"rounded-full px-4 py-2 text-sm font-bold text-[#5a262c] transition-all duration-200 hover:bg-white hover:shadow-sm\">Todos</button> ")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "<div id=\"catalogo-produtos\" class=\"space-y-5 sm:space-y-8\"><style>\n        [data-filtro-vitrine][aria-pressed=\"true\"] { background: #5a262c; color: #fdfbf9; box-shadow: 0 1px 3px #5a262c26; }\n        [data-filtro-vitrine]:focus-visible { outline: 2px solid #c17f6b; outline-offset: 2px; }\n    </style><nav aria-label=\"Filtrar produtos por categoria\" class=\"mx-auto flex w-fit max-w-full flex-wrap justify-center gap-1 rounded-2xl border border-[#ffeae8] bg-[#ffeae8]/60 p-1 sm:gap-1.5 sm:rounded-full sm:p-1.5\"><button type=\"button\" data-filtro-vitrine=\"*\" aria-pressed=\"true\" class=\"rounded-xl px-3 py-1.5 text-sm font-bold text-[#5a262c] transition-all duration-200 hover:bg-white hover:shadow-sm sm:rounded-full sm:px-4 sm:py-2\">Todos</button> ")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -83,14 +83,14 @@ func VitrinePublica(produtos []modelos.Produto, whatsapp string) templ.Component
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 7, "\" aria-pressed=\"false\" class=\"rounded-full px-4 py-2 text-sm font-bold text-[#5a262c] transition-all duration-200 hover:bg-white hover:shadow-sm\">")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 7, "\" aria-pressed=\"false\" class=\"rounded-xl px-3 py-1.5 text-sm font-bold text-[#5a262c] transition-all duration-200 hover:bg-white hover:shadow-sm sm:rounded-full sm:px-4 sm:py-2\">")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 				var templ_7745c5c3_Var4 string
 				templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs(grupo.Nome)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/vitrine_publica.templ`, Line: 42, Col: 222}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/vitrine_publica.templ`, Line: 42, Col: 254}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
 				if templ_7745c5c3_Err != nil {
