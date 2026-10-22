@@ -39,20 +39,14 @@ func (c *ProdutoControlador) Inserir(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "A categoria deve ter até 60 caracteres.", http.StatusBadRequest)
 		return
 	}
-	prioridadeCategoria, ok := lerPrioridadeCategoria(r.FormValue("prioridade_categoria"))
-	if !ok {
-		http.Error(w, "Prioridade de categoria inválida.", http.StatusBadRequest)
-		return
-	}
-
 	produtoDTO := dtos.ProdutoInputDTO{
-		NomePeca:            r.FormValue("nome_peca"),
-		Categoria:           categoria,
-		PrioridadeCategoria: prioridadeCategoria,
-		Preco:               preco,
-		FotoURL:             r.FormValue("foto_url"),
-		ProntaEntrega:       prontaEntrega,
-		Publicado:           publicado,
+		NomePeca:          r.FormValue("nome_peca"),
+		Categoria:         categoria,
+		Preco:             preco,
+		FotoURL:           r.FormValue("foto_url"),
+		ImagemIlustrativa: r.FormValue("imagem_ilustrativa") == "on",
+		ProntaEntrega:     prontaEntrega,
+		Publicado:         publicado,
 	}
 
 	c.dao.Inserir(produtoDTO)
@@ -83,19 +77,14 @@ func (c *ProdutoControlador) Atualizar(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "A categoria deve ter até 60 caracteres.", http.StatusBadRequest)
 		return
 	}
-	prioridadeCategoria, ok := lerPrioridadeCategoria(r.FormValue("prioridade_categoria"))
-	if !ok {
-		http.Error(w, "Prioridade de categoria inválida.", http.StatusBadRequest)
-		return
-	}
 	dto := dtos.ProdutoInputDTO{
-		NomePeca:            r.FormValue("nome_peca"),
-		Categoria:           categoria,
-		PrioridadeCategoria: prioridadeCategoria,
-		Preco:               preco,
-		FotoURL:             r.FormValue("foto_url"),
-		ProntaEntrega:       r.FormValue("pronta_entrega") == "on",
-		Publicado:           r.FormValue("publicado") == "on",
+		NomePeca:          r.FormValue("nome_peca"),
+		Categoria:         categoria,
+		Preco:             preco,
+		FotoURL:           r.FormValue("foto_url"),
+		ImagemIlustrativa: r.FormValue("imagem_ilustrativa") == "on",
+		ProntaEntrega:     r.FormValue("pronta_entrega") == "on",
+		Publicado:         r.FormValue("publicado") == "on",
 	}
 	if err := c.dao.Atualizar(id, dto); err != nil {
 		if err == sql.ErrNoRows {
@@ -128,8 +117,75 @@ func (c *ProdutoControlador) Listar(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Erro ao buscar a lista de produtos.", http.StatusInternalServerError)
 		return
 	}
+	categorias, err := c.dao.BuscarCategorias()
+	if err != nil {
+		http.Error(w, "Erro ao buscar categorias.", http.StatusInternalServerError)
+		return
+	}
 
 	// Renderiza a Vitrine de Produtos (Templ)
-	componente := views.AdminLayout("Catálogo de Produtos", views.Produtos(produtos))
+	componente := views.AdminLayout("Catálogo de Produtos", views.Produtos(produtos, categorias))
 	componente.Render(r.Context(), w)
+}
+
+func (c *ProdutoControlador) ListarCategorias(w http.ResponseWriter, r *http.Request) {
+	categorias, err := c.dao.BuscarCategorias()
+	if err != nil {
+		http.Error(w, "Erro ao buscar categorias.", http.StatusInternalServerError)
+		return
+	}
+	componente := views.AdminLayout("Categorias", views.Categorias(categorias))
+	componente.Render(r.Context(), w)
+}
+
+func (c *ProdutoControlador) InserirCategoria(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Método não permitido.", http.StatusMethodNotAllowed)
+		return
+	}
+	if err := r.ParseForm(); err != nil {
+		http.Error(w, "Erro ao processar formulário.", http.StatusBadRequest)
+		return
+	}
+	nome := strings.TrimSpace(r.FormValue("nome"))
+	if nome == "" || len([]rune(nome)) > 60 {
+		http.Error(w, "Informe um nome de categoria com até 60 caracteres.", http.StatusBadRequest)
+		return
+	}
+	prioridade, ok := lerPrioridadeCategoria(r.FormValue("prioridade"))
+	if !ok {
+		http.Error(w, "Prioridade inválida.", http.StatusBadRequest)
+		return
+	}
+	if err := c.dao.CriarCategoria(nome, prioridade); err != nil {
+		http.Error(w, "Não foi possível criar a categoria. Verifique se ela já existe.", http.StatusConflict)
+		return
+	}
+	http.Redirect(w, r, "/categorias", http.StatusSeeOther)
+}
+
+func (c *ProdutoControlador) AtualizarPrioridadeCategoria(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Método não permitido.", http.StatusMethodNotAllowed)
+		return
+	}
+	if err := r.ParseForm(); err != nil {
+		http.Error(w, "Erro ao processar formulário.", http.StatusBadRequest)
+		return
+	}
+	nome := strings.TrimSpace(r.FormValue("nome"))
+	prioridade, ok := lerPrioridadeCategoria(r.FormValue("prioridade"))
+	if nome == "" || !ok {
+		http.Error(w, "Categoria ou prioridade inválida.", http.StatusBadRequest)
+		return
+	}
+	if err := c.dao.AtualizarPrioridadeCategoria(nome, prioridade); err != nil {
+		if err == sql.ErrNoRows {
+			http.NotFound(w, r)
+			return
+		}
+		http.Error(w, "Erro ao atualizar prioridade da categoria.", http.StatusInternalServerError)
+		return
+	}
+	http.Redirect(w, r, "/categorias", http.StatusSeeOther)
 }

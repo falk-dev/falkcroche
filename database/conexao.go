@@ -51,7 +51,8 @@ func criarTabelas(db *sql.DB) {
 		preco REAL NOT NULL,
 		foto_url TEXT,
 		pronta_entrega BOOLEAN NOT NULL DEFAULT 0,
-		publicado BOOLEAN NOT NULL DEFAULT 1
+		publicado BOOLEAN NOT NULL DEFAULT 1,
+		imagem_ilustrativa BOOLEAN NOT NULL DEFAULT 0
 	);`
 
 	// query para criar a tabela de pedidos
@@ -147,6 +148,7 @@ func criarTabelas(db *sql.DB) {
 		log.Fatalf("Erro ao criar tabela produtos: %v", err)
 	}
 	migrarColunaCategoriaProduto(db)
+	migrarColunaImagemIlustrativa(db)
 	migrarPrioridadesCategorias(db)
 	if _, err := db.Exec(tabelaPedidos); err != nil {
 		log.Fatalf("Erro ao criar tabela pedidos: %v", err)
@@ -235,6 +237,39 @@ func migrarColunaCategoriaProduto(db *sql.DB) {
 	}
 	if _, err := db.Exec(`ALTER TABLE produtos ADD COLUMN categoria TEXT NOT NULL DEFAULT ''`); err != nil {
 		log.Fatalf("Erro ao migrar coluna categoria de produtos: %v", err)
+	}
+}
+
+func migrarColunaImagemIlustrativa(db *sql.DB) {
+	linhas, err := db.Query(`PRAGMA table_info(produtos)`)
+	if err != nil {
+		log.Fatalf("Erro ao verificar coluna imagem_ilustrativa de produtos: %v", err)
+	}
+	for linhas.Next() {
+		var cid int
+		var nome, tipo string
+		var notNull, primaryKey int
+		var valorPadrao sql.NullString
+		if err := linhas.Scan(&cid, &nome, &tipo, &notNull, &valorPadrao, &primaryKey); err != nil {
+			linhas.Close()
+			log.Fatalf("Erro ao ler colunas de produtos: %v", err)
+		}
+		if nome == "imagem_ilustrativa" {
+			if err := linhas.Close(); err != nil {
+				log.Fatalf("Erro ao fechar verificação da coluna imagem_ilustrativa: %v", err)
+			}
+			return
+		}
+	}
+	if err := linhas.Err(); err != nil {
+		linhas.Close()
+		log.Fatalf("Erro ao ler colunas de produtos: %v", err)
+	}
+	if err := linhas.Close(); err != nil {
+		log.Fatalf("Erro ao fechar verificação da coluna imagem_ilustrativa: %v", err)
+	}
+	if _, err := db.Exec(`ALTER TABLE produtos ADD COLUMN imagem_ilustrativa BOOLEAN NOT NULL DEFAULT 0`); err != nil {
+		log.Fatalf("Erro ao migrar coluna imagem_ilustrativa de produtos: %v", err)
 	}
 }
 

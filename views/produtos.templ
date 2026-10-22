@@ -6,14 +6,17 @@ import (
 	"falkcroche/modelos"
 )
 
-templ Produtos(produtos []modelos.Produto) {
+templ Produtos(produtos []modelos.Produto, categorias []modelos.CategoriaProduto) {
 	<div class="space-y-6">
 		<div class="flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-center sm:gap-4">
 			<div>
 				<h3 class="text-xl font-serif font-bold text-[#5a262c]">Produtos do ateliê</h3>
 				<p class="text-sm text-[#5a262c]/60">Gerencie as peças e sua exibição na vitrine.</p>
 			</div>
-			<button id="abrir-modal-produto" type="button" class="shrink-0 rounded-lg bg-[#5a262c] px-4 py-2.5 text-sm font-bold text-[#ffeae8] hover:bg-[#472025] transition-colors">Novo produto</button>
+			<div class="flex flex-wrap gap-2">
+				<a href="/categorias" class="rounded-lg border border-[#e8d5c4] px-4 py-2.5 text-sm font-bold text-[#5a262c] hover:bg-[#ffeae8]">Gerenciar categorias</a>
+				<button id="abrir-modal-produto" type="button" class="shrink-0 rounded-lg bg-[#5a262c] px-4 py-2.5 text-sm font-bold text-[#ffeae8] hover:bg-[#472025] transition-colors">Novo produto</button>
+			</div>
 		</div>
 		<dialog id="modal-produto" class="w-[min(42rem,calc(100%-2rem))] max-w-none rounded-2xl border-0 p-0 shadow-2xl backdrop:bg-[#2b1719]/50">
 			<div class="max-h-[90vh] overflow-y-auto bg-white p-4 sm:p-8">
@@ -36,31 +39,23 @@ templ Produtos(produtos []modelos.Produto) {
 							<input id="produto-preco" type="number" min="0" step="0.01" name="preco" required class="w-full rounded-lg border border-[#e8d5c4] bg-[#fcf9f8] px-3 py-3 outline-none focus:border-[#5a262c] focus:ring-2 focus:ring-[#5a262c]/20"/>
 						</div>
 					</div>
-					<div class="grid grid-cols-1 gap-4 sm:grid-cols-[minmax(0,1fr)_12rem]">
-						<div>
-							<label for="produto-categoria" class="mb-1.5 block text-sm font-semibold">Categoria</label>
-							<input id="produto-categoria" type="text" name="categoria" list="categorias-produto" maxlength="60" placeholder="Ex.: Boina, Chapéu ou Bolsa" class="w-full rounded-lg border border-[#e8d5c4] bg-[#fcf9f8] px-3 py-3 outline-none focus:border-[#5a262c] focus:ring-2 focus:ring-[#5a262c]/20"/>
-							<datalist id="categorias-produto">
-								for _, grupo := range agruparProdutos(produtos) {
-									if grupo.chave != "" {
-										<option value={ grupo.Nome } data-prioridade={ grupo.Prioridade }></option>
-									}
-								}
-							</datalist>
-						</div>
-						<div>
-							<label for="produto-categoria-prioridade" class="mb-1.5 block text-sm font-semibold">Prioridade da categoria</label>
-							<select id="produto-categoria-prioridade" name="prioridade_categoria" class="w-full rounded-lg border border-[#e8d5c4] bg-[#fcf9f8] px-3 py-3 outline-none focus:border-[#5a262c] focus:ring-2 focus:ring-[#5a262c]/20">
-								<option value="alta">Alta</option>
-								<option value="media" selected>Média</option>
-								<option value="baixa">Baixa</option>
-							</select>
-						</div>
+					<div>
+						<label for="produto-categoria" class="mb-1.5 block text-sm font-semibold">Categoria</label>
+						<select id="produto-categoria" name="categoria" class="w-full rounded-lg border border-[#e8d5c4] bg-[#fcf9f8] px-3 py-3 outline-none focus:border-[#5a262c] focus:ring-2 focus:ring-[#5a262c]/20">
+							<option value="">Sem categoria</option>
+							for _, categoria := range categorias {
+								<option value={ categoria.Nome }>{ categoria.Nome }</option>
+							}
+						</select>
 					</div>
 					<div>
 						<label for="produto-foto" class="mb-1.5 block text-sm font-semibold">URL da foto</label>
 						<input id="produto-foto" type="url" name="foto_url" placeholder="https://..." class="w-full rounded-lg border border-[#e8d5c4] bg-[#fcf9f8] px-3 py-3 outline-none focus:border-[#5a262c] focus:ring-2 focus:ring-[#5a262c]/20"/>
 					</div>
+					<label class="flex items-start gap-3 rounded-lg border border-[#e8d5c4] bg-[#fcf9f8] p-4 text-sm font-medium text-[#5a262c]">
+						<input id="produto-imagem-ilustrativa" type="checkbox" name="imagem_ilustrativa" class="mt-0.5 size-4 shrink-0 accent-[#5a262c]" />
+						<span>Foto de inspiração ou meramente ilustrativa</span>
+					</label>
 					<div class="space-y-3 rounded-lg bg-[#fcf9f8] p-4">
 						<label class="flex cursor-pointer items-center gap-3 text-sm font-medium text-[#5a262c]"><input type="checkbox" name="pronta_entrega" class="size-4 accent-[#5a262c]"/> Pronta entrega</label>
 						<label class="flex cursor-pointer items-center gap-3 text-sm font-medium text-[#5a262c]"><input type="checkbox" name="publicado" class="size-4 accent-[#5a262c]"/> Exibir na vitrine pública</label>
@@ -103,7 +98,12 @@ templ Produtos(produtos []modelos.Produto) {
 											} else {
 												<div class="grid size-12 shrink-0 place-items-center rounded-lg bg-[#ffeae8]/60 text-xs text-[#5a262c]/50">Foto</div>
 											}
-											<span class="font-bold text-[#5a262c]">{ p.NomePeca }</span>
+											<div class="min-w-0">
+												<span class="font-bold text-[#5a262c]">{ p.NomePeca }</span>
+												if p.ImagemIlustrativa {
+													<span class="mt-1 block w-fit rounded-full bg-[#ffeae8] px-2 py-0.5 text-[10px] font-bold text-[#87352d]">Imagem ilustrativa</span>
+												}
+											</div>
 										</div>
 									</td>
 									<td class="whitespace-nowrap p-5 font-bold text-[#5a262c]">{ FormatarReais(p.Preco) }</td>
@@ -124,7 +124,7 @@ templ Produtos(produtos []modelos.Produto) {
 										</span>
 									</td>
 									<td class="p-5 text-right">
-										<button type="button" data-editar-produto data-id={ fmt.Sprintf("%d", p.ID) } data-nome={ p.NomePeca } data-categoria={ p.Categoria } data-prioridade-categoria={ p.PrioridadeCategoria } data-preco={ fmt.Sprintf("%.2f", p.Preco) } data-foto={ p.FotoURL } data-pronta-entrega={ fmt.Sprintf("%t", p.ProntaEntrega) } data-publicado={ fmt.Sprintf("%t", p.Publicado) } title={ "Editar produto " + p.NomePeca } aria-label={ "Editar produto " + p.NomePeca } class="ml-auto grid size-9 place-items-center rounded-lg border border-[#e8d5c4] bg-white text-lg hover:bg-[#ffeae8]">✎</button>
+										<button type="button" data-editar-produto data-id={ fmt.Sprintf("%d", p.ID) } data-nome={ p.NomePeca } data-categoria={ p.Categoria } data-preco={ fmt.Sprintf("%.2f", p.Preco) } data-foto={ p.FotoURL } data-imagem-ilustrativa={ fmt.Sprintf("%t", p.ImagemIlustrativa) } data-pronta-entrega={ fmt.Sprintf("%t", p.ProntaEntrega) } data-publicado={ fmt.Sprintf("%t", p.Publicado) } title={ "Editar produto " + p.NomePeca } aria-label={ "Editar produto " + p.NomePeca } class="ml-auto grid size-9 place-items-center rounded-lg border border-[#e8d5c4] bg-white text-lg hover:bg-[#ffeae8]">✎</button>
 									</td>
 								</tr>
 							}

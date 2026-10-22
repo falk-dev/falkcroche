@@ -120,7 +120,7 @@ func VitrinePublica(produtos []modelos.Produto, whatsapp string) templ.Component
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 11, "\" class=\"relative rounded-lg border border-[#e8d5c4]/70 bg-white p-3 shadow-sm transition-shadow hover:shadow-md\">")
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 11, "\" class=\"relative flex h-full flex-col rounded-lg border border-[#e8d5c4]/70 bg-white p-3 shadow-sm transition-shadow hover:shadow-md\">")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
@@ -130,7 +130,7 @@ func VitrinePublica(produtos []modelos.Produto, whatsapp string) templ.Component
 							return templ_7745c5c3_Err
 						}
 					}
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 13, "<div class=\"relative mb-3 aspect-square overflow-hidden rounded-md bg-[#fcf9f8]\">")
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 13, "<div class=\"relative mb-1 aspect-square overflow-hidden rounded-md bg-[#fcf9f8]\">")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
@@ -171,80 +171,95 @@ func VitrinePublica(produtos []modelos.Produto, whatsapp string) templ.Component
 							return templ_7745c5c3_Err
 						}
 					}
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 18, "</div><div class=\"px-1 pb-1 text-center\"><h3 class=\"mb-1 font-serif text-lg font-semibold text-[#5a262c]\">")
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 18, "</div><div class=\"flex flex-1 flex-col px-1 pb-1 text-center\">")
+					if templ_7745c5c3_Err != nil {
+						return templ_7745c5c3_Err
+					}
+					if p.ImagemIlustrativa {
+						templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 19, "<p class=\"h-4 text-xs font-semibold leading-4 text-[#c17f6b]\">* imagem de inspiração</p>")
+						if templ_7745c5c3_Err != nil {
+							return templ_7745c5c3_Err
+						}
+					} else {
+						templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 20, "<p class=\"h-4\"></p>")
+						if templ_7745c5c3_Err != nil {
+							return templ_7745c5c3_Err
+						}
+					}
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 21, "<h3 class=\"mb-1 font-serif text-lg font-semibold text-[#5a262c]\">")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
 					var templ_7745c5c3_Var8 string
 					templ_7745c5c3_Var8, templ_7745c5c3_Err = templ.JoinStringErrs(p.NomePeca)
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/vitrine_publica.templ`, Line: 71, Col: 28}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/vitrine_publica.templ`, Line: 76, Col: 28}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var8))
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 19, "</h3><p class=\"mb-3 text-base font-bold text-[#c17f6b]\">")
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 22, "</h3><p class=\"mb-3 text-base font-bold text-[#c17f6b]\">")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
 					var templ_7745c5c3_Var9 string
 					templ_7745c5c3_Var9, templ_7745c5c3_Err = templ.JoinStringErrs(FormatarReais(p.Preco))
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/vitrine_publica.templ`, Line: 75, Col: 40}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/vitrine_publica.templ`, Line: 80, Col: 40}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var9))
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 20, "</p>")
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 23, "</p>")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
 					if whatsapp != "" {
-						templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 21, "<a href=\"")
+						templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 24, "<a href=\"")
 						if templ_7745c5c3_Err != nil {
 							return templ_7745c5c3_Err
 						}
 						var templ_7745c5c3_Var10 templ.SafeURL
 						templ_7745c5c3_Var10, templ_7745c5c3_Err = templ.JoinURLErrs(linkWhatsApp(whatsapp, p.NomePeca))
 						if templ_7745c5c3_Err != nil {
-							return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/vitrine_publica.templ`, Line: 79, Col: 56}
+							return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/vitrine_publica.templ`, Line: 84, Col: 56}
 						}
 						_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var10))
 						if templ_7745c5c3_Err != nil {
 							return templ_7745c5c3_Err
 						}
-						templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 22, "\" target=\"_blank\" rel=\"noreferrer\" class=\"inline-flex w-full items-center justify-center rounded-md bg-[#5a262c] py-2.5 text-sm font-bold text-[#ffeae8] transition-colors hover:bg-[#472025]\">Tenho interesse</a>")
+						templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 25, "\" target=\"_blank\" rel=\"noreferrer\" class=\"mt-auto inline-flex w-full items-center justify-center rounded-md bg-[#5a262c] py-2.5 text-sm font-bold text-[#ffeae8] transition-colors hover:bg-[#472025]\">Tenho interesse</a>")
 						if templ_7745c5c3_Err != nil {
 							return templ_7745c5c3_Err
 						}
 					}
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 23, "</div></article>")
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 26, "</div></article>")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
 				}
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 24, "</div></div>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 27, "</div></div>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			if whatsapp != "" {
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 25, "<section class=\"mt-7 flex flex-col items-start justify-between gap-4 border-t border-[#c17f6b]/30 pt-5 sm:flex-row sm:items-center\"><div><h2 class=\"font-serif text-lg font-semibold text-[#5a262c]\">Não encontrou o que queria?</h2><p class=\"mt-1 text-sm text-[#5a262c]/70\">Chame a gente para conversar sobre uma peça personalizada.</p></div><a href=\"")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 28, "<section class=\"mt-7 flex flex-col items-start justify-between gap-4 border-t border-[#c17f6b]/30 pt-5 sm:flex-row sm:items-center\"><div><h2 class=\"font-serif text-lg font-semibold text-[#5a262c]\">Não encontrou o que queria?</h2><p class=\"mt-1 text-sm text-[#5a262c]/70\">Chame a gente para conversar sobre uma peça personalizada.</p></div><a href=\"")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 				var templ_7745c5c3_Var11 templ.SafeURL
 				templ_7745c5c3_Var11, templ_7745c5c3_Err = templ.JoinURLErrs(linkWhatsAppContato(whatsapp))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/vitrine_publica.templ`, Line: 104, Col: 43}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/vitrine_publica.templ`, Line: 109, Col: 43}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var11))
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 26, "\" target=\"_blank\" rel=\"noreferrer\" class=\"inline-flex shrink-0 items-center justify-center rounded-lg border border-[#25D366] bg-[#25D366] px-4 py-2.5 text-sm font-semibold text-[#111B21] transition-colors hover:border-[#1ebe5d] hover:bg-[#1ebe5d]\">Conversar no WhatsApp</a></section>")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 29, "\" target=\"_blank\" rel=\"noreferrer\" class=\"inline-flex shrink-0 items-center justify-center rounded-lg border border-[#25D366] bg-[#25D366] px-4 py-2.5 text-sm font-semibold text-[#111B21] transition-colors hover:border-[#1ebe5d] hover:bg-[#1ebe5d]\">Conversar no WhatsApp</a></section>")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}

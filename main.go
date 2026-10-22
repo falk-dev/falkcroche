@@ -57,6 +57,9 @@ func main() {
 	mux.Handle("/produtos", acessoCtrl.Proteger(http.HandlerFunc(produtoCtrl.Listar)))
 	mux.Handle("/produtos/inserir", acessoCtrl.Proteger(http.HandlerFunc(produtoCtrl.Inserir)))
 	mux.Handle("/produtos/atualizar", acessoCtrl.Proteger(http.HandlerFunc(produtoCtrl.Atualizar)))
+	mux.Handle("/categorias", acessoCtrl.Proteger(http.HandlerFunc(produtoCtrl.ListarCategorias)))
+	mux.Handle("/categorias/inserir", acessoCtrl.Proteger(http.HandlerFunc(produtoCtrl.InserirCategoria)))
+	mux.Handle("/categorias/prioridade", acessoCtrl.Proteger(http.HandlerFunc(produtoCtrl.AtualizarPrioridadeCategoria)))
 
 	mux.Handle("/pedidos", acessoCtrl.Proteger(http.HandlerFunc(pedidoCtrl.Listar)))
 	mux.Handle("/pedidos/orcamento", acessoCtrl.Proteger(http.HandlerFunc(pedidoCtrl.ImprimirOrcamento)))

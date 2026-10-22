@@ -71,6 +71,13 @@ func TestCriarTabelasMigraPedidosERetemRecebimentosAnteriores(t *testing.T) {
 	if categoria != "" {
 		t.Fatalf("categoria migrada = %q; esperada vazia para produto antigo", categoria)
 	}
+	var imagemIlustrativa bool
+	if err := db.QueryRow(`SELECT imagem_ilustrativa FROM produtos WHERE id = 2`).Scan(&imagemIlustrativa); err != nil {
+		t.Fatal(err)
+	}
+	if imagemIlustrativa {
+		t.Fatal("produto antigo deveria migrar com imagem ilustrativa desativada")
+	}
 	var prioridadeCategoria string
 	if err := db.QueryRow(`SELECT prioridade FROM categorias_produtos WHERE nome = 'Bolsas'`).Scan(&prioridadeCategoria); err != nil {
 		t.Fatal(err)
