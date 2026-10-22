@@ -18,6 +18,7 @@ import (
 	"falkcroche/views"
 )
 
+//go:embed static
 var arquivosEstaticos embed.FS
 
 func main() {
