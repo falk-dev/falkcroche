@@ -382,7 +382,7 @@ func Produtos(produtos []modelos.Produto, categorias []modelos.CategoriaProduto)
 				return templ_7745c5c3_Err
 			}
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 39, "</div></div><script src=\"/static/js/produtos.js\" defer></script></div>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 39, "</div></div><script src=\"/static/js/produtos.js?v=2\" defer></script></div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
