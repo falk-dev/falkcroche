@@ -28,12 +28,20 @@ jobs:
       - name: Baixar dependências
         run: go mod download
 
+      
       - name: Compilar aplicação Go
         run: |
+          sudo apt-get update
+          sudo apt-get install -y gcc libc6-dev
+
           mkdir -p build
-          CGO_ENABLED=0 GOOS=linux GOARCH=amd64 \
+
+          CGO_ENABLED=1 GOOS=linux GOARCH=amd64 \
             go build -o build/falkcroche-app .
+
           ls -lh build/falkcroche-app
+          file build/falkcroche-app
+
 
       - name: Configurar chave SSH
         env:
