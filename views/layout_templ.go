@@ -355,7 +355,7 @@ func PublicLayout(title string, content templ.Component, logoURL string, staticP
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 22, "<script type=\"text/javascript\">\n\t(function(c,l,a,r,i,t,y){\n\t\tc[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};\n\t\tt=l.createElement(r);t.async=1;t.src=\"https://www.clarity.ms/tag/\"+i;\n\t\ty=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);\n\t})(window, document, \"clarity\", \"script\", \"z085lt3fid\");\n</script><body class=\"flex min-h-screen items-start justify-center bg-[#e8d5c4]/40 p-2 font-sans text-[#5a262c] antialiased sm:p-4 lg:items-center lg:p-8\"><div class=\"flex min-h-[calc(100vh-1rem)] w-full max-w-[1400px] flex-col overflow-hidden rounded-2xl border border-white bg-[#fdfbf9] shadow-xl sm:min-h-[calc(100vh-2rem)] sm:rounded-[2rem] lg:min-h-[calc(100vh-4rem)]\"><header class=\"px-4 pb-3 pt-6 text-center sm:pt-8\"><img src=\"")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 22, "<script type=\"text/javascript\">\n\t(function(c,l,a,r,i,t,y){\n\t\tc[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};\n\t\tt=l.createElement(r);t.async=1;t.src=\"https://www.clarity.ms/tag/\"+i;\n\t\ty=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);\n\t})(window, document, \"clarity\", \"script\", \"z085lt3fid\");\n</script><body class=\"flex min-h-screen items-start justify-center bg-[#e8d5c4]/40 p-2 font-sans text-[#5a262c] antialiased sm:p-4 lg:items-center lg:p-8\"><div class=\"flex min-h-[calc(100vh-1rem)] w-full max-w-[1400px] flex-col overflow-hidden rounded-2xl border border-white bg-[#fdfbf9] shadow-xl sm:min-h-[calc(100vh-2rem)] sm:rounded-[2rem] lg:min-h-[calc(100vh-4rem)]\"><header class=\"px-4 pb-1 pt-6 text-center sm:pb-3 sm:pt-8\"><img src=\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -368,7 +368,7 @@ func PublicLayout(title string, content templ.Component, logoURL string, staticP
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 23, "\" alt=\"Falk Crochê\" class=\"mx-auto mb-2 h-24 w-40 object-contain sm:h-28 sm:w-48\"><p class=\"text-[#c17f6b] text-sm font-medium sm:text-base\">Feito à mão, com o coração.</p></header><main class=\"mx-auto w-full max-w-6xl flex-1 px-4 py-5 sm:px-6 sm:py-6\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 23, "\" alt=\"Falk Crochê\" class=\"mx-auto mb-2 h-24 w-40 object-contain sm:h-28 sm:w-48\"><p class=\"text-[#c17f6b] text-sm font-medium sm:text-base\">Feito à mão, com o coração.</p></header><main class=\"mx-auto w-full max-w-6xl flex-1 px-4 pt-2 pb-5 sm:px-6 sm:py-6\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
