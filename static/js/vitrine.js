@@ -8,7 +8,9 @@ filtrosVitrine.forEach((filtro) => {
             outroFiltro.setAttribute("aria-pressed", String(outroFiltro === filtro));
         });
         produtosVitrine.forEach((produto) => {
-            produto.hidden = categoria !== "*" && produto.dataset.categoria !== categoria;
+            const ocultar = categoria !== "*" && produto.dataset.categoria !== categoria;
+            produto.hidden = ocultar;
+            produto.style.display = ocultar ? "none" : "";
         });
     });
 });

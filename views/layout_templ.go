@@ -376,7 +376,7 @@ func PublicLayout(title string, content templ.Component, logoURL string, staticP
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 24, "</main><footer class=\"py-6 text-center text-xs font-medium text-[#5a262c]/60 sm:text-sm\">&copy; 2026 Falk Crochê. Todos os direitos reservados.</footer></div><script src=\"/static/js/vitrine.js\" defer></script></body></html>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 24, "</main><footer class=\"py-6 text-center text-xs font-medium text-[#5a262c]/60 sm:text-sm\">&copy; 2026 Falk Crochê. Todos os direitos reservados.</footer></div><script src=\"/static/js/vitrine.js?v=2\" defer></script></body></html>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
