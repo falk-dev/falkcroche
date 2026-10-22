@@ -1,121 +1,87 @@
 
-name: Deploy FalkCroche
+name: Deploy Falkcroche na VPS
 
 on:
   push:
     branches:
       - main
+  workflow_dispatch:
 
 permissions:
   contents: read
 
-concurrency:
-  group: falkcroche-production
-  cancel-in-progress: false
-
 jobs:
   deploy:
+    name: Compilar e publicar na VPS
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
+      - name: Baixar código do repositório
         uses: actions/checkout@v4
 
-      - name: Setup Go
+      - name: Configurar Go
         uses: actions/setup-go@v5
         with:
           go-version-file: go.mod
           cache: true
 
-      - name: Run tests
-        run: go test ./...
+      - name: Baixar dependências
+        run: go mod download
 
-      - name: Build application
+      - name: Compilar aplicação Go
         run: |
+          mkdir -p build
           CGO_ENABLED=0 GOOS=linux GOARCH=amd64 \
-            go build -o falkcroche-app main.go
+            go build -o build/falkcroche-app .
+          ls -lh build/falkcroche-app
 
-      - name: Configure SSH
+      - name: Configurar chave SSH
         env:
-          SSH_KEY: ${{ secrets.VM_SSH_KEY }}
-          KNOWN_HOSTS: ${{ secrets.VM_KNOWN_HOSTS }}
+          DEPLOY_KEY: ${{ secrets.DEPLOY_KEY }}
+          VM_HOST: ${{ secrets.VM_HOST }}
+          VM_USER: ${{ secrets.VM_USER }}
         run: |
           mkdir -p ~/.ssh
-          chmod 700 ~/.ssh
-
-          printf '%s\n' "$SSH_KEY" > ~/.ssh/deploy_key
+          printf '%s\n' "$DEPLOY_KEY" > ~/.ssh/deploy_key
           chmod 600 ~/.ssh/deploy_key
 
-          printf '%s\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts
-          chmod 600 ~/.ssh/known_hosts
+          ssh-keyscan -H "$VM_HOST" >> ~/.ssh/known_hosts
 
-      - name: Upload application
-        env:
-          VM_HOST: ${{ secrets.VM_HOST }}
-          VM_USER: ${{ secrets.VM_USER }}
-        run: |
-          scp -i ~/.ssh/deploy_key \
-            -o StrictHostKeyChecking=yes \
-            falkcroche-app \
-            "$VM_USER@$VM_HOST:/tmp/falkcroche-app"
-
-      
-      - name: Diagnosticar SSH na VPS
-        env:
-          VM_HOST: ${{ secrets.VM_HOST }}
-          VM_USER: ${{ secrets.VM_USER }}
-        run: |
-          set -x
-
-          echo "Testando conexão SSH..."
-
-          ssh -vvv \
-            -i ~/.ssh/deploy_key \
-            -o StrictHostKeyChecking=yes \
-            -o ConnectTimeout=15 \
-            "$VM_USER@$VM_HOST" \
-            'echo "SSH conectado"; whoami; hostname; echo "Conexão concluída"'
-
-          echo "Teste SSH finalizado."      
-      
-      - name: Deploy na VPS
+      - name: Enviar executável para VPS
         env:
           VM_HOST: ${{ secrets.VM_HOST }}
           VM_USER: ${{ secrets.VM_USER }}
         run: |
           set -e
 
-          echo "Verificando executável..."
-          ls -l /tmp/falkcroche-app
-
-          echo "Enviando executável para a VPS..."
+          echo "Enviando aplicação..."
           scp -i ~/.ssh/deploy_key \
-            -o StrictHostKeyChecking=yes \
-            /tmp/falkcroche-app \
+            build/falkcroche-app \
             "$VM_USER@$VM_HOST:/tmp/falkcroche-app"
 
-          echo "Instalando e reiniciando aplicação..."
+      - name: Instalar e reiniciar aplicação
+        env:
+          VM_HOST: ${{ secrets.VM_HOST }}
+          VM_USER: ${{ secrets.VM_USER }}
+        run: |
+          set -e
+
           ssh -i ~/.ssh/deploy_key \
-            -o StrictHostKeyChecking=yes \
             "$VM_USER@$VM_HOST" \
-            'set -ex
+            'set -eux
+             APP_DIR=/home/ubuntu/falkcroche
+
              echo "Verificando diretório..."
-             ls -ld /home/ubuntu/falkcroche
+             test -d "$APP_DIR"
 
              echo "Instalando executável..."
-             install -m 755 /tmp/falkcroche-app /home/ubuntu/falkcroche/falkcroche-app
-
-             echo "Removendo arquivo temporário..."
+             install -m 755 /tmp/falkcroche-app "$APP_DIR/falkcroche-app"
              rm -f /tmp/falkcroche-app
 
              echo "Reiniciando serviço..."
              sudo systemctl restart falkcroche
 
-             echo "Verificando status..."
-             sudo systemctl status falkcroche --no-pager -l
+             echo "Verificando serviço..."
+             sudo systemctl is-active falkcroche'
 
-             echo "Confirmando serviço ativo..."
-             systemctl is-active --quiet falkcroche'
-
-          echo "Deploy concluído!"
-
+          echo "Deploy concluído com sucesso!"
