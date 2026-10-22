@@ -73,5 +73,33 @@ jobs:
              sudo systemctl restart falkcroche
              systemctl is-active --quiet falkcroche'
 
+      
+      - name: Deploy na VPS
+        env:
+          VM_HOST: ${{ secrets.VM_HOST }}
+          VM_USER: ${{ secrets.VM_USER }}
+        run: |
+          set -e
+
+          echo "Enviando executável para a VPS..."
+
+          scp -i ~/.ssh/deploy_key \
+            -o StrictHostKeyChecking=yes \
+            /tmp/falkcroche-app \
+            "$VM_USER@$VM_HOST:/tmp/falkcroche-app"
+
+          echo "Instalando aplicação e reiniciando serviço..."
+
+          ssh -i ~/.ssh/deploy_key \
+            -o StrictHostKeyChecking=yes \
+            "$VM_USER@$VM_HOST" \
+            'set -ex
+             install -m 755 /tmp/falkcroche-app /home/ubuntu/falkcroche/falkcroche-app
+             rm -f /tmp/falkcroche-app
+             sudo systemctl restart falkcroche
+             sleep 2
+             sudo systemctl status falkcroche --no-pager -l
+             systemctl is-active --quiet falkcroche'
+
       - name: Deployment complete
         run: echo "Deploy concluído com sucesso!"
