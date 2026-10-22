@@ -38,6 +38,7 @@ func TestCriarTabelasMigraPedidosERetemRecebimentosAnteriores(t *testing.T) {
 			etapa TEXT
 		)`,
 		`INSERT INTO produtos (id, nome_peca, preco) VALUES (2, 'Peça antiga', 100)`,
+		`INSERT INTO produtos (id, nome_peca, categoria, preco) VALUES (3, 'Bolsa nova', 'Bolsas', 80)`,
 		`INSERT INTO pedidos (id, produto_id, status) VALUES (7, 2, 'Sinal recebido')`,
 		`INSERT INTO transacoes (tipo, descricao, valor, data, pedido_id, etapa)
 			VALUES ('Entrada', 'Pedido #7 - sinal', 30, '2026-08-01', 7, 'sinal')`,
@@ -69,6 +70,13 @@ func TestCriarTabelasMigraPedidosERetemRecebimentosAnteriores(t *testing.T) {
 	}
 	if categoria != "" {
 		t.Fatalf("categoria migrada = %q; esperada vazia para produto antigo", categoria)
+	}
+	var prioridadeCategoria string
+	if err := db.QueryRow(`SELECT prioridade FROM categorias_produtos WHERE nome = 'Bolsas'`).Scan(&prioridadeCategoria); err != nil {
+		t.Fatal(err)
+	}
+	if prioridadeCategoria != "media" {
+		t.Fatalf("prioridade migrada = %q; esperada media", prioridadeCategoria)
 	}
 	var quantidadeItens int
 	var nomeItem string

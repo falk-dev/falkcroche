@@ -39,14 +39,20 @@ func (c *ProdutoControlador) Inserir(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "A categoria deve ter até 60 caracteres.", http.StatusBadRequest)
 		return
 	}
+	prioridadeCategoria, ok := lerPrioridadeCategoria(r.FormValue("prioridade_categoria"))
+	if !ok {
+		http.Error(w, "Prioridade de categoria inválida.", http.StatusBadRequest)
+		return
+	}
 
 	produtoDTO := dtos.ProdutoInputDTO{
-		NomePeca:      r.FormValue("nome_peca"),
-		Categoria:     categoria,
-		Preco:         preco,
-		FotoURL:       r.FormValue("foto_url"),
-		ProntaEntrega: prontaEntrega,
-		Publicado:     publicado,
+		NomePeca:            r.FormValue("nome_peca"),
+		Categoria:           categoria,
+		PrioridadeCategoria: prioridadeCategoria,
+		Preco:               preco,
+		FotoURL:             r.FormValue("foto_url"),
+		ProntaEntrega:       prontaEntrega,
+		Publicado:           publicado,
 	}
 
 	c.dao.Inserir(produtoDTO)
@@ -77,13 +83,19 @@ func (c *ProdutoControlador) Atualizar(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "A categoria deve ter até 60 caracteres.", http.StatusBadRequest)
 		return
 	}
+	prioridadeCategoria, ok := lerPrioridadeCategoria(r.FormValue("prioridade_categoria"))
+	if !ok {
+		http.Error(w, "Prioridade de categoria inválida.", http.StatusBadRequest)
+		return
+	}
 	dto := dtos.ProdutoInputDTO{
-		NomePeca:      r.FormValue("nome_peca"),
-		Categoria:     categoria,
-		Preco:         preco,
-		FotoURL:       r.FormValue("foto_url"),
-		ProntaEntrega: r.FormValue("pronta_entrega") == "on",
-		Publicado:     r.FormValue("publicado") == "on",
+		NomePeca:            r.FormValue("nome_peca"),
+		Categoria:           categoria,
+		PrioridadeCategoria: prioridadeCategoria,
+		Preco:               preco,
+		FotoURL:             r.FormValue("foto_url"),
+		ProntaEntrega:       r.FormValue("pronta_entrega") == "on",
+		Publicado:           r.FormValue("publicado") == "on",
 	}
 	if err := c.dao.Atualizar(id, dto); err != nil {
 		if err == sql.ErrNoRows {
@@ -94,6 +106,19 @@ func (c *ProdutoControlador) Atualizar(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	http.Redirect(w, r, "/produtos", http.StatusSeeOther)
+}
+
+func lerPrioridadeCategoria(valor string) (string, bool) {
+	prioridade := strings.ToLower(strings.TrimSpace(valor))
+	if prioridade == "" {
+		prioridade = "media"
+	}
+	switch prioridade {
+	case "alta", "media", "baixa":
+		return prioridade, true
+	default:
+		return "", false
+	}
 }
 
 // Listar busca todos os produtos do banco.

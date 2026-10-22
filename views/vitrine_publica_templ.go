@@ -105,7 +105,7 @@ func VitrinePublica(produtos []modelos.Produto, whatsapp string) templ.Component
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			for _, grupo := range agruparProdutos(produtos) {
+			for _, grupo := range agruparProdutosPorPrioridade(produtos) {
 				for _, p := range grupo.Produtos {
 					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 10, "<article data-produto-vitrine data-categoria=\"")
 					if templ_7745c5c3_Err != nil {

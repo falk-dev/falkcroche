@@ -43,7 +43,7 @@ if len(produtos) == 0 {
         }
     </nav>
     <div data-grade-produtos class="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3">
-    for _, grupo := range agruparProdutos(produtos) {
+    for _, grupo := range agruparProdutosPorPrioridade(produtos) {
     for _, p := range grupo.Produtos {
     <article
         data-produto-vitrine data-categoria={ grupo.chave }

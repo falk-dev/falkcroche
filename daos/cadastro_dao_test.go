@@ -46,6 +46,9 @@ func TestAtualizarProduto(t *testing.T) {
 	}
 	defer db.Close()
 	db.SetMaxOpenConns(1)
+	if _, err := db.Exec(`CREATE TABLE categorias_produtos (nome TEXT PRIMARY KEY COLLATE NOCASE, prioridade TEXT NOT NULL DEFAULT 'media')`); err != nil {
+		t.Fatal(err)
+	}
 	if _, err := db.Exec(`CREATE TABLE produtos (id INTEGER PRIMARY KEY, nome_peca TEXT, categoria TEXT NOT NULL DEFAULT '', preco REAL, foto_url TEXT, pronta_entrega BOOLEAN, publicado BOOLEAN)`); err != nil {
 		t.Fatal(err)
 	}
@@ -54,18 +57,56 @@ func TestAtualizarProduto(t *testing.T) {
 	}
 
 	dao := NovoProdutoDAO(db)
-	if err := dao.Atualizar(1, dtos.ProdutoInputDTO{NomePeca: "Bolsa floral", Categoria: "Bolsas", Preco: 75.5, FotoURL: "https://exemplo.com/bolsa.jpg", ProntaEntrega: true, Publicado: true}); err != nil {
+	if err := dao.Atualizar(1, dtos.ProdutoInputDTO{NomePeca: "Bolsa floral", Categoria: "Bolsas", PrioridadeCategoria: "alta", Preco: 75.5, FotoURL: "https://exemplo.com/bolsa.jpg", ProntaEntrega: true, Publicado: true}); err != nil {
 		t.Fatal(err)
 	}
 	produtos, err := dao.BuscarTodos()
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(produtos) != 1 || produtos[0].NomePeca != "Bolsa floral" || produtos[0].Categoria != "Bolsas" || produtos[0].Preco != 75.5 || !produtos[0].ProntaEntrega || !produtos[0].Publicado {
+	if len(produtos) != 1 || produtos[0].NomePeca != "Bolsa floral" || produtos[0].Categoria != "Bolsas" || produtos[0].PrioridadeCategoria != "alta" || produtos[0].Preco != 75.5 || !produtos[0].ProntaEntrega || !produtos[0].Publicado {
 		t.Fatalf("produto não atualizado: %+v", produtos)
 	}
 	if err := dao.Atualizar(2, dtos.ProdutoInputDTO{}); err != sql.ErrNoRows {
 		t.Fatalf("atualização de produto inexistente = %v; esperado sql.ErrNoRows", err)
+	}
+}
+
+func TestPrioridadeDaCategoriaEhCompartilhadaEntreProdutos(t *testing.T) {
+	db, err := sql.Open("sqlite3", ":memory:")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Close()
+	db.SetMaxOpenConns(1)
+	for _, query := range []string{
+		`CREATE TABLE categorias_produtos (nome TEXT PRIMARY KEY COLLATE NOCASE, prioridade TEXT NOT NULL DEFAULT 'media')`,
+		`CREATE TABLE produtos (id INTEGER PRIMARY KEY AUTOINCREMENT, nome_peca TEXT, categoria TEXT NOT NULL DEFAULT '', preco REAL, foto_url TEXT, pronta_entrega BOOLEAN, publicado BOOLEAN)`,
+	} {
+		if _, err := db.Exec(query); err != nil {
+			t.Fatal(err)
+		}
+	}
+	dao := NovoProdutoDAO(db)
+	for _, produto := range []dtos.ProdutoInputDTO{
+		{NomePeca: "Bolsa A", Categoria: "Bolsas", PrioridadeCategoria: "baixa"},
+		{NomePeca: "Bolsa B", Categoria: "Bolsas", PrioridadeCategoria: "baixa"},
+	} {
+		if _, err := dao.Inserir(produto); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if err := dao.Atualizar(2, dtos.ProdutoInputDTO{NomePeca: "Bolsa B", Categoria: "Bolsas", PrioridadeCategoria: "alta"}); err != nil {
+		t.Fatal(err)
+	}
+	produtos, err := dao.BuscarTodos()
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, produto := range produtos {
+		if produto.PrioridadeCategoria != "alta" {
+			t.Fatalf("prioridade do produto %q = %q; esperada alta para toda a categoria", produto.NomePeca, produto.PrioridadeCategoria)
+		}
 	}
 }
 
@@ -77,6 +118,7 @@ func TestBuscarTodosOrdenaProdutosPorCategoria(t *testing.T) {
 	defer db.Close()
 	db.SetMaxOpenConns(1)
 	for _, query := range []string{
+		`CREATE TABLE categorias_produtos (nome TEXT PRIMARY KEY COLLATE NOCASE, prioridade TEXT NOT NULL DEFAULT 'media')`,
 		`CREATE TABLE produtos (id INTEGER PRIMARY KEY, nome_peca TEXT, categoria TEXT NOT NULL DEFAULT '', preco REAL, foto_url TEXT, pronta_entrega BOOLEAN, publicado BOOLEAN)`,
 		`INSERT INTO produtos (id, nome_peca, categoria, preco, foto_url, pronta_entrega, publicado) VALUES (1, 'Bolsa', 'Bolsas', 10, '', 0, 0), (2, 'Chapéu', 'Chapéus', 10, '', 0, 0), (3, 'Boina vermelha', 'Boina', 10, '', 0, 0), (4, 'Boina azul', 'Boina', 10, '', 0, 0), (5, 'Case', '', 10, '', 0, 0)`,
 	} {

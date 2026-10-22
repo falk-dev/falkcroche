@@ -147,6 +147,7 @@ func criarTabelas(db *sql.DB) {
 		log.Fatalf("Erro ao criar tabela produtos: %v", err)
 	}
 	migrarColunaCategoriaProduto(db)
+	migrarPrioridadesCategorias(db)
 	if _, err := db.Exec(tabelaPedidos); err != nil {
 		log.Fatalf("Erro ao criar tabela pedidos: %v", err)
 	}
@@ -178,6 +179,19 @@ func criarTabelas(db *sql.DB) {
 	migrarPagamentosPendentes(db)
 
 	log.Println("Tabelas verificadas/criadas com sucesso!")
+}
+
+func migrarPrioridadesCategorias(db *sql.DB) {
+	if _, err := db.Exec(`CREATE TABLE IF NOT EXISTS categorias_produtos (
+		nome TEXT PRIMARY KEY COLLATE NOCASE,
+		prioridade TEXT NOT NULL DEFAULT 'media' CHECK (prioridade IN ('alta', 'media', 'baixa'))
+	)`); err != nil {
+		log.Fatalf("Erro ao criar tabela de prioridades das categorias: %v", err)
+	}
+	if _, err := db.Exec(`INSERT OR IGNORE INTO categorias_produtos (nome, prioridade)
+		SELECT DISTINCT TRIM(categoria), 'media' FROM produtos WHERE TRIM(categoria) <> ''`); err != nil {
+		log.Fatalf("Erro ao migrar prioridades das categorias existentes: %v", err)
+	}
 }
 
 func migrarItensPedido(db *sql.DB) {
