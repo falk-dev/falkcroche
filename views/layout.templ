@@ -124,6 +124,11 @@ templ AdminLayout(title string, content templ.Component) {
 			</div>
 		</main>
 	</div>
+	<script>
+		document.addEventListener("click", (evento) => {
+			if (evento.target instanceof HTMLDialogElement && evento.target.open) evento.target.close();
+		});
+	</script>
 	<script src="/static/js/notificacoes.js" defer></script>
 </body>
 
