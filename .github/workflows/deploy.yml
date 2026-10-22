@@ -59,21 +59,24 @@ jobs:
             falkcroche-app \
             "$VM_USER@$VM_HOST:/tmp/falkcroche-app"
 
-      - name: Deploy and restart
+      
+      - name: Diagnosticar SSH na VPS
         env:
           VM_HOST: ${{ secrets.VM_HOST }}
           VM_USER: ${{ secrets.VM_USER }}
         run: |
-          ssh -i ~/.ssh/deploy_key \
-            -o StrictHostKeyChecking=yes \
-            "$VM_USER@$VM_HOST" \
-            'set -e
-             install -m 755 /tmp/falkcroche-app /home/ubuntu/falkcroche/falkcroche-app
-             rm -f /tmp/falkcroche-app
-             sudo systemctl restart falkcroche
-             systemctl is-active --quiet falkcroche'
+          set -x
 
-      
+          echo "Testando conexão SSH..."
+
+          ssh -vvv \
+            -i ~/.ssh/deploy_key \
+            -o StrictHostKeyChecking=yes \
+            -o ConnectTimeout=15 \
+            "$VM_USER@$VM_HOST" \
+            'echo "SSH conectado"; whoami; hostname; echo "Conexão concluída"'
+
+          echo "Teste SSH finalizado."      
       
       - name: Deploy na VPS
         env:
