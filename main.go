@@ -1,8 +1,10 @@
 package main
 
 import (
+	"embed"
 	"errors"
 	"fmt"
+	"io/fs"
 	"log"
 	"net/http"
 	"os"
@@ -16,10 +18,16 @@ import (
 	"falkcroche/views"
 )
 
+var arquivosEstaticos embed.FS
+
 func main() {
 	fmt.Println("Iniciando o sistema Falk Crochê...")
 	if err := godotenv.Load(); err != nil && !errors.Is(err, os.ErrNotExist) {
 		log.Printf("Aviso: não foi possível carregar .env: %v", err)
+	}
+	staticFS, err := fs.Sub(arquivosEstaticos, "static")
+	if err != nil {
+		log.Fatalf("Erro ao carregar arquivos estáticos: %v", err)
 	}
 
 	db := database.Conectar()
@@ -45,7 +53,7 @@ func main() {
 	)
 
 	mux := http.NewServeMux()
-	mux.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
+	mux.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.FS(staticFS))))
 	mux.HandleFunc("/admin/login", acessoCtrl.Login)
 	mux.Handle("/admin/sair", acessoCtrl.Proteger(http.HandlerFunc(acessoCtrl.Sair)))
 
